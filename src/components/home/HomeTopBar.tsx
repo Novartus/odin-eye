@@ -51,14 +51,14 @@ export const HomeTopBar: React.FC<HomeTopBarProps> = ({
             <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <Path
                 d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
-                stroke={Colors.accentBlue}
+                stroke="#2C4A3E"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
               <Path
                 d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"
-                stroke={Colors.accentBlue}
+                stroke="#2C4A3E"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -86,28 +86,28 @@ export const HomeTopBar: React.FC<HomeTopBarProps> = ({
             <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <Path
                 d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"
-                stroke={isSyncing ? '#007AFF' : '#0F172A'}
+                stroke={isSyncing ? '#10B981' : '#0F172A'}
                 strokeWidth="2.2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
               <Path
                 d="M21 3v5h-5"
-                stroke={isSyncing ? '#007AFF' : '#0F172A'}
+                stroke={isSyncing ? '#10B981' : '#0F172A'}
                 strokeWidth="2.2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
               <Path
                 d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"
-                stroke={isSyncing ? '#007AFF' : '#0F172A'}
+                stroke={isSyncing ? '#10B981' : '#0F172A'}
                 strokeWidth="2.2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
               <Path
                 d="M8 16H3v5"
-                stroke={isSyncing ? '#007AFF' : '#0F172A'}
+                stroke={isSyncing ? '#10B981' : '#0F172A'}
                 strokeWidth="2.2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -175,8 +175,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 16,
+    height: 60,
   },
   profileSection: {
     flexDirection: 'row',

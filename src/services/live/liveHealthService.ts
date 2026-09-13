@@ -8,18 +8,8 @@ import { ultrahumanApiClient } from '../api/ultrahumanApiClient';
 import { fitbitApiClient } from '../api/fitbitApiClient';
 import { healthConnect } from '../healthConnect/healthConnectService';
 import { credentialsStorage, SavedCredentials } from '../storage/credentialsStorage';
-
-export interface SyncReport {
-  success: boolean;
-  timestamp: string;
-  sourcesSynced: string[];
-  hevyWorkoutCount?: number;
-  recoveryScore?: number;
-  activeZoneMinutes?: number;
-  errors: string[];
-}
-
-export type TelemetryListener = (data: TriPillarHealthSummary, report: SyncReport) => void;
+import { SyncReport, TelemetryListener } from '../../types/devices';
+export { SyncReport, TelemetryListener } from '../../types/devices';
 
 export class LiveHealthService {
   private static instance: LiveHealthService;

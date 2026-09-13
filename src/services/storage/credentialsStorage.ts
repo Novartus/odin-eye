@@ -11,35 +11,8 @@
 
 import * as SecureStore from 'expo-secure-store';
 import { cryptoService, EncryptedPayload } from '../security/cryptoService';
-
-export interface SavedCredentials {
-  hevyApiKey: string;
-  ultrahumanToken: string;
-  fitbitToken: string;
-  healthConnectEnabled: boolean;
-  healthConnectPermissionsGranted?: boolean;
-  healthConnectPromptDismissed?: boolean;
-  geminiApiKey?: string;
-  openaiApiKey?: string;
-  aiProvider?: 'gemini_nano' | 'ondevice' | 'gemini' | 'openai';
-  aiEnabled?: boolean;
-  lastSyncTime?: string;
-  hasCompletedOnboarding?: boolean;
-  dailyStepsGoal?: number;
-  dailyCaloriesGoal?: number;
-}
-
-export interface SecurityVaultStatus {
-  isEncrypted: boolean;
-  storageEngine: string;
-  cipher: string;
-  mac: string;
-  keyDerivation: string;
-  sandboxLevel: string;
-  lastEncryptedAt: string;
-  isSelfTestPassing: boolean;
-  isHardwareKeystore: boolean;
-}
+import { SavedCredentials, SecurityVaultStatus } from '../../types/storage';
+export { SavedCredentials, SecurityVaultStatus } from '../../types/storage';
 
 const SECURE_STORE_KEY = 'odineye_secure_vault';
 const VAULT_FILE_NAME = 'odineye_secure_vault.enc';
@@ -57,6 +30,7 @@ class CredentialsStorage {
     openaiApiKey: '',
     aiProvider: 'gemini_nano',
     aiEnabled: true,
+    bodyAnalysisEnabled: true,
     hasCompletedOnboarding: false,
     dailyStepsGoal: 10000,
     dailyCaloriesGoal: 500,

@@ -18,62 +18,7 @@ export * from './medicationTypes';
 const STORAGE_KEY = 'odineye_medications_data_v2';
 const FILE_BACKUP_NAME = 'odineye_medications_backup.json';
 
-const DEFAULT_MEDICATIONS: Medication[] = [
-  {
-    id: 'med-carsil-1',
-    name: 'Carsil',
-    dosage: '35mg',
-    unit: '2 tablets',
-    form: 'tablet',
-    times: ['07:00 AM', '06:00 PM'],
-    frequency: 'Twice daily',
-    duration: '3 months',
-    startDate: '2026-08-15',
-    progressPct: 65,
-    description: 'Silybum marianum extract used to support liver function and protect hepatocytes from toxic cellular stress.',
-    sideEffects: ['Mild gastrointestinal discomfort', 'Transient nausea', 'Mild laxative effect'],
-    color: '#EFF6FF',
-    accentColor: '#DBEAFE',
-    iconColor: '#2563EB',
-    takenDates: {},
-  },
-  {
-    id: 'med-roaccutane-2',
-    name: 'Roaccutane',
-    dosage: '30mg',
-    unit: '1 capsule',
-    form: 'capsule',
-    times: ['07:00 AM'],
-    frequency: 'Daily with meal',
-    duration: '6 months',
-    startDate: '2026-07-01',
-    progressPct: 40,
-    description: 'Isotretinoin, also known as 13-cis-retinoic acid, is primarily prescribed to regulate epidermal cellular turnover and dermal sebum output.',
-    sideEffects: ['Dryness of lips and skin', 'Increased sun sensitivity', 'Temporary fatigue'],
-    color: '#F0FDF4',
-    accentColor: '#DCFCE7',
-    iconColor: '#16A34A',
-    takenDates: {},
-  },
-  {
-    id: 'med-cardioactive-3',
-    name: 'CardioActive',
-    dosage: '20ml',
-    unit: '20 drops',
-    form: 'drops',
-    times: ['12:00 PM'],
-    frequency: 'Daily at noon',
-    duration: '1 month',
-    startDate: '2026-09-01',
-    progressPct: 30,
-    description: 'Hawthorn and herbal bioflavonoid formulation formulated for autonomic cardiovascular tone and capillary stabilization.',
-    sideEffects: ['Mild dizziness if taken on empty stomach', 'Slight drowsiness'],
-    color: '#FFF7ED',
-    accentColor: '#FFEDD5',
-    iconColor: '#EA580C',
-    takenDates: {},
-  },
-];
+const DEFAULT_MEDICATIONS: Medication[] = [];
 
 type ReminderListener = (alert: ReminderAlertEvent) => void;
 
@@ -152,14 +97,17 @@ class MedicationService {
       } catch {}
     }
 
-    if (loadedData && Array.isArray(loadedData) && loadedData.length > 0) {
-      this.medications = loadedData;
+    if (loadedData && Array.isArray(loadedData)) {
+      // Purge any legacy dummy seed items
+      const cleaned = loadedData.filter(
+        (m) => m.id !== 'med-carsil-1' && m.id !== 'med-roaccutane-2' && m.id !== 'med-cardioactive-3'
+      );
+      this.medications = cleaned;
+      if (cleaned.length !== loadedData.length) {
+        await this.saveToStorage();
+      }
     } else {
-      // Seed default medications with today's first dose pre-marked
-      const today = this.getTodayDateKey();
-      const seeded = JSON.parse(JSON.stringify(DEFAULT_MEDICATIONS));
-      seeded[0].takenDates[today] = ['07:00 AM'];
-      this.medications = seeded;
+      this.medications = [];
       await this.saveToStorage();
     }
 

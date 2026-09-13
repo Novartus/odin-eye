@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
-import { TriPillarHealthSummary } from '../../types/health';
-import { EnabledSources } from '../settings/DeviceSourcesModal';
+import Svg, { Circle, Path } from 'react-native-svg';
+import { TriPillarHealthSummary, EnabledSources, MetricType } from '../../types';
 import { Colors } from '../../theme/colors';
 import { SmartRingIcon } from '../common/SmartRingIcon';
-import { MetricDetailExpandModal, MetricType } from './MetricDetailExpandModal';
+import { MetricDetailExpandModal } from './MetricDetailExpandModal';
 
 interface MetricCardsGridProps {
   data: TriPillarHealthSummary;
@@ -91,12 +90,16 @@ export const MetricCardsGrid: React.FC<MetricCardsGridProps> = ({
   // Svg circular progress calculations for Walking Hero card
   const ringRadius = 38;
   const ringCircumference = 2 * Math.PI * ringRadius;
-  const outerStrokeOffset = ringCircumference - (ringCircumference * (stepsGoalPct || 15)) / 100;
+  const outerStrokeOffset = stepsGoalPct > 0
+    ? ringCircumference - (ringCircumference * stepsGoalPct) / 100
+    : ringCircumference;
 
   const innerRadius = 28;
   const innerCircumference = 2 * Math.PI * innerRadius;
-  const innerProgressPct = Math.min(100, Math.max(10, Math.round((activeDistance / 8) * 100)));
-  const innerStrokeOffset = innerCircumference - (innerCircumference * innerProgressPct) / 100;
+  const innerProgressPct = Math.min(100, Math.round((activeDistance / 8) * 100));
+  const innerStrokeOffset = innerProgressPct > 0
+    ? innerCircumference - (innerCircumference * innerProgressPct) / 100
+    : innerCircumference;
 
   return (
     <View style={styles.container}>
@@ -156,7 +159,7 @@ export const MetricCardsGrid: React.FC<MetricCardsGridProps> = ({
               stroke="#FFFFFF"
               strokeWidth="6"
               strokeDasharray={`${2 * Math.PI * 43}`}
-              strokeDashoffset={`${2 * Math.PI * 43 - (2 * Math.PI * 43 * (stepsGoalPct || 15)) / 100}`}
+              strokeDashoffset={`${stepsGoalPct > 0 ? 2 * Math.PI * 43 - (2 * Math.PI * 43 * stepsGoalPct) / 100 : 2 * Math.PI * 43}`}
               strokeLinecap="round"
               fill="none"
               transform="rotate(-90 51 51)"
@@ -176,14 +179,29 @@ export const MetricCardsGrid: React.FC<MetricCardsGridProps> = ({
         </View>
       </TouchableOpacity>
 
-      {/* 2. MILESTONE BANNER (Screen 2 Signature) */}
+      {/* 2. MILESTONE BANNER (Clean Vector Upward Momentum) */}
       <View style={styles.milestoneBanner}>
         <View style={styles.milestoneIconWrap}>
-          <Text style={styles.milestoneCrown}>👑</Text>
+          <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <Path
+              d="M22 7l-8.5 8.5-5-5L2 17"
+              stroke={Colors.bentoMintDark}
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <Path
+              d="M16 7h6v6"
+              stroke={Colors.bentoMintDark}
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </Svg>
         </View>
         <View style={styles.milestoneTextCol}>
           <Text style={styles.milestoneTitle}>
-            {stepsGoalPct >= 80 ? 'Wow! You made it!' : 'Daily Wellness Momentum'}
+            {stepsGoalPct >= 80 ? 'Daily Goal Achieved!' : 'Daily Wellness Momentum'}
           </Text>
           <Text style={styles.milestoneSub}>
             {stepsGoalPct >= 80
@@ -222,15 +240,23 @@ export const MetricCardsGrid: React.FC<MetricCardsGridProps> = ({
                     stroke="#5F5782"
                     strokeWidth="4"
                     strokeDasharray="170"
-                    strokeDashoffset={recovery.recoveryScore > 0 ? `${170 - (170 * recovery.recoveryScore) / 100}` : '65'}
+                    strokeDashoffset={recovery.recoveryScore > 0 ? `${170 - (170 * recovery.recoveryScore) / 100}` : '170'}
                     strokeLinecap="round"
                     fill="none"
                     transform="rotate(-90 32 32)"
                   />
                 </Svg>
-                {/* Pure White Floating Disk with footsteps icon */}
+                {/* Pure White Floating Disk with clean pulse icon */}
                 <View style={styles.lilacInnerWhiteDisk}>
-                  <Text style={styles.lilacDiskIcon}>🐾</Text>
+                  <Svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <Path
+                      d="M22 12h-4l-3 9L9 3l-3 9H2"
+                      stroke="#5F5782"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </Svg>
                 </View>
               </View>
 
@@ -258,7 +284,9 @@ export const MetricCardsGrid: React.FC<MetricCardsGridProps> = ({
             <View style={styles.cardHeaderRow}>
               <Text style={styles.compactCardTitle}>Strength</Text>
               <View style={styles.miniIconCircle}>
-                <Text style={{ fontSize: 13 }}>🏋️</Text>
+                <Svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <Path d="M6 5v14M18 5v14M4 8v8M20 8v8M6 12h12" stroke="#5B21B6" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                </Svg>
               </View>
             </View>
             <View style={styles.compactValueRow}>
@@ -280,7 +308,21 @@ export const MetricCardsGrid: React.FC<MetricCardsGridProps> = ({
             <View style={styles.cardHeaderRow}>
               <Text style={styles.peachCardTitle}>Calories</Text>
               <View style={styles.peachIconCircle}>
-                <Text style={{ fontSize: 14 }}>🔥</Text>
+                <Svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M12 2c.5 3 2 4.5 4 6.5s3 4.5 3 7.5a7 7 0 1 1-14 0c0-4 3.5-7 4.5-9s1.5-3 2.5-5z"
+                    stroke="#EA580C"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <Path
+                    d="M12 14a2.5 2.5 0 0 0-2.5 2.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5c0-.8-.38-1.5-.95-1.95"
+                    stroke="#EA580C"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                </Svg>
               </View>
             </View>
 
@@ -305,7 +347,22 @@ export const MetricCardsGrid: React.FC<MetricCardsGridProps> = ({
             <View style={styles.cardHeaderRow}>
               <Text style={styles.buttercreamCardTitle}>Heart Rate</Text>
               <View style={styles.yellowIconCircle}>
-                <Text style={{ fontSize: 14 }}>❤️</Text>
+                <Svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"
+                    stroke="#D97706"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <Path
+                    d="M9 12l2 2l3 -4"
+                    stroke="#D97706"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
               </View>
             </View>
 
@@ -490,9 +547,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 6,
     elevation: 2,
-  },
-  milestoneCrown: {
-    fontSize: 20,
   },
   milestoneTextCol: {
     flex: 1,

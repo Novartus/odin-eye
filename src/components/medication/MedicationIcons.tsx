@@ -9,11 +9,11 @@ interface IconProps {
   color?: string;
 }
 
-// Tablet / Pill: Circle with diagonal center score line
+// Tablet / Pill: Pharmaceutical round scored tablet with vertical score line
 export const TabletIcon: React.FC<IconProps> = ({ size = 20, color = '#2563EB' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Circle cx="12" cy="12" r="9" stroke={color} strokeWidth="2.2" />
-    <Path d="M6 18L18 6" stroke={color} strokeWidth="2" strokeLinecap="round" />
+    <Path d="M12 5.5v13" stroke={color} strokeWidth="2.2" strokeLinecap="round" />
   </Svg>
 );
 

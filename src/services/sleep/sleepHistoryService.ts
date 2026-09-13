@@ -154,39 +154,17 @@ export class SleepHistoryService {
         if (stored) {
           result.push({ ...stored, isToday: false });
         } else {
-          // If today has sleep recorded (e.g. 7h 24m) but prior days weren't yet accumulated,
-          // create a natural restorative variation pattern based on today's baseline so the chart
-          // displays the aesthetic 7-bar distribution shown in the reference UI.
-          if (todayMinutes > 0) {
-            // Slight natural variation (e.g. 6.8h, 7.5h, 7.1h, 8.0h, 6.9h)
-            const offsets = [-35, 25, -15, 45, -20, 10]; // variation in minutes
-            const offset = offsets[(6 - i) % offsets.length];
-            const estMinutes = Math.max(300, todayMinutes + offset);
-            result.push({
-              date: key,
-              dayLabel: dayLetter,
-              fullDayLabel: dayName,
-              durationMinutes: estMinutes,
-              sleepIndex: Math.max(65, Math.min(95, (todayIndex || 80) + Math.round(offset / 10))),
-              efficiencyPct: 88,
-              deepPct: 20,
-              remPct: 23,
-              isToday: false,
-            });
-          } else {
-            // Zero baseline if user has logged no sleep yet
-            result.push({
-              date: key,
-              dayLabel: dayLetter,
-              fullDayLabel: dayName,
-              durationMinutes: 0,
-              sleepIndex: 0,
-              efficiencyPct: 0,
-              deepPct: 0,
-              remPct: 0,
-              isToday: false,
-            });
-          }
+          result.push({
+            date: key,
+            dayLabel: dayLetter,
+            fullDayLabel: dayName,
+            durationMinutes: 0,
+            sleepIndex: 0,
+            efficiencyPct: 0,
+            deepPct: 0,
+            remPct: 0,
+            isToday: false,
+          });
         }
       }
     }
@@ -218,24 +196,12 @@ export class SleepHistoryService {
           isToday: true,
         });
       } else {
-        if (todaySteps > 0) {
-          const stepVariations = [-800, 1200, -400, 950, -1100, 300];
-          const offset = stepVariations[(6 - i) % stepVariations.length];
-          const estSteps = Math.max(2500, todaySteps + offset);
-          result.push({
-            date: key,
-            dayLabel: dayLetter,
-            steps: estSteps,
-            isToday: false,
-          });
-        } else {
-          result.push({
-            date: key,
-            dayLabel: dayLetter,
-            steps: 0,
-            isToday: false,
-          });
-        }
+        result.push({
+          date: key,
+          dayLabel: dayLetter,
+          steps: 0,
+          isToday: false,
+        });
       }
     }
 

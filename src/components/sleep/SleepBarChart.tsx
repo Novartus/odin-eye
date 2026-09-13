@@ -48,29 +48,29 @@ export const SleepBarChart: React.FC<SleepBarChartProps> = ({
             ? Math.min(100, Math.max(18, Math.round((item.durationMinutes / TARGET_MINUTES) * 100)))
             : 10;
 
-          // Color palette matching the reference image
-          let barBg = '#F1F5F9';
+          // Scandinavian Pastel Bento Palette
+          let barBg = '#EBF2EE';
           if (hasData) {
             if (isPurple) {
               if (item.isToday) {
-                barBg = '#6D28D9'; // Deep vibrant purple for today
+                barBg = '#181C1B'; // Deep obsidian charcoal for today
               } else if (pct >= 85) {
-                barBg = '#8B5CF6'; // Medium-high purple
+                barBg = '#493D78'; // Bento lilac dark
               } else if (pct >= 70) {
-                barBg = '#A78BFA'; // Medium purple
+                barBg = '#8E82BD'; // Medium lilac
               } else {
-                barBg = '#C4B5FD'; // Soft lavender
+                barBg = '#DDD9F5'; // Soft periwinkle lilac
               }
             } else {
-              // Green variant for steps
+              // Mint variant
               if (item.isToday) {
-                barBg = '#059669'; // Deep emerald for today
+                barBg = '#181C1B';
               } else if (pct >= 85) {
-                barBg = '#10B981';
+                barBg = '#237A5D';
               } else if (pct >= 70) {
-                barBg = '#34D399';
+                barBg = '#5FA890';
               } else {
-                barBg = '#6EE7B7';
+                barBg = '#CCE6DE';
               }
             }
           }

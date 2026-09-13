@@ -18,6 +18,7 @@ import { localAiCoach } from '../../services/ai/localCoachEngine';
 import { aiHealthService } from '../../services/ai/aiService';
 import { credentialsStorage } from '../../services/storage/credentialsStorage';
 import { FormattedMessage } from './FormattedMessage';
+import { BouncingDotsLoader } from '../common/BouncingDotsLoader';
 import { Colors } from '../../theme/colors';
 
 interface DedicatedAiCoachViewProps {
@@ -43,13 +44,17 @@ export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data
     });
   }, []);
 
+  const welcomeText = data.recovery.recoveryScore > 0
+    ? `Hey there! Great to see you today 😊\n\nI've got your live biometric telemetry synced. You're sitting at a **${data.recovery.recoveryScore}% Recovery score** today.\n\nHow are you feeling today? Are you thinking about hitting a workout, or would you like to review your recovery trends?`
+    : `Hey there! Welcome to your on-device AI Wellness Coach 😊\n\nOnce you connect your wearable or Health Connect in Settings, I will analyze your recovery, sleep stages, and workout strain privately on your device.\n\nHow can I support your health and fitness goals today?`;
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome-msg',
       sender: 'coach',
-      text: `Hey there! Great to see you today 😊\n\nI've got your live Ring AIR, Health Connect, and Hevy telemetry synced. You're sitting at a **${data.recovery.recoveryScore}% Recovery score** today with all your muscle groups **100% primed** and ready for action (zero fatigue debt).\n\nHow are you feeling today? Are you thinking about hitting a workout, or would you like to review your recovery trends?`,
+      text: welcomeText,
       timestamp: new Date().toISOString(),
-      dataPointsReferenced: ['Android AICore (Gemini Nano)', 'On-Device NPU', 'Ultrahuman', 'Health Connect', 'Hevy'],
+      dataPointsReferenced: ['Android AICore (Gemini Nano)', 'On-Device NPU'],
     },
   ]);
   const [inputText, setInputText] = useState('');
@@ -156,26 +161,26 @@ export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data
                 aiProvider === 'gemini_nano'
                   ? { backgroundColor: '#10B981' }
                   : aiProvider === 'gemini'
-                  ? { backgroundColor: '#007AFF' }
-                  : {},
+                    ? { backgroundColor: '#007AFF' }
+                    : {},
               ]}
             />
             <Text style={styles.bannerTitle}>
               {aiProvider === 'gemini_nano'
                 ? 'Android AICore (Gemini Nano)'
                 : aiProvider === 'gemini'
-                ? 'Google Gemini 1.5 Flash'
-                : aiProvider === 'openai'
-                ? 'OpenAI GPT-4o-mini'
-                : 'On-Device NPU Local AI'}
+                  ? 'Google Gemini 1.5 Flash'
+                  : aiProvider === 'openai'
+                    ? 'OpenAI GPT-4o-mini'
+                    : 'On-Device NPU Local AI'}
             </Text>
           </View>
           <Text style={styles.bannerLatency}>
             {aiProvider === 'gemini_nano'
               ? 'On-Device NPU • 100% Private'
               : aiProvider === 'ondevice'
-              ? '100% Private • ~14ms'
-              : 'Grounded Live LLM'}
+                ? '100% Private • ~14ms'
+                : 'Grounded Live LLM'}
           </Text>
         </View>
 
@@ -251,18 +256,17 @@ export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data
           })}
 
           {isThinking && (
-            <View style={styles.thinkingBox}>
-              <ActivityIndicator size="small" color={Colors.accentBlue} />
-              <Text style={styles.thinkingText}>
-                {aiProvider === 'gemini_nano'
-                  ? 'Synthesizing via Android AICore (Gemini Nano)...'
+            <BouncingDotsLoader
+              statusText={
+                aiProvider === 'gemini_nano'
+                  ? 'Thinking... (Android AICore)'
                   : aiProvider === 'gemini'
-                  ? 'Generating response with Gemini 1.5 Flash...'
-                  : aiProvider === 'openai'
-                  ? 'Generating response with GPT-4o-mini...'
-                  : 'Synthesizing biometrics on-device...'}
-              </Text>
-            </View>
+                    ? 'Thinking... (Gemini 1.5 Flash)'
+                    : aiProvider === 'openai'
+                      ? 'Thinking... (GPT-4o-mini)'
+                      : 'Synthesizing biometrics on-device...'
+              }
+            />
           )}
         </View>
       </ScrollView>

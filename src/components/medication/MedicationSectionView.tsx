@@ -107,16 +107,31 @@ export const MedicationSectionView: React.FC = () => {
     return dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
   }, [selectedDateKey]);
 
-  // Scheduled doses for selected date
+  // All scheduled doses for selected date
+  const allDosesForDate = useMemo(() => {
+    return medicationService.getScheduledDosesForDate(selectedDateKey);
+  }, [medications, selectedDateKey]);
+
+  const pendingCount = useMemo(() => {
+    return allDosesForDate.filter((d) => !d.isTaken).length;
+  }, [allDosesForDate]);
+
+  const takenCount = useMemo(() => {
+    return allDosesForDate.filter((d) => d.isTaken).length;
+  }, [allDosesForDate]);
+
+  const allCount = allDosesForDate.length;
+
+  // Filtered doses for selected date
   const doses = useMemo(() => {
-    let list = medicationService.getScheduledDosesForDate(selectedDateKey);
     if (filter === 'pending') {
-      list = list.filter((d) => !d.isTaken);
-    } else if (filter === 'taken') {
-      list = list.filter((d) => d.isTaken);
+      return allDosesForDate.filter((d) => !d.isTaken);
     }
-    return list;
-  }, [medications, selectedDateKey, filter]);
+    if (filter === 'taken') {
+      return allDosesForDate.filter((d) => d.isTaken);
+    }
+    return allDosesForDate;
+  }, [allDosesForDate, filter]);
 
   // Group doses by time slot
   const groupedByTime = useMemo(() => {
@@ -273,10 +288,18 @@ export const MedicationSectionView: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* Top Header: Profile Avatar, Test Reminder Alert button, and (+) Add Button */}
+      {/* Top Header: Profile Avatar, Test Reminder Alert button, and Edit & (+) Add Buttons */}
       <View style={styles.topHeader}>
         <View style={styles.avatarCircle}>
-          <Text style={{ fontSize: 18 }}>🧘‍♂️</Text>
+          <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <Path
+              d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
+              stroke={Colors.bentoMintDark}
+              strokeWidth="2.2"
+              strokeLinecap="round"
+            />
+            <Circle cx="12" cy="7" r="4" stroke={Colors.bentoMintDark} strokeWidth="2.2" />
+          </Svg>
         </View>
 
         <View style={styles.headerRightActions}>
@@ -289,10 +312,42 @@ export const MedicationSectionView: React.FC = () => {
             <Text style={styles.alertTestBtnText}>🔔 Test Alert</Text>
           </TouchableOpacity>
 
+          {/* Quick Edit Schedule Routine Button */}
+          <TouchableOpacity
+            style={[styles.editHeaderBtn, isEditMode && styles.editHeaderBtnActive]}
+            onPress={() => {
+              setIsEditMode(!isEditMode);
+              if (isEditMode) {
+                setSelectedForArchive(new Set());
+              }
+            }}
+            activeOpacity={0.8}
+            accessibilityLabel="Edit medication routine"
+          >
+            <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <Path
+                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                stroke={isEditMode ? '#FFFFFF' : Colors.textPrimary}
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <Path
+                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                stroke={isEditMode ? '#FFFFFF' : Colors.textPrimary}
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </Svg>
+          </TouchableOpacity>
+
+          {/* (+) Add Medication Button */}
           <TouchableOpacity
             style={styles.addBtn}
             onPress={() => setShowAddModal(true)}
             activeOpacity={0.8}
+            accessibilityLabel="Add medication"
           >
             <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <Path d="M12 5v14M5 12h14" stroke={Colors.textPrimary} strokeWidth="2.4" strokeLinecap="round" />
@@ -369,48 +424,60 @@ export const MedicationSectionView: React.FC = () => {
         </View>
       </View>
 
-      {/* Schedule Sub-header with Filter Pills and Clear Edit Button */}
-      <View style={styles.scheduleHeaderRow}>
-        <View style={styles.scheduleHeaderLeft}>
-          <Text style={styles.subHeaderColTime}>Time</Text>
-          <Text style={styles.subHeaderColMed}>Medication</Text>
-        </View>
-
-        <View style={styles.scheduleHeaderRight}>
-          <View style={styles.filterPillsRow}>
-            {(['all', 'pending', 'taken'] as const).map((f) => {
-              const isAct = filter === f;
-              return (
-                <TouchableOpacity
-                  key={f}
-                  style={[styles.filterPill, isAct && styles.filterPillActive]}
-                  onPress={() => setFilter(f)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.filterPillText, isAct && styles.filterPillTextActive]}>
-                    {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {/* Clear Edit Button to select and archive schedule medications */}
+      {/* Mindful Scandinavian Filter Bar (All / Pending / Taken with live counts) */}
+      <View style={styles.filterBarWrapper}>
+        <View style={styles.filterSegmentContainer}>
           <TouchableOpacity
-            style={[styles.editRoutineBtn, isEditMode && styles.editRoutineBtnActive]}
-            onPress={() => {
-              setIsEditMode(!isEditMode);
-              if (isEditMode) {
-                setSelectedForArchive(new Set());
-              }
-            }}
-            activeOpacity={0.75}
+            style={[styles.filterSegmentBtn, filter === 'all' && styles.filterSegmentBtnActive]}
+            onPress={() => setFilter('all')}
+            activeOpacity={0.8}
           >
-            <Text style={[styles.editRoutineBtnText, isEditMode && styles.editRoutineBtnTextActive]}>
-              {isEditMode ? 'Done ✓' : '✏️ Edit'}
+            <Text style={[styles.filterSegmentText, filter === 'all' && styles.filterSegmentTextActive]}>
+              All
             </Text>
+            <View style={[styles.filterCountBadge, filter === 'all' && styles.filterCountBadgeActive]}>
+              <Text style={[styles.filterCountText, filter === 'all' && styles.filterCountTextActive]}>
+                {allCount}
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.filterSegmentBtn, filter === 'pending' && styles.filterSegmentBtnActive]}
+            onPress={() => setFilter('pending')}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.filterSegmentText, filter === 'pending' && styles.filterSegmentTextActive]}>
+              Pending
+            </Text>
+            <View style={[styles.filterCountBadge, filter === 'pending' && styles.filterCountBadgePending]}>
+              <Text style={[styles.filterCountText, filter === 'pending' && styles.filterCountTextPending]}>
+                {pendingCount}
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.filterSegmentBtn, filter === 'taken' && styles.filterSegmentBtnActive]}
+            onPress={() => setFilter('taken')}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.filterSegmentText, filter === 'taken' && styles.filterSegmentTextActive]}>
+              Taken
+            </Text>
+            <View style={[styles.filterCountBadge, filter === 'taken' && styles.filterCountBadgeTaken]}>
+              <Text style={[styles.filterCountText, filter === 'taken' && styles.filterCountTextTaken]}>
+                {takenCount}
+              </Text>
+            </View>
           </TouchableOpacity>
         </View>
+      </View>
+
+      {/* Schedule Column Labels */}
+      <View style={styles.scheduleColumnLabels}>
+        <Text style={styles.colLabelTime}>TIME</Text>
+        <Text style={styles.colLabelMed}>MEDICATION & DOSAGE</Text>
       </View>
 
       {/* Edit Mode Interactive Archive Action Banner */}
@@ -452,6 +519,17 @@ export const MedicationSectionView: React.FC = () => {
               <Text style={styles.archiveActionBtnText}>
                 📦 Archive ({selectedForArchive.size})
               </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.doneEditBannerBtn}
+              onPress={() => {
+                setIsEditMode(false);
+                setSelectedForArchive(new Set());
+              }}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.doneEditBannerBtnText}>Done ✓</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -706,6 +784,25 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#9C7A1A',
   },
+  editHeaderBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#EAF2EE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(44, 74, 62, 0.1)',
+    shadowColor: '#1F342C',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  editHeaderBtnActive: {
+    backgroundColor: '#2C4A3E',
+    borderColor: '#2C4A3E',
+  },
   addBtn: {
     width: 42,
     height: 42,
@@ -849,51 +946,95 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981',
     borderRadius: 3,
   },
-  scheduleHeaderRow: {
+  filterBarWrapper: {
+    marginBottom: 16,
+    paddingHorizontal: 2,
+  },
+  filterSegmentContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#EEF3F0',
+    borderRadius: 18,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(44, 74, 62, 0.08)',
+  },
+  filterSegmentBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-    paddingHorizontal: 4,
-  },
-  scheduleHeaderLeft: {
-    flexDirection: 'row',
-    gap: 24,
-  },
-  subHeaderColTime: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#94A3B8',
-    letterSpacing: 0.5,
-    width: 54,
-  },
-  subHeaderColMed: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#94A3B8',
-    letterSpacing: 0.5,
-  },
-  filterPillsRow: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  filterPill: {
+    justifyContent: 'center',
+    paddingVertical: 9,
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-    backgroundColor: '#F1F5F9',
+    borderRadius: 14,
   },
-  filterPillActive: {
-    backgroundColor: '#1A1D1C',
+  filterSegmentBtnActive: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#1F342C',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  filterPillText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#64748B',
-  },
-  filterPillTextActive: {
-    color: '#FFFFFF',
+  filterSegmentText: {
+    fontSize: 12.5,
     fontWeight: '700',
+    color: '#63706B',
+    marginRight: 6,
+  },
+  filterSegmentTextActive: {
+    color: '#141816',
+    fontWeight: '800',
+  },
+  filterCountBadge: {
+    minWidth: 20,
+    height: 20,
+    paddingHorizontal: 6,
+    borderRadius: 10,
+    backgroundColor: '#DFE7E3',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterCountBadgeActive: {
+    backgroundColor: '#141816',
+  },
+  filterCountBadgePending: {
+    backgroundColor: '#FDE6D8',
+  },
+  filterCountBadgeTaken: {
+    backgroundColor: '#D7ECE4',
+  },
+  filterCountText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#4A5B53',
+  },
+  filterCountTextActive: {
+    color: '#FFFFFF',
+  },
+  filterCountTextPending: {
+    color: '#9A3412',
+  },
+  filterCountTextTaken: {
+    color: '#065F46',
+  },
+  scheduleColumnLabels: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    marginBottom: 12,
+  },
+  colLabelTime: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#8A9992',
+    letterSpacing: 0.8,
+    width: 58,
+  },
+  colLabelMed: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#8A9992',
+    letterSpacing: 0.8,
   },
   timelineList: {
     gap: 16,
@@ -1013,31 +1154,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 18,
   },
-  scheduleHeaderRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  editRoutineBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 4.5,
-    borderRadius: 10,
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  editRoutineBtnActive: {
-    backgroundColor: '#1A1D1C',
-    borderColor: '#1A1D1C',
-  },
-  editRoutineBtnText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#475569',
-  },
-  editRoutineBtnTextActive: {
-    color: '#FFFFFF',
-  },
   archiveBanner: {
     backgroundColor: '#EFF6FF',
     borderRadius: 16,
@@ -1098,6 +1214,19 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   archiveActionBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  doneEditBannerBtn: {
+    backgroundColor: '#1E293B',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  doneEditBannerBtnText: {
     fontSize: 12,
     fontWeight: '800',
     color: '#FFFFFF',

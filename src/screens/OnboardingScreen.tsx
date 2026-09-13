@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,21 +6,68 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  Animated,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Svg, { Path, Circle } from 'react-native-svg';
+import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { credentialsStorage } from '../services/storage/credentialsStorage';
 
 interface OnboardingScreenProps {
   onFinish: (goals: { stepsGoal: number; caloriesGoal: number }) => void;
+  initialStep?: 1 | 2;
 }
 
-export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) => {
-  const [step, setStep] = useState<1 | 2>(1);
+export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, initialStep = 1 }) => {
+  const [step, setStep] = useState<1 | 2>(initialStep);
 
   // Goal selections with recommended defaults
   const [stepsGoal, setStepsGoal] = useState<number>(10000);
   const [caloriesGoal, setCaloriesGoal] = useState<number>(500);
+
+  useEffect(() => {
+    credentialsStorage.loadCredentials().then((creds) => {
+      if (creds.dailyStepsGoal) setStepsGoal(creds.dailyStepsGoal);
+      if (creds.dailyCaloriesGoal) setCaloriesGoal(creds.dailyCaloriesGoal);
+    });
+  }, []);
+
+  // Step transition animations (60 FPS native driver)
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
+
+  const goToStep = (targetStep: 1 | 2) => {
+    const exitOffset = targetStep === 2 ? -28 : 28;
+    const enterOffset = targetStep === 2 ? 28 : -28;
+
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 160,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: exitOffset,
+        duration: 160,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setStep(targetStep);
+      slideAnim.setValue(enterOffset);
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
+  };
 
   const stepPresets = [
     { val: 6000, label: 'Gentle', sub: 'Easy Pacing' },
@@ -55,13 +102,29 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) 
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {step === 1 ? (
+      <Animated.View
+        style={{
+          flex: 1,
+          opacity: fadeAnim,
+          transform: [{ translateX: slideAnim }],
+        }}
+      >
+        {step === 1 ? (
         /* STEP 1: "LET'S GET STARTED" WELCOME SCREEN */
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.welcomeScrollContent}
           showsVerticalScrollIndicator={false}
         >
+          {/* Brand Emblem Logo */}
+          <View style={styles.welcomeLogoWrap}>
+            <Image
+              source={require('../../assets/icon.png')}
+              style={styles.welcomeLogoImage}
+              resizeMode="contain"
+            />
+          </View>
+
           {/* Top Brand Pill */}
           <View style={styles.welcomePill}>
             <Text style={styles.welcomePillText}>🌿 MINDFUL HEALTH & EQUILIBRIUM</Text>
@@ -138,7 +201,10 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) 
 
           {/* Privacy & Hardware Trust Badges */}
           <View style={styles.trustBanner}>
-            <Text style={styles.trustBannerIcon}>🔒</Text>
+            <Svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ marginRight: 6 }}>
+              <Rect x="3" y="11" width="18" height="11" rx="2" stroke="#1F382E" strokeWidth="2" fill="#E8F4F0" />
+              <Path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#1F382E" strokeWidth="2" strokeLinecap="round" />
+            </Svg>
             <Text style={styles.trustBannerText}>
               100% On-Device AI & Encrypted Storage. Zero Telemetry Sharing.
             </Text>
@@ -147,7 +213,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) 
           {/* Bottom CTA Action Button */}
           <TouchableOpacity
             style={styles.primaryPillBtn}
-            onPress={() => setStep(2)}
+            onPress={() => goToStep(2)}
             activeOpacity={0.88}
           >
             <Text style={styles.primaryPillBtnText}>Let's get started</Text>
@@ -175,7 +241,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) 
           <View style={styles.goalHeaderRow}>
             <TouchableOpacity
               style={styles.backCircleBtn}
-              onPress={() => setStep(1)}
+              onPress={() => goToStep(1)}
               activeOpacity={0.7}
             >
               <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -190,7 +256,9 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) 
             </TouchableOpacity>
 
             <View style={styles.stepBadge}>
-              <Text style={styles.stepBadgeText}>STEP 2 OF 2</Text>
+              <Text style={styles.stepBadgeText}>
+                {initialStep === 2 ? 'RECALIBRATE TARGETS' : 'STEP 2 OF 2'}
+              </Text>
             </View>
 
             <View style={{ width: 40 }} />
@@ -320,7 +388,9 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) 
             onPress={handleComplete}
             activeOpacity={0.88}
           >
-            <Text style={styles.primaryPillBtnText}>Complete Setup & Enter App</Text>
+            <Text style={styles.primaryPillBtnText}>
+              {initialStep === 2 ? 'Save Targets & Return to App' : 'Complete Setup & Enter App'}
+            </Text>
             <View style={styles.whiteArrowCircle}>
               <Svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <Path
@@ -335,6 +405,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) 
           </TouchableOpacity>
         </ScrollView>
       )}
+      </Animated.View>
     </SafeAreaView>
   );
 };
@@ -351,6 +422,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 16,
     paddingBottom: 40,
+  },
+  welcomeLogoWrap: {
+    width: 60,
+    height: 60,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#1F382E',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(227, 241, 236, 0.8)',
+    overflow: 'hidden',
+  },
+  welcomeLogoImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 18,
   },
   welcomePill: {
     alignSelf: 'flex-start',

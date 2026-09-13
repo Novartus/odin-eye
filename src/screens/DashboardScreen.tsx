@@ -25,8 +25,9 @@ import { TodayInsightCard } from '../components/home/TodayInsightCard';
 import { HealthOverviewView } from '../components/overview/HealthOverviewView';
 import { BodyAnalysisView } from '../components/body/BodyAnalysisView';
 import { DedicatedAiCoachView } from '../components/ai/DedicatedAiCoachView';
-import { SettingsView, EnabledSources } from '../components/settings/SettingsView';
-import { FloatingTabBar, TabKey } from '../components/navigation/FloatingTabBar';
+import { SettingsView } from '../components/settings/SettingsView';
+import { FloatingTabBar } from '../components/navigation/FloatingTabBar';
+import { EnabledSources, TabKey, ReminderAlertEvent } from '../types';
 import { liveHealthService } from '../services/live/liveHealthService';
 import { HealthConnectPromptModal } from '../components/common/HealthConnectPromptModal';
 import { DevModeBanner } from '../components/common/DevModeBanner';
@@ -36,7 +37,7 @@ import { MedicationReminderAlertModal } from '../components/medication/Medicatio
 import { NotificationsModal } from '../components/common/NotificationsModal';
 import { healthConnect } from '../services/healthConnect/healthConnectService';
 import { credentialsStorage } from '../services/storage/credentialsStorage';
-import { medicationService, ReminderAlertEvent } from '../services/medication/medicationService';
+import { medicationService } from '../services/medication/medicationService';
 import { medicationNotificationService } from '../services/medication/medicationNotificationService';
 
 interface DashboardScreenProps {
@@ -66,6 +67,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
   // AI Master State (Distraction-Free Pure Telemetry Option)
   const [isAiEnabled, setIsAiEnabled] = useState(true);
 
+  // Body Analysis State (Optional Biomechanical & Muscle Clock Modules)
+  const [isBodyAnalysisEnabled, setIsBodyAnalysisEnabled] = useState(true);
+
   // Health Connect Read-Only Permission Prompt State
   const [showHealthConnectModal, setShowHealthConnectModal] = useState(false);
   const [isHealthConnectConnected, setIsHealthConnectConnected] = useState(
@@ -73,8 +77,59 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
   );
 
   const spinValue = useRef(new Animated.Value(0)).current;
+  const tabFadeAnim = useRef(new Animated.Value(1)).current;
+  const syncPulseAnim = useRef(new Animated.Value(0)).current;
+  const scrollViewRef = useRef<ScrollView>(null);
 
-  // Check on initial app launch whether Health Connect prompt should be shown & load AI preferences
+  // Fluid 60 FPS tab transition without layout jumping
+  const switchTab = (nextTab: TabKey) => {
+    if (nextTab === activeTab) return;
+    Animated.timing(tabFadeAnim, {
+      toValue: 0,
+      duration: 70,
+      useNativeDriver: true,
+    }).start(() => {
+      setActiveTab(nextTab);
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+      Animated.timing(tabFadeAnim, {
+        toValue: 1,
+        duration: 130,
+        useNativeDriver: true,
+      }).start();
+    });
+  };
+
+  const handleToggleBodyAnalysis = (val: boolean) => {
+    setIsBodyAnalysisEnabled(val);
+    if (!val && activeTab === 'body') {
+      switchTab('home');
+    }
+  };
+
+  useEffect(() => {
+    if (isSyncing) {
+      const loop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(syncPulseAnim, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(syncPulseAnim, {
+            toValue: 0,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      loop.start();
+      return () => loop.stop();
+    } else {
+      syncPulseAnim.setValue(0);
+    }
+  }, [isSyncing]);
+
+  // Check on initial app launch whether Health Connect prompt should be shown & load AI/Body preferences
   useEffect(() => {
     credentialsStorage.loadCredentials().then((creds) => {
       if (!creds.healthConnectPermissionsGranted && !creds.healthConnectPromptDismissed) {
@@ -86,6 +141,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
       }
       if (creds.aiEnabled !== undefined) {
         setIsAiEnabled(creds.aiEnabled);
+      }
+      if (creds.bodyAnalysisEnabled !== undefined) {
+        setIsBodyAnalysisEnabled(creds.bodyAnalysisEnabled);
       }
       if (creds.dailyStepsGoal) {
         setDailyStepsGoal(creds.dailyStepsGoal);
@@ -209,222 +267,263 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" />
 
-      {/* Screen Header for Sub-Views with Symmetrical Circular Buttons */}
-      {activeTab !== 'home' && (
-        <View style={styles.subScreenHeader}>
-          {/* Sleek Vector Back Button */}
-          <TouchableOpacity
-            style={styles.circleHeaderBtn}
-            onPress={() => setActiveTab('home')}
-            activeOpacity={0.7}
-          >
-            <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <Path
-                d="M15 19l-7-7 7-7"
-                stroke={Colors.textPrimary}
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </Svg>
-          </TouchableOpacity>
-
-          {/* Centered Sub-screen Title */}
-          <Text style={styles.subScreenTitle}>
-            {activeTab === 'meds' && 'Medication Routine'}
-            {activeTab === 'overview' && 'Health Overview'}
-            {activeTab === 'body' && 'Body Analysis'}
-            {activeTab === 'coach' && 'AI Health Coach'}
-            {activeTab === 'settings' && 'Devices & Settings'}
-          </Text>
-
-          {/* Symmetrical Sync Action Button */}
-          <TouchableOpacity
-            style={[styles.circleHeaderBtn, isSyncing && styles.syncActiveHeaderBtn]}
-            onPress={handleManualSync}
-            disabled={isSyncing}
-            activeOpacity={0.7}
-          >
-            <Animated.View style={{ transform: [{ rotate: spin }] }}>
-              <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      {/* Fixed-Height Permanent Header Bar (Never mounts/unmounts, eliminating layout jumps) */}
+      <View style={styles.fixedHeaderArea}>
+        {activeTab === 'home' ? (
+          <HomeTopBar
+            onOpenSettings={() => switchTab('settings')}
+            onOpenNotifications={() => setShowNotificationsModal(true)}
+            onManualSync={handleManualSync}
+            isSyncing={isSyncing}
+            lastSyncText={lastSyncText}
+          />
+        ) : (
+          <View style={styles.subScreenHeader}>
+            {/* Sleek Vector Back Button */}
+            <TouchableOpacity
+              style={styles.circleHeaderBtn}
+              onPress={() => switchTab('home')}
+              activeOpacity={0.7}
+            >
+              <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <Path
-                  d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"
-                  stroke={isSyncing ? '#007AFF' : '#0F172A'}
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <Path
-                  d="M21 3v5h-5"
-                  stroke={isSyncing ? '#007AFF' : '#0F172A'}
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <Path
-                  d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"
-                  stroke={isSyncing ? '#007AFF' : '#0F172A'}
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <Path
-                  d="M8 16H3v5"
-                  stroke={isSyncing ? '#007AFF' : '#0F172A'}
-                  strokeWidth="2.2"
+                  d="M15 19l-7-7 7-7"
+                  stroke={Colors.textPrimary}
+                  strokeWidth="2.4"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </Svg>
-            </Animated.View>
-          </TouchableOpacity>
-        </View>
+            </TouchableOpacity>
+
+            {/* Centered Sub-screen Title */}
+            <Text style={styles.subScreenTitle}>
+              {activeTab === 'meds' && 'Medication Routine'}
+              {activeTab === 'overview' && 'Health Overview'}
+              {activeTab === 'body' && 'Body Analysis'}
+              {activeTab === 'coach' && 'AI Health Coach'}
+              {activeTab === 'settings' && 'Devices & Settings'}
+            </Text>
+
+            {/* Symmetrical Sync Action Button */}
+            <TouchableOpacity
+              style={[styles.circleHeaderBtn, isSyncing && styles.syncActiveHeaderBtn]}
+              onPress={handleManualSync}
+              disabled={isSyncing}
+              activeOpacity={0.7}
+            >
+              <Animated.View style={{ transform: [{ rotate: spin }] }}>
+                <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"
+                    stroke={isSyncing ? '#007AFF' : '#0F172A'}
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <Path
+                    d="M21 3v5h-5"
+                    stroke={isSyncing ? '#007AFF' : '#0F172A'}
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <Path
+                    d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"
+                    stroke={isSyncing ? '#007AFF' : '#0F172A'}
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <Path
+                    d="M8 16H3v5"
+                    stroke={isSyncing ? '#007AFF' : '#0F172A'}
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+              </Animated.View>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
+      {/* Dynamic Sync Banner Strip */}
+      {isSyncing && (
+        <Animated.View
+          style={[
+            styles.syncingBannerStrip,
+            {
+              opacity: syncPulseAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0.4, 1],
+              }),
+            },
+          ]}
+        >
+          <View style={styles.syncingDot} />
+          <Text style={styles.syncingBannerText}>Syncing fresh telemetry...</Text>
+        </Animated.View>
       )}
 
-      {/* When in Coach tab, render DedicatedAiCoachView with full viewport height & responsive auto-scroll */}
-      {activeTab === 'coach' && isAiEnabled ? (
-        <DedicatedAiCoachView
-          data={data}
-          recommendation={dailyRecommendation}
-        />
-      ) : (
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={isSyncing}
-              onRefresh={handleManualSync}
-              tintColor="#007AFF"
-              colors={['#007AFF']}
-            />
-          }
-        >
-          {/* 1. HOME SCREEN */}
-          {activeTab === 'home' && (
-            <>
-              <HomeTopBar
-                onOpenSettings={() => setActiveTab('settings')}
-                onOpenNotifications={() => setShowNotificationsModal(true)}
+      {/* Main Tab Screen Body with 60 FPS Native Opacity Transition */}
+      <Animated.View style={{ flex: 1, opacity: tabFadeAnim }}>
+        {activeTab === 'coach' && isAiEnabled ? (
+          <DedicatedAiCoachView
+            data={data}
+            recommendation={dailyRecommendation}
+          />
+        ) : (
+          <ScrollView
+            ref={scrollViewRef}
+            style={styles.scroll}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={isSyncing}
+                onRefresh={handleManualSync}
+                tintColor="#007AFF"
+                colors={['#007AFF']}
+              />
+            }
+          >
+            {/* 1. HOME SCREEN */}
+            {activeTab === 'home' && (
+              <>
+                {/* Dev-mode-only Expo Go build guide banner */}
+                <DevModeBanner
+                  onNavigateToSettings={() => switchTab('settings')}
+                />
+
+                {/* Health Connect Quick Connect Banner */}
+                {!isHealthConnectConnected && (
+                  <TouchableOpacity
+                    style={styles.hcBanner}
+                    onPress={() => setShowHealthConnectModal(true)}
+                    activeOpacity={0.85}
+                  >
+                    <View style={styles.hcBannerLeft}>
+                      <View style={styles.hcBannerIcon}>
+                        <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                          <Path
+                            d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"
+                            stroke="#E11D48"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <Path
+                            d="M9 12l2 2l3 -4"
+                            stroke="#E11D48"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </Svg>
+                      </View>
+                      <View style={styles.hcBannerTextGroup}>
+                        <View style={styles.hcBannerTitleRow}>
+                          <Text style={styles.hcBannerTitle}>Connect Health Connect</Text>
+                          <View style={styles.hcReadOnlyPill}>
+                            <Text style={styles.hcReadOnlyText}>READ-ONLY</Text>
+                          </View>
+                        </View>
+                        <Text style={styles.hcBannerSubtitle}>
+                          Auto-pickup sleep, pulse & steps without Ultrahuman API key
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.hcBannerBtn}>
+                      <Text style={styles.hcBannerBtnText}>Connect</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+
+                <MetricCardsGrid
+                  data={data}
+                  enabledSources={enabledSources}
+                  stepsGoal={dailyStepsGoal}
+                  caloriesGoal={dailyCaloriesGoal}
+                />
+                <TodayWellnessCard
+                  score={data.recovery.recoveryScore}
+                  sleepQualityPct={data.recovery.sleepIndex}
+                  activeZoneMinutes={data.cardio.todayActiveZoneMinutes}
+                  tonnageKg={data.strength.todayWorkout?.totalVolumeKg || data.strength.weeklyVolumeKg}
+                  onPress={() => switchTab('overview')}
+                />
+                {/* Today's Medication Overview Quick Widget */}
+                <TodayMedicationCard onOpenMedications={() => switchTab('meds')} />
+
+                {isAiEnabled && (
+                  <TodayInsightCard
+                    headline={dailyRecommendation.headline}
+                    body={dailyRecommendation.synthesisRationale}
+                    onPress={() => switchTab('coach')}
+                  />
+                )}
+              </>
+            )}
+
+            {/* 2. MEDICATION REMINDER SCREEN */}
+            {activeTab === 'meds' && (
+              <MedicationSectionView />
+            )}
+
+            {/* 3. HEALTH OVERVIEW SCREEN */}
+            {activeTab === 'overview' && (
+              <>
+                <HealthOverviewView data={data} />
+                {isAiEnabled && (
+                  <TodayInsightCard
+                    headline={data.recovery.recoveryScore > 0 ? "Cardio & Recovery Harmony" : "Telemetry Awaiting Sync"}
+                    body={data.recovery.recoveryScore > 0
+                      ? `Your cardiovascular strain of ${data.cardio.todayActiveZoneMinutes} Active Zone Minutes is balanced by your ${data.recovery.recoveryScore}% recovery index.`
+                      : "Connect your devices in Settings or allow Health Connect permissions to synthesize your daily equilibrium."}
+                    onPress={() => switchTab('coach')}
+                  />
+                )}
+              </>
+            )}
+
+            {/* 3. BODY & MUSCLE ANALYSIS SCREEN */}
+            {activeTab === 'body' && (
+              <>
+                <BodyAnalysisView muscleStatuses={data.strength.muscleStatuses} />
+              </>
+            )}
+
+            {/* 4. SETTINGS & DEVICES SCREEN (Smooth In-Place View, No Jarring Modal) */}
+            {activeTab === 'settings' && (
+              <SettingsView
+                enabledSources={enabledSources}
+                onToggleSource={handleToggleSource}
                 onManualSync={handleManualSync}
                 isSyncing={isSyncing}
                 lastSyncText={lastSyncText}
+                onOpenHealthConnectPrompt={() => setShowHealthConnectModal(true)}
+                aiEnabled={isAiEnabled}
+                onToggleAi={setIsAiEnabled}
+                bodyAnalysisEnabled={isBodyAnalysisEnabled}
+                onToggleBodyAnalysis={handleToggleBodyAnalysis}
+                onResetOnboarding={onResetOnboarding}
               />
+            )}
 
-              {/* Dev-mode-only Expo Go build guide banner */}
-              <DevModeBanner
-                onNavigateToSettings={() => setActiveTab('settings')}
-              />
-
-              {/* Health Connect Quick Connect Banner */}
-              {!isHealthConnectConnected && (
-                <TouchableOpacity
-                  style={styles.hcBanner}
-                  onPress={() => setShowHealthConnectModal(true)}
-                  activeOpacity={0.85}
-                >
-                  <View style={styles.hcBannerLeft}>
-                    <View style={styles.hcBannerIcon}>
-                      <Text style={{ fontSize: 18 }}>❤️</Text>
-                    </View>
-                    <View style={styles.hcBannerTextGroup}>
-                      <View style={styles.hcBannerTitleRow}>
-                        <Text style={styles.hcBannerTitle}>Connect Health Connect</Text>
-                        <View style={styles.hcReadOnlyPill}>
-                          <Text style={styles.hcReadOnlyText}>READ-ONLY</Text>
-                        </View>
-                      </View>
-                      <Text style={styles.hcBannerSubtitle}>
-                        Auto-pickup sleep, pulse & steps without Ultrahuman API key
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.hcBannerBtn}>
-                    <Text style={styles.hcBannerBtnText}>Connect</Text>
-                  </View>
-                </TouchableOpacity>
-              )}
-
-              <MetricCardsGrid
-                data={data}
-                enabledSources={enabledSources}
-                stepsGoal={dailyStepsGoal}
-                caloriesGoal={dailyCaloriesGoal}
-              />
-              <TodayWellnessCard
-                score={data.recovery.recoveryScore}
-                sleepQualityPct={data.recovery.sleepIndex}
-                activeZoneMinutes={data.cardio.todayActiveZoneMinutes}
-                tonnageKg={data.strength.todayWorkout?.totalVolumeKg || data.strength.weeklyVolumeKg}
-                onPress={() => setActiveTab('overview')}
-              />
-              {/* Today's Medication Overview Quick Widget */}
-              <TodayMedicationCard onOpenMedications={() => setActiveTab('meds')} />
-
-              {isAiEnabled && (
-                <TodayInsightCard
-                  headline={dailyRecommendation.headline}
-                  body={dailyRecommendation.synthesisRationale}
-                  onPress={() => setActiveTab('coach')}
-                />
-              )}
-            </>
-          )}
-
-          {/* 2. MEDICATION REMINDER SCREEN */}
-          {activeTab === 'meds' && (
-            <MedicationSectionView />
-          )}
-
-          {/* 3. HEALTH OVERVIEW SCREEN */}
-          {activeTab === 'overview' && (
-            <>
-              <HealthOverviewView data={data} />
-              {isAiEnabled && (
-                <TodayInsightCard
-                  headline={data.recovery.recoveryScore > 0 ? "Cardio & Recovery Harmony" : "Telemetry Awaiting Sync"}
-                  body={data.recovery.recoveryScore > 0
-                    ? `Your cardiovascular strain of ${data.cardio.todayActiveZoneMinutes} Active Zone Minutes is balanced by your ${data.recovery.recoveryScore}% recovery index.`
-                    : "Connect your devices in Settings or allow Health Connect permissions to synthesize your daily equilibrium."}
-                  onPress={() => setActiveTab('coach')}
-                />
-              )}
-            </>
-          )}
-
-          {/* 3. BODY & MUSCLE ANALYSIS SCREEN */}
-          {activeTab === 'body' && (
-            <>
-              <BodyAnalysisView muscleStatuses={data.strength.muscleStatuses} />
-            </>
-          )}
-
-          {/* 4. SETTINGS & DEVICES SCREEN (Smooth In-Place View, No Jarring Modal) */}
-          {activeTab === 'settings' && (
-            <SettingsView
-              enabledSources={enabledSources}
-              onToggleSource={handleToggleSource}
-              onManualSync={handleManualSync}
-              isSyncing={isSyncing}
-              lastSyncText={lastSyncText}
-              onOpenHealthConnectPrompt={() => setShowHealthConnectModal(true)}
-              aiEnabled={isAiEnabled}
-              onToggleAi={setIsAiEnabled}
-              onResetOnboarding={onResetOnboarding}
-            />
-          )}
-
-          <View style={styles.bottomSpacer} />
-        </ScrollView>
-      )}
+            <View style={styles.bottomSpacer} />
+          </ScrollView>
+        )}
+      </Animated.View>
 
       {/* Floating Capsule Bottom Navigation Bar (Rendered across all tabs with proper padding) */}
       {!isKeyboardOpen && (
         <FloatingTabBar
           activeTab={activeTab}
-          onSelectTab={(tab) => setActiveTab(tab)}
+          onSelectTab={(tab) => switchTab(tab)}
           showAiTab={isAiEnabled}
+          showBodyAnalysisTab={isBodyAnalysisEnabled}
         />
       )}
 
@@ -438,7 +537,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
         onConnected={handleHealthConnectConnected}
         onNavigateToSettings={() => {
           setShowHealthConnectModal(false);
-          setActiveTab('settings');
+          switchTab('settings');
         }}
       />
 
@@ -448,11 +547,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
         onClose={() => setShowNotificationsModal(false)}
         onOpenMedications={() => {
           setShowNotificationsModal(false);
-          setActiveTab('meds');
+          switchTab('meds');
         }}
         onOpenSettings={() => {
           setShowNotificationsModal(false);
-          setActiveTab('settings');
+          switchTab('settings');
         }}
         onTriggerTestAlert={() => {
           medicationService.triggerTestReminder();
@@ -474,18 +573,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  fixedHeaderArea: {
+    height: 60,
+    backgroundColor: Colors.background,
+    justifyContent: 'center',
+  },
   subScreenHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    paddingTop: 14,
-    paddingBottom: 12,
+    height: 60,
   },
   circleHeaderBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -510,6 +613,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
+    paddingTop: 8,
     paddingBottom: 90, // Room for floating capsule tab bar
   },
   bottomSpacer: {
@@ -595,5 +699,28 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '700',
+  },
+  syncingBannerStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E6F4FE',
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#D0E8FD',
+  },
+  syncingDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#007AFF',
+  },
+  syncingBannerText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#007AFF',
+    letterSpacing: 0.2,
   },
 });

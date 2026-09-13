@@ -1,16 +1,7 @@
 // Unified Health Data Models for Ultrahuman, Fitbit, and Hevy
 
-export type DeviceSource = 'ultrahuman' | 'fitbit' | 'hevy' | 'health_connect';
-
-export interface DeviceMetadata {
-  id: DeviceSource;
-  name: string;
-  model: string;
-  batteryLevel?: number;
-  lastSyncTime: string;
-  isConnected: boolean;
-  accentColor: string;
-}
+export { DeviceSource, DeviceMetadata, EnabledSources, SyncReport, TelemetryListener } from './devices';
+import { DeviceSource, DeviceMetadata } from './devices';
 
 // 1. Ultrahuman Ring AIR: Passive Biological Recovery & Circadian
 export interface SleepStageRecord {

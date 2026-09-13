@@ -57,7 +57,9 @@ export const TodayMedicationCard: React.FC<TodayMedicationCardProps> = ({ onOpen
           <View>
             <Text style={styles.title}>Medication Routine</Text>
             <Text style={styles.subtitle}>
-              {summary.taken}/{summary.total} doses taken today ({summary.percentage}%)
+              {summary.total > 0
+                ? `${summary.taken}/${summary.total} doses taken today (${summary.percentage}%)`
+                : 'No active medications scheduled'}
             </Text>
           </View>
         </View>
@@ -71,49 +73,62 @@ export const TodayMedicationCard: React.FC<TodayMedicationCardProps> = ({ onOpen
       </View>
 
       {/* Progress track */}
-      <View style={styles.progressBarBg}>
-        <View style={[styles.progressBarFill, { width: `${summary.percentage}%` }]} />
-      </View>
+      {summary.total > 0 && (
+        <View style={styles.progressBarBg}>
+          <View style={[styles.progressBarFill, { width: `${summary.percentage}%` }]} />
+        </View>
+      )}
 
       {/* Mini Quick Doses List */}
       <View style={styles.dosesList}>
-        {previewItems.map((item) => {
-          const med = item.medication;
-          return (
-            <View
-              key={`${med.id}-${item.time}`}
-              style={[
-                styles.doseItem,
-                { backgroundColor: med.color || '#F8FAFC' },
-                item.isTaken && styles.doseItemTaken,
-              ]}
-            >
-              <TouchableOpacity
-                style={styles.checkHitArea}
-                onPress={() => handleToggle(med.id, item.time)}
-                activeOpacity={0.7}
+        {previewItems.length === 0 ? (
+          <TouchableOpacity
+            style={styles.emptyDosesWrap}
+            onPress={onOpenMedications}
+            activeOpacity={0.75}
+          >
+            <Text style={styles.emptyDosesText}>No doses scheduled for today.</Text>
+            <Text style={styles.emptyDosesAction}>+ Add Routine</Text>
+          </TouchableOpacity>
+        ) : (
+          previewItems.map((item) => {
+            const med = item.medication;
+            return (
+              <View
+                key={`${med.id}-${item.time}`}
+                style={[
+                  styles.doseItem,
+                  { backgroundColor: med.color || '#F8FAFC' },
+                  item.isTaken && styles.doseItemTaken,
+                ]}
               >
-                <CheckCircleIcon size={20} checked={item.isTaken} color="#2C4A3E" />
-              </TouchableOpacity>
-
-              <View style={styles.doseInfo}>
-                <Text
-                  style={[styles.medName, item.isTaken && styles.medNameTaken]}
-                  numberOfLines={1}
+                <TouchableOpacity
+                  style={styles.checkHitArea}
+                  onPress={() => handleToggle(med.id, item.time)}
+                  activeOpacity={0.7}
                 >
-                  {med.name} {med.dosage}
-                </Text>
-                <Text style={styles.doseTime}>
-                  {item.time} • {med.unit}
-                </Text>
-              </View>
+                  <CheckCircleIcon size={20} checked={item.isTaken} color="#2C4A3E" />
+                </TouchableOpacity>
 
-              <View style={[styles.iconBadge, { backgroundColor: med.accentColor || '#E2E8F0' }]}>
-                {renderIcon(med.form, med.iconColor || '#2C4A3E')}
+                <View style={styles.doseInfo}>
+                  <Text
+                    style={[styles.medName, item.isTaken && styles.medNameTaken]}
+                    numberOfLines={1}
+                  >
+                    {med.name} {med.dosage}
+                  </Text>
+                  <Text style={styles.doseTime}>
+                    {item.time} • {med.unit}
+                  </Text>
+                </View>
+
+                <View style={[styles.iconBadge, { backgroundColor: med.accentColor || '#E2E8F0' }]}>
+                  {renderIcon(med.form, med.iconColor || '#2C4A3E')}
+                </View>
               </View>
-            </View>
-          );
-        })}
+            );
+          })
+        )}
       </View>
     </View>
   );
@@ -240,5 +255,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 6,
+  },
+  emptyDosesWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    backgroundColor: '#F4F8F6',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(31, 56, 46, 0.06)',
+  },
+  emptyDosesText: {
+    fontSize: 12,
+    color: '#63706B',
+    fontWeight: '500',
+  },
+  emptyDosesAction: {
+    fontSize: 12,
+    color: '#1F382E',
+    fontWeight: '700',
   },
 });
