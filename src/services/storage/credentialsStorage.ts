@@ -48,6 +48,7 @@ class CredentialsStorage {
   private vaultPath: string | null = null;
   private lastEncryptedAt: string = '';
   private isLoaded: boolean = false;
+  private initPromise: Promise<void> | null = null;
   private loadPromise: Promise<SavedCredentials> | null = null;
 
   public static getInstance(): CredentialsStorage {
@@ -58,10 +59,10 @@ class CredentialsStorage {
   }
 
   constructor() {
-    this.initStorage();
+    this.initPromise = this.initStorage();
   }
 
-  private async initStorage() {
+  private async initStorage(): Promise<void> {
     // 1. expo-secure-store (Android Keystore / iOS Keychain — hardware-backed)
     try {
       this.isSecureStoreAvailable = await SecureStore.isAvailableAsync();
@@ -80,8 +81,12 @@ class CredentialsStorage {
     } catch {
       this.fileSystem = null;
     }
+  }
 
-    await this.loadCredentials();
+  public async ensureInitialized(): Promise<void> {
+    if (this.initPromise) {
+      await this.initPromise;
+    }
   }
 
   /**
@@ -91,6 +96,8 @@ class CredentialsStorage {
    * Instant subsequent calls return the in-memory cache directly without freezing the JS thread.
    */
   public async loadCredentials(forceReload: boolean = false): Promise<SavedCredentials> {
+    await this.ensureInitialized();
+
     if (!forceReload && this.isLoaded) {
       return this.memoryCache;
     }
@@ -126,9 +133,14 @@ class CredentialsStorage {
           const payload: EncryptedPayload = JSON.parse(rawEncrypted);
           const decryptedJson = cryptoService.decrypt(payload);
           const parsed = JSON.parse(decryptedJson);
+          const hasOnboarded = parsed.hasCompletedOnboarding !== undefined
+            ? Boolean(parsed.hasCompletedOnboarding)
+            : Boolean(parsed.ultrahumanToken || parsed.hevyApiKey || parsed.fitbitToken || parsed.geminiApiKey);
+
           this.memoryCache = {
             ...this.memoryCache,
             ...parsed,
+            hasCompletedOnboarding: hasOnboarded,
             enabledSources: {
               ultrahuman: false,
               fitbit: true,
@@ -155,6 +167,7 @@ class CredentialsStorage {
    * Encrypt and persist credentials to expo-secure-store + expo-file-system.
    */
   public async saveCredentials(creds: Partial<SavedCredentials>): Promise<SavedCredentials> {
+    await this.ensureInitialized();
     this.memoryCache = { ...this.memoryCache, ...creds };
     this.isLoaded = true;
     try {
@@ -215,6 +228,7 @@ class CredentialsStorage {
    * Securely wipe all stored credentials from hardware Keystore, disk, and memory
    */
   public async clearVault(): Promise<void> {
+    await this.ensureInitialized();
     this.memoryCache = {
       hevyApiKey: '',
       ultrahumanToken: '',

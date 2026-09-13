@@ -16,7 +16,10 @@ export default function App() {
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
     credentialsStorage.loadCredentials().then((creds) => {
-      setHasCompletedOnboarding(Boolean(creds.hasCompletedOnboarding));
+      const isOnboarded = creds.hasCompletedOnboarding !== undefined
+        ? Boolean(creds.hasCompletedOnboarding)
+        : Boolean(creds.ultrahumanToken || creds.hevyApiKey || creds.fitbitToken || creds.geminiApiKey);
+      setHasCompletedOnboarding(isOnboarded);
       // Fast, smooth handoff once credentials and config are ready
       timeoutId = setTimeout(() => {
         setIsLoading(false);
