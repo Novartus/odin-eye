@@ -1,6 +1,9 @@
 package com.odineye.health.widget
 
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
+import android.os.Build
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -116,5 +119,29 @@ class OdinEyeWidgetModule(private val reactContext: ReactApplicationContext) : R
         } catch (e: Exception) {
             promise.resolve(null)
         }
+    }
+
+    @ReactMethod
+    fun requestPinWidget(widgetType: String, promise: Promise) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                val appWidgetManager = AppWidgetManager.getInstance(reactContext)
+                val providerClass = if (widgetType == "pill") {
+                    PillReminderWidgetProvider::class.java
+                } else {
+                    ZenVitalsWidgetProvider::class.java
+                }
+                val myProvider = ComponentName(reactContext, providerClass)
+                if (appWidgetManager.isRequestPinAppWidgetSupported) {
+                    val pinnedSuccess = appWidgetManager.requestPinAppWidget(myProvider, null, null)
+                    promise.resolve(pinnedSuccess)
+                    return
+                }
+            } catch (e: Exception) {
+                promise.reject("PIN_ERROR", e.message, e)
+                return
+            }
+        }
+        promise.resolve(false)
     }
 }

@@ -49,7 +49,8 @@
     <!-- OdinEye Home Screen Widgets -->
     <receiver
         android:name=".widget.PillReminderWidgetProvider"
-        android:label="OdinEye Medication"
+        android:label="@string/widget_pill_name"
+        android:icon="@mipmap/ic_launcher"
         android:exported="true">
       <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -62,7 +63,8 @@
 
     <receiver
         android:name=".widget.ZenVitalsWidgetProvider"
-        android:label="OdinEye Zen &amp; Vitals"
+        android:label="@string/widget_zen_name"
+        android:icon="@mipmap/ic_launcher"
         android:exported="true">
       <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

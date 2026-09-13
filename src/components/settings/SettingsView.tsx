@@ -279,6 +279,21 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     }
   };
 
+  const handlePinWidget = async (type: 'pill' | 'zen') => {
+    try {
+      Vibration.vibrate(25);
+      const success = await widgetSyncService.requestPinWidget(type);
+      if (success) {
+        setWidgetSyncNotice(`✓ Prompted to add ${type === 'pill' ? 'Medication' : 'Zen'} widget`);
+      } else {
+        setWidgetSyncNotice('To add: Long-press your home screen & tap "Widgets"');
+      }
+      setTimeout(() => setWidgetSyncNotice(null), 4000);
+    } catch {
+      setWidgetSyncNotice('To add: Long-press your home screen & tap "Widgets"');
+    }
+  };
+
   // Testing & Status State
   const [testingService, setTestingService] = useState<'hevy' | 'ultrahuman' | 'fitbit' | 'gemini' | 'aicore' | null>(null);
   const [hevyStatus, setHevyStatus] = useState<{ connected: boolean; message: string } | null>(null);
@@ -1474,7 +1489,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         {/* Live Widget Previews */}
         <View style={styles.widgetPreviewsWrap}>
           {/* Pill Reminder Widget Preview */}
-          <View style={styles.widgetPreviewItem}>
+          <TouchableOpacity
+            style={styles.widgetPreviewItem}
+            onPress={() => handlePinWidget('pill')}
+            activeOpacity={0.88}
+          >
             <View style={styles.widgetPreviewTop}>
               <Text style={styles.widgetPreviewTag}>PILL REMINDER · 4x2</Text>
               <View style={styles.widgetPreviewBadge}>
@@ -1491,10 +1510,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <Text style={styles.widgetPreviewTakeText}>Take</Text>
               </View>
             </View>
-          </View>
+            <View style={styles.widgetPinRow}>
+              <Text style={styles.widgetPinText}>➕ Tap to add to Home Screen</Text>
+            </View>
+          </TouchableOpacity>
 
           {/* Zen & Vitals Widget Preview */}
-          <View style={styles.widgetPreviewItem}>
+          <TouchableOpacity
+            style={styles.widgetPreviewItem}
+            onPress={() => handlePinWidget('zen')}
+            activeOpacity={0.88}
+          >
             <View style={styles.widgetPreviewTop}>
               <Text style={styles.widgetPreviewTag}>ZEN &amp; VITALS · 4x2</Text>
               <View style={styles.widgetPreviewBadge}>
@@ -1519,7 +1545,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <Text style={styles.widgetPreviewTakeText}>Breathe</Text>
               </View>
             </View>
-          </View>
+            <View style={styles.widgetPinRow}>
+              <Text style={styles.widgetPinText}>➕ Tap to add to Home Screen</Text>
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* Instructions */}
@@ -2812,6 +2841,20 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#1F382E',
     marginTop: 2,
+  },
+  widgetPinRow: {
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(44, 74, 62, 0.08)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  widgetPinText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#2C4A3E',
   },
   widgetInstructionsBox: {
     backgroundColor: '#F3F7F5',

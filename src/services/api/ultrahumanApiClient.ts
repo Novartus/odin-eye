@@ -38,6 +38,10 @@ export interface RawUltrahumanMetric {
   awake_minutes?: number;
   sleep_efficiency?: number;
   efficiency?: number;
+  steps?: number;
+  total_steps?: number;
+  step_count?: number;
+  steps_count?: number;
   [key: string]: any;
 }
 
@@ -209,6 +213,7 @@ export class UltrahumanApiClient {
     const hrvRmssd = raw.hrv ?? raw.hrv_rmssd ?? raw.rmssd ?? 0;
     const skinTempDelta = raw.temp_deviation ?? raw.temperature_deviation ?? raw.temp_delta ?? 0;
     const sleepEfficiencyPct = raw.sleep_efficiency ?? raw.efficiency ?? 0;
+    const steps = raw.steps ?? raw.total_steps ?? raw.step_count ?? raw.steps_count ?? undefined;
 
     return {
       recoveryScore,
@@ -225,6 +230,7 @@ export class UltrahumanApiClient {
       currentHeartRate,
       hrvRmssd,
       skinTempDelta,
+      steps,
       circadianPhase: {
         currentPhase,
         morningSunlightWindow: { start: totalMinutes > 0 ? '07:15' : '—', end: totalMinutes > 0 ? '08:45' : '—' },

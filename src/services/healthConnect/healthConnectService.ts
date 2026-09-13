@@ -63,6 +63,42 @@ export interface HealthConnectDailyTelemetry {
   lastSyncTime: string;
   connectedSources: string[];
   originWearable?: 'ultrahuman' | 'fitbit' | 'smart_ring' | 'wear_os' | 'other';
+  sourceDeviceName?: string;
+}
+
+export function detectWearableOrigin(dataOrigin?: string): 'ultrahuman' | 'fitbit' | 'smart_ring' | 'wear_os' | 'other' {
+  if (!dataOrigin) return 'other';
+  const lower = dataOrigin.toLowerCase();
+  if (lower.includes('ultrahuman')) return 'ultrahuman';
+  if (lower.includes('fitbit')) return 'fitbit';
+  if (lower.includes('oura') || lower.includes('ring')) return 'smart_ring';
+  if (
+    lower.includes('samsung') ||
+    lower.includes('shealth') ||
+    lower.includes('garmin') ||
+    lower.includes('wear') ||
+    lower.includes('polar') ||
+    lower.includes('whoop') ||
+    lower.includes('withings')
+  ) {
+    return 'wear_os';
+  }
+  return 'other';
+}
+
+export function formatOriginDisplayName(dataOrigin?: string): string {
+  if (!dataOrigin) return 'Health Connect';
+  const lower = dataOrigin.toLowerCase();
+  if (lower.includes('ultrahuman')) return 'Ultrahuman Ring AIR';
+  if (lower.includes('fitbit')) return 'Fitbit';
+  if (lower.includes('oura')) return 'Oura Ring';
+  if (lower.includes('shealth') || lower.includes('samsung')) return 'Samsung Health';
+  if (lower.includes('garmin')) return 'Garmin';
+  if (lower.includes('whoop')) return 'Whoop';
+  if (lower.includes('withings')) return 'Withings';
+  if (lower.includes('fitness') || lower.includes('google.android.apps.fitness')) return 'Google Fit';
+  if (lower.includes('gms') || lower.includes('hardware') || lower.includes('pedometer')) return 'Phone Sensor';
+  return 'Health Connect';
 }
 
 export interface HealthConnectValidationResult {
@@ -436,6 +472,8 @@ export class HealthConnectService {
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const isLinked = isNativeHealthConnectLinked();
 
+    const creds = await credentialsStorage.loadCredentials();
+
     // 1. Live Native Android Health Connect Query
     if (isLinked && healthConnectSdk) {
       try {
@@ -449,12 +487,60 @@ export class HealthConnectService {
           endTime: now.toISOString(),
         };
 
-        // Read Steps
+        // Read Steps with deduplication across origin packages (prevents phone + ring double-counting)
         let totalSteps = 0;
+        let detectedStepOrigin: string | undefined;
         try {
           const stepsResult = await healthConnectSdk.readRecords('Steps', { timeRangeFilter });
-          totalSteps = stepsResult.records.reduce((acc: number, r: any) => acc + (r.count || 0), 0);
-        } catch {}
+          if (stepsResult && stepsResult.records && stepsResult.records.length > 0) {
+            // Group step records by dataOrigin package
+            const stepsByOrigin: Record<string, number> = {};
+            for (const r of stepsResult.records as any[]) {
+              const origin = (r.metadata?.dataOrigin || 'unknown').toLowerCase();
+              stepsByOrigin[origin] = (stepsByOrigin[origin] || 0) + (r.count || 0);
+            }
+
+            const origins = Object.keys(stepsByOrigin);
+            const ultrahumanOrigin = origins.find((o) => o.includes('ultrahuman'));
+            const fitbitOrigin = origins.find((o) => o.includes('fitbit'));
+            const wearableOrigin = origins.find(
+              (o) =>
+                o.includes('oura') ||
+                o.includes('ring') ||
+                o.includes('garmin') ||
+                o.includes('whoop') ||
+                o.includes('polar') ||
+                o.includes('withings') ||
+                o.includes('samsung') ||
+                o.includes('shealth')
+            );
+
+            if (creds.enabledSources?.ultrahuman !== false && ultrahumanOrigin) {
+              totalSteps = stepsByOrigin[ultrahumanOrigin];
+              detectedStepOrigin = ultrahumanOrigin;
+            } else if (creds.enabledSources?.fitbit !== false && fitbitOrigin) {
+              totalSteps = stepsByOrigin[fitbitOrigin];
+              detectedStepOrigin = fitbitOrigin;
+            } else if (wearableOrigin) {
+              totalSteps = stepsByOrigin[wearableOrigin];
+              detectedStepOrigin = wearableOrigin;
+            } else {
+              // Pick package with highest step count (deduplicates phone sensor vs third-party apps, NEVER sum!)
+              let maxCount = 0;
+              let maxOrigin = origins[0];
+              for (const [orig, count] of Object.entries(stepsByOrigin)) {
+                if (count > maxCount) {
+                  maxCount = count;
+                  maxOrigin = orig;
+                }
+              }
+              totalSteps = maxCount;
+              detectedStepOrigin = maxOrigin;
+            }
+          }
+        } catch (e: any) {
+          console.warn('[HealthConnect] Steps query failed:', e?.message);
+        }
 
         // Read Sleep Sessions & Stages
         let sleepMinutes = 0;
@@ -513,6 +599,7 @@ export class HealthConnectService {
         let avgHr: number | undefined;
         let minHr: number | undefined;
         const hrTimeline: HeartRateSample[] = [];
+        let detectedHrOrigin: string | undefined;
 
         try {
           // Look back 24 hours to capture both nocturnal sleep heart rate and daytime pulse
@@ -530,41 +617,76 @@ export class HealthConnectService {
             let sampleCount = 0;
             let lowestBpm = 999;
 
+            interface NormalizedHrSample {
+              timeMs: number;
+              bpm: number;
+              origin: string;
+              timeStr: string;
+            }
+            const allSamples: NormalizedHrSample[] = [];
+
             for (const rec of hrResult.records as any[]) {
+              const recOrigin = (rec.metadata?.dataOrigin || '').toLowerCase();
               if (rec.samples && Array.isArray(rec.samples)) {
                 for (const s of rec.samples) {
                   const bpm = s.beatsPerMinute || s.bpm;
                   if (bpm && bpm > 35 && bpm < 230) {
-                    totalBpm += bpm;
-                    sampleCount++;
-                    if (bpm < lowestBpm) lowestBpm = bpm;
-                    latestHr = bpm;
-                    hrTimeline.push({
-                      timestamp: s.time ? new Date(s.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : timeStr,
+                    const timeMs = s.time ? new Date(s.time).getTime() : 0;
+                    allSamples.push({
+                      timeMs,
                       bpm,
-                      source: 'ultrahuman',
+                      origin: recOrigin,
+                      timeStr: s.time
+                        ? new Date(s.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : timeStr,
                     });
                   }
                 }
               } else if (rec.beatsPerMinute) {
                 const bpm = rec.beatsPerMinute;
                 if (bpm > 35 && bpm < 230) {
-                  totalBpm += bpm;
-                  sampleCount++;
-                  if (bpm < lowestBpm) lowestBpm = bpm;
-                  latestHr = bpm;
-                  hrTimeline.push({
-                    timestamp: timeStr,
+                  const timeMs = rec.startTime ? new Date(rec.startTime).getTime() : 0;
+                  allSamples.push({
+                    timeMs,
                     bpm,
-                    source: 'ultrahuman',
+                    origin: recOrigin,
+                    timeStr: rec.startTime
+                      ? new Date(rec.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      : timeStr,
                   });
                 }
               }
             }
 
-            if (sampleCount > 0) {
+            if (allSamples.length > 0) {
+              // Chronological sort ascending for timeline
+              allSamples.sort((a, b) => a.timeMs - b.timeMs);
+
+              for (const s of allSamples) {
+                totalBpm += s.bpm;
+                sampleCount++;
+                if (s.bpm < lowestBpm) lowestBpm = s.bpm;
+
+                const hrSource = s.origin.includes('fitbit') ? 'fitbit' : 'ultrahuman';
+                hrTimeline.push({
+                  timestamp: s.timeStr,
+                  bpm: s.bpm,
+                  source: hrSource,
+                });
+              }
+
               avgHr = Math.round(totalBpm / sampleCount);
               minHr = lowestBpm < 999 ? lowestBpm : undefined;
+
+              // Extract true latest sample
+              const mostRecent = allSamples[allSamples.length - 1];
+              detectedHrOrigin = mostRecent.origin;
+
+              // Strict recency check: only consider it "current / live heart rate" if recorded within the last 2 hours
+              const twoHoursAgoMs = now.getTime() - 2 * 60 * 60 * 1000;
+              if (mostRecent.timeMs >= twoHoursAgoMs) {
+                latestHr = mostRecent.bpm;
+              }
             }
           }
         } catch (e: any) {
@@ -587,7 +709,8 @@ export class HealthConnectService {
           restingHr = Math.max(45, avgHr - 8);
         }
 
-        const finalLatestHr = latestHr || avgHr || (restingHr ? restingHr + 6 : undefined);
+        // Zero dummy data: finalLatestHr is ONLY set if a genuine recent daytime reading exists. Never fabricate!
+        const finalLatestHr = latestHr;
 
         // Read HRV RMSSD
         let hrvRmssd: number | undefined;
@@ -683,9 +806,10 @@ export class HealthConnectService {
           lastSyncTime: timeStr,
           connectedSources: [
             'Android Health Connect (Native)',
-            ...(sleepMinutes > 0 ? ['Ultrahuman Ring AIR (via Health Connect)'] : []),
+            ...(detectedHrOrigin || detectedStepOrigin ? [`${formatOriginDisplayName(detectedHrOrigin || detectedStepOrigin)} (via Health Connect)`] : []),
           ],
-          originWearable: 'ultrahuman',
+          originWearable: detectWearableOrigin(detectedHrOrigin || detectedStepOrigin),
+          sourceDeviceName: formatOriginDisplayName(detectedHrOrigin || detectedStepOrigin),
         };
       } catch (err: any) {
         console.warn('Failed to query native Health Connect records:', err);
@@ -707,7 +831,8 @@ export class HealthConnectService {
       sleepMinutes: 0,
       lastSyncTime: timeStr,
       connectedSources: ['Android Health Connect (0 records today)'],
-      originWearable: 'ultrahuman',
+      originWearable: creds.enabledSources?.ultrahuman !== false ? 'ultrahuman' : 'other',
+      sourceDeviceName: creds.enabledSources?.ultrahuman !== false ? 'Ultrahuman Ring AIR' : 'Health Connect',
     };
   }
 

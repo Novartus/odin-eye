@@ -33,6 +33,7 @@ export interface UltrahumanRecoveryData {
   };
   source?: 'ultrahuman' | 'health_connect';
   sourceDeviceName?: string;
+  steps?: number;
 }
 
 // 2. Google Fitbit: Workout Cardiovascular Strain & Zone Minutes

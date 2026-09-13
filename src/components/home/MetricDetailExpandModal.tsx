@@ -172,35 +172,61 @@ export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = (
 
     case 'heart':
       title = 'Cardiovascular Rhythm';
-      deviceTag = 'Wearable Telemetry';
-      const liveHr = recovery.currentHeartRate || recovery.restingHeartRate;
-      const hasHr = Boolean(liveHr && liveHr > 0);
-      mainScore = hasHr ? `${liveHr}` : '—';
-      scoreUnit = 'Beats Per Minute';
+      deviceTag = recovery.sourceDeviceName || (enabledSources?.ultrahuman ? 'Ultrahuman Ring AIR' : 'Wearable Telemetry');
+      const hasRecentLiveHr = Boolean(recovery.currentHeartRate && recovery.currentHeartRate > 0);
+      const hasWorkoutHr = Boolean(cardio.recentWorkout && cardio.averageWorkoutHeartRate && cardio.averageWorkoutHeartRate > 0);
+      const displayHr = recovery.currentHeartRate || recovery.restingHeartRate || (hasWorkoutHr ? cardio.averageWorkoutHeartRate : undefined);
+      const hasHr = Boolean(displayHr && displayHr > 0);
+      mainScore = hasHr ? `${displayHr}` : '—';
+      scoreUnit = hasRecentLiveHr ? 'Live / Recent Pulse' : (recovery.restingHeartRate ? 'Resting BPM (RHR)' : 'Beats Per Minute');
       scoreStatus = hasHr
-        ? (liveHr! <= 75 ? 'Optimal Basal Rhythm' : 'Elevated Exertion')
+        ? (displayHr! <= 75 ? 'Optimal Basal Rhythm' : 'Elevated Exertion')
         : 'Awaiting Pulse Stream';
-      outerPct = hasHr ? Math.min(100, Math.round((liveHr! / 160) * 100)) : 0;
-      diskVal = hasHr ? `${liveHr}` : '—';
+      outerPct = hasHr ? Math.min(100, Math.round((displayHr! / 160) * 100)) : 0;
+      diskVal = hasHr ? `${displayHr}` : '—';
       diskSub = 'bpm';
-      rangePos = hasHr ? `${Math.min(90, Math.max(10, Math.round((liveHr! / 160) * 100)))}%` : '0%';
+      rangePos = hasHr ? `${Math.min(90, Math.max(10, Math.round((displayHr! / 160) * 100)))}%` : '0%';
 
       theme = {
         heroBg: '#FDF5D9', // Buttercream
         heroBorder: 'rgba(135, 104, 20, 0.08)',
         heroTextColor: '#523E08',
         heroSubColor: '#876814',
-        heroBadgeText: '❤️ Cardiac Rhythm',
+        heroBadgeText: hasRecentLiveHr ? '❤️ Live Pulse' : '❤️ Resting Baseline',
         isDark: false,
         accentRing: '#FFFFFF',
         trackRing: 'rgba(255, 255, 255, 0.5)',
       };
 
       detailCards = [
-        { label: 'Current BPM', value: hasHr ? `${liveHr} bpm` : '—', sub: 'Live reading', icon: '❤️', bg: '#FDF5D9' },
-        { label: 'Resting HR', value: recovery.restingHeartRate > 0 ? `${recovery.restingHeartRate} bpm` : '—', sub: 'Overnight baseline', icon: '🌙', bg: '#E3F1EC' },
-        { label: 'Autonomic HRV', value: recovery.hrvRmssd > 0 ? `${recovery.hrvRmssd} ms` : '—', sub: 'Sympathetic balance', icon: '⚡', bg: '#EDE8FA' },
-        { label: 'Peak Zone', value: cardio.peakHeartRate > 0 ? `${cardio.peakHeartRate} bpm` : '—', sub: 'Max today recorded', icon: '🔥', bg: '#FFF2EB' },
+        {
+          label: 'Current BPM',
+          value: hasRecentLiveHr ? `${recovery.currentHeartRate} bpm` : '—',
+          sub: hasRecentLiveHr ? 'Recent daytime reading' : 'No recent pulse (<2h)',
+          icon: '❤️',
+          bg: '#FDF5D9',
+        },
+        {
+          label: 'Resting HR (RHR)',
+          value: recovery.restingHeartRate > 0 ? `${recovery.restingHeartRate} bpm` : '—',
+          sub: 'Overnight basal baseline',
+          icon: '🌙',
+          bg: '#E3F1EC',
+        },
+        {
+          label: 'Autonomic HRV',
+          value: recovery.hrvRmssd > 0 ? `${recovery.hrvRmssd} ms` : '—',
+          sub: 'Sympathetic balance',
+          icon: '⚡',
+          bg: '#EDE8FA',
+        },
+        {
+          label: 'Peak Zone',
+          value: cardio.peakHeartRate > 0 ? `${cardio.peakHeartRate} bpm` : '—',
+          sub: 'Max today recorded',
+          icon: '🔥',
+          bg: '#FFF2EB',
+        },
       ];
 
       tiers = [
@@ -212,7 +238,7 @@ export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = (
       actionableTip = hasHr
         ? (recovery.restingHeartRate > 0
           ? `Resting heart rate baseline rested at ${recovery.restingHeartRate} bpm with steady parasympathetic recovery.`
-          : `Live pulse reading is currently ${liveHr} bpm.`)
+          : `Recent pulse reading was recorded at ${displayHr} bpm.`)
         : 'Connect your wearable or Health Connect to stream live cardiac rhythms.';
       break;
 

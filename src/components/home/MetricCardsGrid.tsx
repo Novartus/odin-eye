@@ -53,17 +53,35 @@ export const MetricCardsGrid: React.FC<MetricCardsGridProps> = ({
 
   const isHealthConnectRecovery = recovery.source === 'health_connect';
 
-  // Live heart rate from active wearable stream
-  const liveHr = recovery.currentHeartRate || recovery.restingHeartRate || (hasLiveFitbitWorkout ? cardio.averageWorkoutHeartRate : undefined);
-  const heartRateVal = liveHr ? `${liveHr}` : '—';
+  // Live heart rate from active wearable stream vs resting heart rate
+  const hasWorkoutHr = Boolean(hasLiveFitbitWorkout && cardio.averageWorkoutHeartRate);
+  const hasLivePulse = Boolean(recovery.currentHeartRate && recovery.currentHeartRate > 0);
+  const hasRestingHr = Boolean(recovery.restingHeartRate && recovery.restingHeartRate > 0);
+
+  const heartRateVal = hasWorkoutHr
+    ? `${cardio.averageWorkoutHeartRate}`
+    : hasLivePulse
+    ? `${recovery.currentHeartRate}`
+    : hasRestingHr
+    ? `${recovery.restingHeartRate}`
+    : '—';
+
+  let heartRateLabel = 'Resting pulse';
   let heartRateSource = 'No Pulse Data';
 
-  if (hasLiveFitbitWorkout && cardio.averageWorkoutHeartRate) {
+  if (hasWorkoutHr) {
+    heartRateLabel = 'Workout HR';
     heartRateSource = 'Fitbit';
-  } else if (recovery.currentHeartRate) {
-    heartRateSource = (enabledSources.ultrahuman && !isHealthConnectRecovery) ? 'Ring AIR' : 'Health Connect';
-  } else if (recovery.restingHeartRate) {
-    heartRateSource = (enabledSources.ultrahuman && !isHealthConnectRecovery) ? 'Ring AIR (RHR)' : 'Health Connect (RHR)';
+  } else if (hasLivePulse) {
+    heartRateLabel = 'Recent pulse';
+    heartRateSource = (enabledSources.ultrahuman && !isHealthConnectRecovery)
+      ? 'Ring AIR'
+      : (recovery.sourceDeviceName || 'Health Connect');
+  } else if (hasRestingHr) {
+    heartRateLabel = 'Resting (RHR)';
+    heartRateSource = (enabledSources.ultrahuman && !isHealthConnectRecovery)
+      ? 'Ring AIR (RHR)'
+      : (recovery.sourceDeviceName ? `${recovery.sourceDeviceName} (RHR)` : 'Health Connect (RHR)');
   }
 
   // Recovery Index: Real score
@@ -368,7 +386,7 @@ export const MetricCardsGrid: React.FC<MetricCardsGridProps> = ({
               <Text style={styles.buttercreamValueText}>{heartRateVal}</Text>
               <Text style={styles.buttercreamUnitText}>bpm</Text>
             </View>
-            <Text style={styles.buttercreamLabel}>Resting pulse</Text>
+            <Text style={styles.buttercreamLabel}>{heartRateLabel}</Text>
 
             <View style={styles.sourceBottomRow}>
               <Text style={styles.cardSourceText}>{heartRateSource}</Text>

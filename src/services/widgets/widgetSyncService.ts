@@ -110,7 +110,7 @@ class WidgetSyncService {
 
       const steps = healthData.dailyActivity?.steps || 0;
       const stepGoal = healthData.dailyActivity?.stepGoal || creds.dailyStepsGoal || 10000;
-      const heartRate = healthData.recovery?.currentHeartRate || healthData.recovery?.restingHeartRate || 64;
+      const heartRate = healthData.recovery?.currentHeartRate || healthData.recovery?.restingHeartRate || 0;
       const streakDays = mindfulStats.currentStreak;
 
       if (OdinEyeWidgetModule?.updateZenWidget) {
@@ -156,6 +156,21 @@ class WidgetSyncService {
       return await OdinEyeWidgetModule.getRequestedTab();
     } catch {
       return null;
+    }
+  }
+
+  /**
+   * Prompts native Android OS dialog to pin widget to home screen (Android 8.0+)
+   */
+  public async requestPinWidget(widgetType: 'pill' | 'zen'): Promise<boolean> {
+    try {
+      if (OdinEyeWidgetModule?.requestPinWidget) {
+        return await OdinEyeWidgetModule.requestPinWidget(widgetType);
+      }
+      return false;
+    } catch (e) {
+      console.log('[WidgetSync] Request pin widget error:', e);
+      return false;
     }
   }
 }

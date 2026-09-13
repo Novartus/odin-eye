@@ -1,3 +1,7 @@
 <resources>
   <string name="app_name">OdinEye</string>
+  <string name="widget_pill_name">OdinEye Medication</string>
+  <string name="widget_pill_description">Track upcoming medication doses and log them directly from your home screen.</string>
+  <string name="widget_zen_name">OdinEye Zen &amp; Vitals</string>
+  <string name="widget_zen_description">View daily steps progress, heart rate, and start mindful breathing sessions.</string>
 </resources>

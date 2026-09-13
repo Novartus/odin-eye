@@ -120,7 +120,7 @@ export class LiveHealthService {
                 lightSleepPct: lightPct,
                 awakePct: awakePct,
                 restingHeartRate: hcData.restingHeartRate || 0,
-                currentHeartRate: hcData.latestHeartRate || (hcData.restingHeartRate ? hcData.restingHeartRate + 4 : undefined),
+                currentHeartRate: hcData.latestHeartRate || undefined,
                 hrvRmssd: hcData.hrvRmssd || 0,
                 skinTempDelta: hcData.skinTempDelta || 0,
                 circadianPhase: {
@@ -130,9 +130,11 @@ export class LiveHealthService {
                   optimalSleepWindow: { start: '22:45', end: '06:45' },
                 },
                 source: 'health_connect',
-                sourceDeviceName: (creds.enabledSources?.ultrahuman !== false && hcData.originWearable === 'ultrahuman')
-                  ? 'Health Connect (Ultrahuman Ring AIR)'
-                  : 'Android Health Connect',
+                sourceDeviceName: hcData.sourceDeviceName || (
+                  (creds.enabledSources?.ultrahuman !== false && hcData.originWearable === 'ultrahuman')
+                    ? 'Health Connect (Ultrahuman Ring AIR)'
+                    : (hcData.originWearable === 'fitbit' ? 'Health Connect (Fitbit)' : 'Android Health Connect')
+                ),
               };
               recoveryScore = calculatedRecovery;
 
@@ -173,6 +175,23 @@ export class LiveHealthService {
           };
           recoveryScore = liveRecovery.recoveryScore;
           sourcesSynced.push(`Ultrahuman (${recoveryScore}% Recovery)`);
+
+          // If Ultrahuman cloud metrics report steps, prioritize ring steps for dailyActivity
+          if (liveRecovery.steps && liveRecovery.steps > 0) {
+            const currentSteps = liveRecovery.steps;
+            const existingActivity = this.currentData.dailyActivity;
+            this.currentData.dailyActivity = {
+              steps: currentSteps,
+              stepGoal: existingActivity?.stepGoal ?? 10000,
+              distanceKm: existingActivity?.distanceKm ?? parseFloat(((currentSteps * 0.76) / 1000).toFixed(1)),
+              activeCalories: existingActivity?.activeCalories ?? Math.round(currentSteps * 0.042),
+              totalCalories: existingActivity?.totalCalories ?? (Math.round(currentSteps * 0.042) + 1600),
+              activeMinutes: existingActivity?.activeMinutes ?? 0,
+              floorsClimbed: existingActivity?.floorsClimbed ?? Math.round(currentSteps / 550),
+              source: 'Ultrahuman Ring AIR',
+              lastSyncTime: existingActivity?.lastSyncTime ?? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            };
+          }
         }
       } catch (err: any) {
         errors.push(`Ultrahuman: ${err?.message || 'Sync failed'}`);
