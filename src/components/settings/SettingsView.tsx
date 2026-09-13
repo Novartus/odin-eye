@@ -842,6 +842,70 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </View>
       </View>
 
+      {/* 2.0 Device Configuration Questionnaire Card (Choose what to enable/disable) */}
+      <View style={styles.sourcesQuestionnaireCard}>
+        <View style={styles.sourcesQuestionnaireHeader}>
+          <View style={styles.sourcesQuestionnaireIcon}>
+            <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <Path
+                d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"
+                stroke="#1F382E"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </Svg>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.sourcesQuestionnaireTitle}>Select Active Data Sources</Text>
+            <Text style={styles.sourcesQuestionnaireSubtitle}>
+              Choose what devices to track. If you don't have an Ultrahuman Ring, keep it disabled — Health Connect automatically reads heart rate and sleep from Fitbit or Wear OS.
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.sourceSelectorRow}>
+          <TouchableOpacity
+            style={[styles.sourceSelectChip, enabledSources.fitbit && styles.sourceSelectChipActive]}
+            onPress={() => onToggleSource('fitbit', !enabledSources.fitbit)}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.sourceSelectChipTitle, enabledSources.fitbit && styles.sourceSelectChipTitleActive]}>
+              Fitbit / Wear OS
+            </Text>
+            <Text style={[styles.sourceSelectChipSub, enabledSources.fitbit && styles.sourceSelectChipSubActive]}>
+              {enabledSources.fitbit ? '✓ Enabled' : 'Disabled'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.sourceSelectChip, enabledSources.hevy && styles.sourceSelectChipActive]}
+            onPress={() => onToggleSource('hevy', !enabledSources.hevy)}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.sourceSelectChipTitle, enabledSources.hevy && styles.sourceSelectChipTitleActive]}>
+              Hevy Lifting
+            </Text>
+            <Text style={[styles.sourceSelectChipSub, enabledSources.hevy && styles.sourceSelectChipSubActive]}>
+              {enabledSources.hevy ? '✓ Enabled' : 'Disabled'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.sourceSelectChip, enabledSources.ultrahuman && styles.sourceSelectChipActive]}
+            onPress={() => onToggleSource('ultrahuman', !enabledSources.ultrahuman)}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.sourceSelectChipTitle, enabledSources.ultrahuman && styles.sourceSelectChipTitleActive]}>
+              Ultrahuman Ring
+            </Text>
+            <Text style={[styles.sourceSelectChipSub, enabledSources.ultrahuman && styles.sourceSelectChipSubActive]}>
+              {enabledSources.ultrahuman ? '✓ Enabled' : 'Disabled (Default)'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       {/* 2.1 Android Health Connect Hub Card */}
       <View style={styles.hcHubCard}>
         <View style={styles.hcHubTopRow}>
@@ -958,7 +1022,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <Text style={styles.deviceFeeds}>Feeds: Sleep Architecture, Nightly HRV, Skin Temp</Text>
               <Text style={styles.deviceBattery}>
                 {!enabledSources.ultrahuman
-                  ? 'Source Disabled'
+                  ? 'Source Disabled (Default) • Sleep & HR read via Health Connect'
                   : ultrahumanStatus?.connected
                     ? 'Live API Connected ✓'
                     : ultrahumanToken
@@ -2436,6 +2500,82 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 2,
+  },
+  sourcesQuestionnaireCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    padding: 18,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(24, 28, 27, 0.08)',
+    shadowColor: '#181C1B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  sourcesQuestionnaireHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 14,
+  },
+  sourcesQuestionnaireIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#E8F5E9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sourcesQuestionnaireTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#181C1B',
+    marginBottom: 3,
+  },
+  sourcesQuestionnaireSubtitle: {
+    fontSize: 12,
+    color: '#6F7F78',
+    lineHeight: 16,
+  },
+  sourceSelectorRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 4,
+  },
+  sourceSelectChip: {
+    flex: 1,
+    backgroundColor: '#F8FAF9',
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(24, 28, 27, 0.08)',
+  },
+  sourceSelectChipActive: {
+    backgroundColor: '#EAF2EE',
+    borderColor: '#2C4A3E',
+  },
+  sourceSelectChipTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#6F7F78',
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  sourceSelectChipTitleActive: {
+    color: '#1F382E',
+  },
+  sourceSelectChipSub: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#94A3B8',
+    textAlign: 'center',
+  },
+  sourceSelectChipSubActive: {
+    color: '#15803D',
   },
   goalSettingRow: {
     flexDirection: 'row',

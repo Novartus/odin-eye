@@ -5,6 +5,11 @@ export interface SavedCredentials {
   ultrahumanToken: string;
   fitbitToken: string;
   healthConnectEnabled: boolean;
+  enabledSources?: {
+    ultrahuman: boolean;
+    fitbit: boolean;
+    hevy: boolean;
+  };
   healthConnectPermissionsGranted?: boolean;
   healthConnectPromptDismissed?: boolean;
   geminiApiKey?: string;

@@ -14,14 +14,15 @@ import { TriPillarHealthSummary } from '../../types/health';
 import { SmartRingIcon } from '../common/SmartRingIcon';
 import { SleepBarChart } from '../sleep/SleepBarChart';
 import { sleepHistoryService } from '../../services/sleep/sleepHistoryService';
-import { MetricType } from '../../types/navigation';
-export { MetricType } from '../../types/navigation';
+import { MetricType, EnabledSources } from '../../types';
+export { MetricType } from '../../types';
 
 interface MetricDetailExpandModalProps {
   visible: boolean;
   onClose: () => void;
   metricType: MetricType | null;
   data: TriPillarHealthSummary;
+  enabledSources?: EnabledSources;
 }
 
 interface ThemeConfig {
@@ -40,6 +41,7 @@ export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = (
   onClose,
   metricType,
   data,
+  enabledSources,
 }) => {
   if (!metricType) return null;
 
@@ -73,7 +75,7 @@ export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = (
   switch (metricType) {
     case 'recovery':
       title = 'Recovery & Balance';
-      deviceTag = recovery.source === 'health_connect' ? 'Health Connect' : 'Ultrahuman Ring AIR';
+      deviceTag = (enabledSources?.ultrahuman && recovery.source !== 'health_connect') ? 'Ultrahuman Ring AIR' : 'Health Connect';
       const hasRecovery = recovery.recoveryScore > 0;
       mainScore = hasRecovery ? `${recovery.recoveryScore}%` : '—';
       scoreUnit = 'Physiological Readiness';
@@ -116,7 +118,7 @@ export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = (
 
     case 'sleep':
       title = 'Rest & Sleep Architecture';
-      deviceTag = 'Ultrahuman Ring AIR';
+      deviceTag = (enabledSources?.ultrahuman && recovery.source !== 'health_connect') ? 'Ultrahuman Ring AIR' : 'Health Connect';
       const hasSleep = recovery.sleepDurationMinutes > 0;
       const sleepH = hasSleep ? Math.floor(recovery.sleepDurationMinutes / 60) : 0;
       const sleepM = hasSleep ? recovery.sleepDurationMinutes % 60 : 0;
@@ -163,7 +165,9 @@ export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = (
 
       actionableTip = hasSleep
         ? 'Maintain ambient bedroom temperature around 18-19°C (65-67°F) to support natural core temperature drop.'
-        : 'Sleep metrics will automatically display once your smart ring or Android Health Connect syncs.';
+        : enabledSources?.ultrahuman
+          ? 'Sleep metrics will automatically display once your smart ring or Android Health Connect syncs.'
+          : 'Sleep metrics will automatically display once your fitness tracker or Android Health Connect syncs.';
       break;
 
     case 'heart':
@@ -399,7 +403,19 @@ export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = (
           {/* Hardware Source Pill */}
           <View style={styles.sourcePillRow}>
             <View style={styles.sourcePill}>
-              <SmartRingIcon size={13} color="#237A5D" />
+              {enabledSources?.ultrahuman ? (
+                <SmartRingIcon size={13} color="#237A5D" />
+              ) : (
+                <Svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M22 12h-4l-3 9L9 3l-3 9H2"
+                    stroke="#237A5D"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+              )}
               <Text style={styles.sourcePillText}>{deviceTag} • On-Device Encrypted</Text>
             </View>
           </View>

@@ -37,11 +37,18 @@ class CredentialsStorage {
     hasCompletedOnboarding: false,
     dailyStepsGoal: 10000,
     dailyCaloriesGoal: 500,
+    enabledSources: {
+      ultrahuman: false,
+      fitbit: true,
+      hevy: true,
+    },
   };
   private isSecureStoreAvailable: boolean = false;
   private fileSystem: any = null;
   private vaultPath: string | null = null;
   private lastEncryptedAt: string = '';
+  private isLoaded: boolean = false;
+  private loadPromise: Promise<SavedCredentials> | null = null;
 
   public static getInstance(): CredentialsStorage {
     if (!CredentialsStorage.instance) {
@@ -79,42 +86,69 @@ class CredentialsStorage {
 
   /**
    * Load and decrypt credentials from the encrypted vault.
-   * Priority: expo-secure-store → expo-file-system → in-memory defaults
+   * Priority: expo-secure-store → expo-file-system → in-memory defaults.
+   * Fully deduplicated: multiple concurrent callers join the single in-flight decrypt promise.
+   * Instant subsequent calls return the in-memory cache directly without freezing the JS thread.
    */
-  public async loadCredentials(): Promise<SavedCredentials> {
-    try {
-      let rawEncrypted: string | null = null;
-
-      // 1. Primary: expo-secure-store (hardware-backed keystore)
-      if (this.isSecureStoreAvailable) {
-        try {
-          rawEncrypted = await SecureStore.getItemAsync(SECURE_STORE_KEY);
-        } catch (e: any) {
-          console.warn('[CredentialsStorage] SecureStore read:', e?.message);
-        }
-      }
-
-      // 2. Secondary: sandboxed file
-      if (!rawEncrypted && this.fileSystem && this.vaultPath) {
-        try {
-          const info = await this.fileSystem.getInfoAsync(this.vaultPath);
-          if (info.exists) {
-            rawEncrypted = await this.fileSystem.readAsStringAsync(this.vaultPath);
-          }
-        } catch {}
-      }
-
-      if (rawEncrypted) {
-        const payload: EncryptedPayload = JSON.parse(rawEncrypted);
-        const decryptedJson = cryptoService.decrypt(payload);
-        const parsed = JSON.parse(decryptedJson);
-        this.memoryCache = { ...this.memoryCache, ...parsed };
-        this.lastEncryptedAt = payload.timestamp;
-      }
-    } catch (err: any) {
-      console.warn('[CredentialsStorage] Vault load error:', err?.message);
+  public async loadCredentials(forceReload: boolean = false): Promise<SavedCredentials> {
+    if (!forceReload && this.isLoaded) {
+      return this.memoryCache;
     }
-    return this.memoryCache;
+
+    if (this.loadPromise) {
+      return this.loadPromise;
+    }
+
+    this.loadPromise = (async () => {
+      try {
+        let rawEncrypted: string | null = null;
+
+        // 1. Primary: expo-secure-store (hardware-backed keystore)
+        if (this.isSecureStoreAvailable) {
+          try {
+            rawEncrypted = await SecureStore.getItemAsync(SECURE_STORE_KEY);
+          } catch (e: any) {
+            console.warn('[CredentialsStorage] SecureStore read:', e?.message);
+          }
+        }
+
+        // 2. Secondary: sandboxed file
+        if (!rawEncrypted && this.fileSystem && this.vaultPath) {
+          try {
+            const info = await this.fileSystem.getInfoAsync(this.vaultPath);
+            if (info.exists) {
+              rawEncrypted = await this.fileSystem.readAsStringAsync(this.vaultPath);
+            }
+          } catch {}
+        }
+
+        if (rawEncrypted) {
+          const payload: EncryptedPayload = JSON.parse(rawEncrypted);
+          const decryptedJson = cryptoService.decrypt(payload);
+          const parsed = JSON.parse(decryptedJson);
+          this.memoryCache = {
+            ...this.memoryCache,
+            ...parsed,
+            enabledSources: {
+              ultrahuman: false,
+              fitbit: true,
+              hevy: true,
+              ...(this.memoryCache.enabledSources || {}),
+              ...(parsed.enabledSources || {}),
+            },
+          };
+          this.lastEncryptedAt = payload.timestamp;
+        }
+      } catch (err: any) {
+        console.warn('[CredentialsStorage] Vault load error:', err?.message);
+      } finally {
+        this.isLoaded = true;
+        this.loadPromise = null;
+      }
+      return this.memoryCache;
+    })();
+
+    return this.loadPromise;
   }
 
   /**
@@ -122,6 +156,7 @@ class CredentialsStorage {
    */
   public async saveCredentials(creds: Partial<SavedCredentials>): Promise<SavedCredentials> {
     this.memoryCache = { ...this.memoryCache, ...creds };
+    this.isLoaded = true;
     try {
       const plaintext = JSON.stringify(this.memoryCache);
       const encryptedPayload = cryptoService.encrypt(plaintext);

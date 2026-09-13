@@ -14,7 +14,25 @@ import {
   AppState,
   Vibration,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
+/**
+ * Schedules background work when the JS thread is idle without blocking UI mounting.
+ * Replaces deprecated InteractionManager using requestIdleCallback with a safe timer fallback.
+ */
+const runWhenIdle = (callback: () => void, timeout = 250): (() => void) => {
+  const g: any = typeof globalThis !== 'undefined' ? globalThis : undefined;
+  if (g && typeof g.requestIdleCallback === 'function') {
+    const handle = g.requestIdleCallback(callback, { timeout });
+    return () => {
+      if (typeof g.cancelIdleCallback === 'function') {
+        g.cancelIdleCallback(handle);
+      }
+    };
+  }
+  const timer = setTimeout(callback, 80);
+  return () => clearTimeout(timer);
+};
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { localAiCoach } from '../services/ai/localCoachEngine';
 import { Colors } from '../theme/colors';
@@ -51,6 +69,7 @@ interface DashboardScreenProps {
 }
 
 export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboarding }) => {
+  const insets = useSafeAreaInsets();
   const [data, setData] = useState(liveHealthService.getData());
   const [activeTab, setActiveTab] = useState<TabKey>('home');
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
@@ -66,7 +85,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncText, setLastSyncText] = useState('Live Telemetry Active');
   const [enabledSources, setEnabledSources] = useState<EnabledSources>({
-    ultrahuman: true,
+    ultrahuman: false,
     fitbit: true,
     hevy: true,
   });
@@ -178,14 +197,21 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
       if (creds.targetSleepDurationHours) {
         setTargetSleepGoal(creds.targetSleepDurationHours);
       }
+      if (creds.enabledSources) {
+        setEnabledSources(creds.enabledSources);
+        const activeCount = Object.values(creds.enabledSources).filter(Boolean).length;
+        setLastSyncText(`${activeCount} of 3 Devices Active`);
+      }
     });
 
     // Initialize Android Home Screen AppWidgets synchronization & deep-link check
-    widgetSyncService.init();
-    widgetSyncService.getRequestedTab().then((tab) => {
-      if (tab === 'meds' || tab === 'zen') {
-        switchTab(tab as TabKey);
-      }
+    const cancelWidgetSync = runWhenIdle(() => {
+      widgetSyncService.init();
+      widgetSyncService.getRequestedTab().then((tab) => {
+        if (tab === 'meds' || tab === 'zen') {
+          switchTab(tab as TabKey);
+        }
+      });
     });
 
     const appStateSub = AppState.addEventListener('change', (nextState) => {
@@ -200,6 +226,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
     });
 
     return () => {
+      cancelWidgetSync();
       appStateSub.remove();
     };
   }, []);
@@ -213,10 +240,15 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
       }
     });
 
-    // Run initial sync cycle on app launch
-    liveHealthService.syncAll().catch(() => {});
+    // Run initial sync cycle in background after screen transition settles
+    const cancelSync = runWhenIdle(() => {
+      liveHealthService.syncAll().catch(() => {});
+    });
 
-    return unsubscribe;
+    return () => {
+      cancelSync();
+      unsubscribe();
+    };
   }, []);
 
   // Subscribe to real-time medication reminders across all tabs
@@ -226,20 +258,25 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
     });
 
     // Initialize OS background alarms and handle notification taps when app was closed
-    medicationNotificationService.initialize((medId, time) => {
-      const allMeds = medicationService.getMedicationsSync();
-      const med = allMeds.find((m) => m.id === medId);
-      if (med) {
-        setGlobalMedAlert({
-          medication: med,
-          time,
-          dateKey: medicationService.getTodayDateKey(),
-          triggeredAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        });
-      }
+    const cancelNotif = runWhenIdle(() => {
+      medicationNotificationService.initialize((medId, time) => {
+        const allMeds = medicationService.getMedicationsSync();
+        const med = allMeds.find((m) => m.id === medId);
+        if (med) {
+          setGlobalMedAlert({
+            medication: med,
+            time,
+            dateKey: medicationService.getTodayDateKey(),
+            triggeredAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          });
+        }
+      });
     });
 
-    return unsubscribeMeds;
+    return () => {
+      cancelNotif();
+      unsubscribeMeds();
+    };
   }, []);
 
   // Track keyboard visibility so floating tabs never block inputs or keyboards
@@ -302,6 +339,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
       const next = { ...prev, [sourceKey]: value };
       const activeCount = Object.values(next).filter(Boolean).length;
       setLastSyncText(`${activeCount} of 3 Devices Active`);
+      credentialsStorage.saveCredentials({ enabledSources: next }).then(() => {
+        liveHealthService.syncAll();
+        widgetSyncService.syncAllWidgets();
+      });
       return next;
     });
   };
@@ -429,7 +470,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
           <ScrollView
             ref={scrollViewRef}
             style={styles.scroll}
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={[
+              styles.scrollContent,
+              { paddingBottom: Math.max(insets.bottom + 70, 90) },
+            ]}
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl
@@ -482,7 +526,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
                           </View>
                         </View>
                         <Text style={styles.hcBannerSubtitle}>
-                          Auto-pickup sleep, pulse & steps without Ultrahuman API key
+                          Auto-pickup sleep, pulse & steps from Fitbit, Wear OS or phone
                         </Text>
                       </View>
                     </View>
@@ -581,7 +625,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
               />
             )}
 
-            <View style={styles.bottomSpacer} />
+            <View style={[styles.bottomSpacer, { height: Math.max(insets.bottom, 20) + 40 }]} />
           </ScrollView>
         )}
       </Animated.View>

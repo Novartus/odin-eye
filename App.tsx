@@ -17,22 +17,22 @@ export default function App() {
     let timeoutId: ReturnType<typeof setTimeout>;
     credentialsStorage.loadCredentials().then((creds) => {
       setHasCompletedOnboarding(Boolean(creds.hasCompletedOnboarding));
-      // Smooth handoff after brief presentation
+      // Fast, smooth handoff once credentials and config are ready
       timeoutId = setTimeout(() => {
         setIsLoading(false);
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 350,
+          duration: 250,
           useNativeDriver: true,
         }).start();
-      }, 750);
+      }, 100);
     });
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [fadeAnim]);
 
-  const [onboardingInitialStep, setOnboardingInitialStep] = useState<1 | 2>(1);
+  const [onboardingInitialStep, setOnboardingInitialStep] = useState<1 | 2 | 3>(1);
 
   const handleFinishOnboarding = () => {
     setHasCompletedOnboarding(true);

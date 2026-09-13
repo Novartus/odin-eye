@@ -16,6 +16,7 @@ import { ChatMessage, AiCoachRecommendation } from '../../types/aiCoach';
 import { localAiCoach } from '../../services/ai/localCoachEngine';
 import { aiHealthService } from '../../services/ai/aiService';
 import { credentialsStorage } from '../../services/storage/credentialsStorage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FormattedMessage } from './FormattedMessage';
 import { BouncingDotsLoader } from '../common/BouncingDotsLoader';
 import { Colors } from '../../theme/colors';
@@ -26,6 +27,9 @@ interface DedicatedAiCoachViewProps {
 }
 
 export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data, recommendation }) => {
+  const insets = useSafeAreaInsets();
+  const tabBottomOffset = Math.max(insets.bottom + 10, 20);
+
   const [aiProvider, setAiProvider] = useState<'gemini_nano' | 'ondevice' | 'gemini' | 'openai'>('gemini_nano');
 
   useEffect(() => {
@@ -55,6 +59,7 @@ export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data
   const scrollViewRef = useRef<ScrollView>(null);
   const keyboardOffset = useRef(new Animated.Value(0)).current;
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const inputBottomMargin = isKeyboardOpen ? 8 : tabBottomOffset + 64;
 
   // Auto-scroll to bottom whenever messages change or when thinking state changes
   const scrollToBottom = (animated = true) => {
@@ -264,7 +269,7 @@ export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data
       </ScrollView>
 
       {/* Floating Input Capsule (Floats seamlessly above bottom navigation dock) */}
-      <View style={[styles.inputCapsuleWrapper, { marginBottom: isKeyboardOpen ? 8 : 88 }]}>
+      <View style={[styles.inputCapsuleWrapper, { marginBottom: inputBottomMargin }]}>
         <View style={styles.inputCapsule}>
           <TextInput
             style={styles.input}

@@ -106,8 +106,8 @@ export class LiveHealthService {
               hcData.hrvRmssd
             );
 
-            // If user has not provided a separate Ultrahuman cloud API key, auto-populate recovery directly from Health Connect
-            if (!creds.ultrahumanToken || !creds.ultrahumanToken.trim()) {
+            // If Ultrahuman is disabled or user has not provided a separate Ultrahuman cloud API key, auto-populate recovery directly from Health Connect
+            if (!creds.ultrahumanToken || !creds.ultrahumanToken.trim() || creds.enabledSources?.ultrahuman === false) {
               this.currentData.recovery = {
                 recoveryScore: calculatedRecovery,
                 sleepIndex: calculatedSleepIndex,
@@ -130,7 +130,7 @@ export class LiveHealthService {
                   optimalSleepWindow: { start: '22:45', end: '06:45' },
                 },
                 source: 'health_connect',
-                sourceDeviceName: hcData.originWearable === 'ultrahuman'
+                sourceDeviceName: (creds.enabledSources?.ultrahuman !== false && hcData.originWearable === 'ultrahuman')
                   ? 'Health Connect (Ultrahuman Ring AIR)'
                   : 'Android Health Connect',
               };
@@ -140,7 +140,7 @@ export class LiveHealthService {
                 sourcesSynced.push(`Health Connect (${(sleepMinutes / 60).toFixed(1)}h Sleep • ${calculatedRecovery}% Recovery)`);
               }
             } else {
-              // If Ultrahuman token is present, supplement any missing live daytime fields
+              // If Ultrahuman is enabled and token is present, supplement any missing live daytime fields
               if (hcData.latestHeartRate && !this.currentData.recovery.currentHeartRate) {
                 this.currentData.recovery.currentHeartRate = hcData.latestHeartRate;
               }
@@ -162,8 +162,8 @@ export class LiveHealthService {
       }
     }
 
-    // 2. Synchronize Ultrahuman Ring AIR (Biological Recovery, Sleep, HRV)
-    if (creds.ultrahumanToken && creds.ultrahumanToken.trim()) {
+    // 2. Synchronize Ultrahuman Ring AIR (Only if enabled in Settings)
+    if (creds.enabledSources?.ultrahuman !== false && creds.ultrahumanToken && creds.ultrahumanToken.trim()) {
       try {
         const liveRecovery = await ultrahumanApiClient.fetchDailyRecovery(creds.ultrahumanToken);
         if (liveRecovery) {
@@ -180,7 +180,7 @@ export class LiveHealthService {
     }
 
     // 3. Synchronize Hevy Strength Log (Real API)
-    if (creds.hevyApiKey && creds.hevyApiKey.trim()) {
+    if (creds.enabledSources?.hevy !== false && creds.hevyApiKey && creds.hevyApiKey.trim()) {
       try {
         const workouts = await hevyApiClient.fetchWorkouts(creds.hevyApiKey, 10);
         if (workouts.length > 0) {
@@ -232,7 +232,7 @@ export class LiveHealthService {
     }
 
     // 4. Synchronize Google Fitbit (Strict Recency & Disconnected Handling)
-    if (creds.fitbitToken && creds.fitbitToken.trim()) {
+    if (creds.enabledSources?.fitbit !== false && creds.fitbitToken && creds.fitbitToken.trim()) {
       try {
         const liveCardio = await fitbitApiClient.fetchDailyCardio(creds.fitbitToken);
         if (liveCardio && (liveCardio.todayActiveZoneMinutes > 0 || liveCardio.recentWorkout)) {

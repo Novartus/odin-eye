@@ -7,29 +7,55 @@ import {
   ScrollView,
   Animated,
   Image,
+  Switch,
+  Vibration,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { credentialsStorage } from '../services/storage/credentialsStorage';
 
 interface OnboardingScreenProps {
-  onFinish: (goals: { stepsGoal: number; caloriesGoal: number; mindfulnessGoal?: number }) => void;
-  initialStep?: 1 | 2;
+  onFinish: (config: {
+    stepsGoal: number;
+    caloriesGoal: number;
+    mindfulnessGoal?: number;
+    enabledSources?: { ultrahuman: boolean; fitbit: boolean; hevy: boolean };
+    aiEnabled?: boolean;
+    bodyAnalysisEnabled?: boolean;
+    mindfulnessEnabled?: boolean;
+  }) => void;
+  initialStep?: 1 | 2 | 3;
 }
 
 export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, initialStep = 1 }) => {
-  const [step, setStep] = useState<1 | 2>(initialStep);
+  const [step, setStep] = useState<1 | 2 | 3>(initialStep);
 
   // Goal selections with recommended defaults
   const [stepsGoal, setStepsGoal] = useState<number>(10000);
   const [caloriesGoal, setCaloriesGoal] = useState<number>(500);
   const [mindfulnessGoal, setMindfulnessGoal] = useState<number>(10);
 
+  // Feature and source selections (Screen 3: What to enable)
+  const [enabledSources, setEnabledSources] = useState<{ ultrahuman: boolean; fitbit: boolean; hevy: boolean }>({
+    ultrahuman: false, // Disabled by default
+    fitbit: true,
+    hevy: true,
+  });
+  const [aiEnabled, setAiEnabled] = useState<boolean>(true);
+  const [bodyAnalysisEnabled, setBodyAnalysisEnabled] = useState<boolean>(true);
+  const [mindfulnessEnabled, setMindfulnessEnabled] = useState<boolean>(true);
+
   useEffect(() => {
     credentialsStorage.loadCredentials().then((creds) => {
       if (creds.dailyStepsGoal) setStepsGoal(creds.dailyStepsGoal);
       if (creds.dailyCaloriesGoal) setCaloriesGoal(creds.dailyCaloriesGoal);
       if (creds.dailyMindfulnessGoal) setMindfulnessGoal(creds.dailyMindfulnessGoal);
+      if (creds.enabledSources) {
+        setEnabledSources(creds.enabledSources);
+      }
+      if (creds.aiEnabled !== undefined) setAiEnabled(creds.aiEnabled);
+      if (creds.bodyAnalysisEnabled !== undefined) setBodyAnalysisEnabled(creds.bodyAnalysisEnabled);
+      if (creds.mindfulnessEnabled !== undefined) setMindfulnessEnabled(creds.mindfulnessEnabled);
     });
   }, []);
 
@@ -37,9 +63,10 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, in
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
 
-  const goToStep = (targetStep: 1 | 2) => {
-    const exitOffset = targetStep === 2 ? -28 : 28;
-    const enterOffset = targetStep === 2 ? 28 : -28;
+  const goToStep = (targetStep: 1 | 2 | 3) => {
+    const isForward = targetStep > step;
+    const exitOffset = isForward ? -28 : 28;
+    const enterOffset = isForward ? 28 : -28;
 
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -70,6 +97,20 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, in
     });
   };
 
+  const handleToggleSource = (sourceKey: 'ultrahuman' | 'fitbit' | 'hevy', val: boolean) => {
+    try {
+      Vibration.vibrate(22);
+    } catch {}
+    setEnabledSources((prev) => ({ ...prev, [sourceKey]: val }));
+  };
+
+  const handleToggleFeature = (setter: React.Dispatch<React.SetStateAction<boolean>>, val: boolean) => {
+    try {
+      Vibration.vibrate(22);
+    } catch {}
+    setter(val);
+  };
+
   const stepPresets = [
     { val: 6000, label: 'Gentle', sub: 'Easy Pacing' },
     { val: 8000, label: 'Baseline', sub: 'Healthy Habit' },
@@ -97,8 +138,20 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, in
       dailyStepsGoal: stepsGoal,
       dailyCaloriesGoal: caloriesGoal,
       dailyMindfulnessGoal: mindfulnessGoal,
+      enabledSources,
+      aiEnabled,
+      bodyAnalysisEnabled,
+      mindfulnessEnabled,
     });
-    onFinish({ stepsGoal, caloriesGoal, mindfulnessGoal });
+    onFinish({
+      stepsGoal,
+      caloriesGoal,
+      mindfulnessGoal,
+      enabledSources,
+      aiEnabled,
+      bodyAnalysisEnabled,
+      mindfulnessEnabled,
+    });
   };
 
   const handleStepIncrement = (delta: number) => {
@@ -115,6 +168,45 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, in
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      {/* Persistent Top Progress Header (1/3, 2/3, 3/3) */}
+      <View style={styles.topProgressContainer}>
+        {step > 1 ? (
+          <TouchableOpacity
+            style={styles.topProgressBackBtn}
+            onPress={() => goToStep((step - 1) as 1 | 2)}
+            activeOpacity={0.7}
+          >
+            <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <Path
+                d="M15 19l-7-7 7-7"
+                stroke="#141816"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </Svg>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.topBrandPill}>
+            <Text style={styles.topBrandEmoji}>🌿</Text>
+          </View>
+        )}
+
+        {/* Center: 3 Segmented Progress Bars */}
+        <View style={styles.progressBarWrapper}>
+          <View style={styles.segmentTrackRow}>
+            <View style={[styles.segmentBar, step >= 1 && styles.segmentBarActive]} />
+            <View style={[styles.segmentBar, step >= 2 && styles.segmentBarActive]} />
+            <View style={[styles.segmentBar, step >= 3 && styles.segmentBarActive]} />
+          </View>
+        </View>
+
+        {/* Right: Explicit Step Fraction Badge (1/3, 2/3, 3/3) */}
+        <View style={styles.stepFractionBadge}>
+          <Text style={styles.stepFractionText}>{step}/3</Text>
+        </View>
+      </View>
+
       <Animated.View
         style={{
           flex: 1,
@@ -140,7 +232,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, in
 
           {/* Top Brand Pill */}
           <View style={styles.welcomePill}>
-            <Text style={styles.welcomePillText}>🌿 MINDFUL HEALTH & EQUILIBRIUM</Text>
+            <Text style={styles.welcomePillText}>🌿 STEP 1 OF 3 · GETTING STARTED</Text>
           </View>
 
           {/* Headline & Subtitle */}
@@ -243,38 +335,20 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, in
             </View>
           </TouchableOpacity>
         </ScrollView>
-      ) : (
+      ) : step === 2 ? (
         /* STEP 2: DAILY STEPS & CALORIES GOAL SELECTION */
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.goalScrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Header with Back Button & Step Indicator */}
-          <View style={styles.goalHeaderRow}>
-            <TouchableOpacity
-              style={styles.backCircleBtn}
-              onPress={() => goToStep(1)}
-              activeOpacity={0.7}
-            >
-              <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <Path
-                  d="M15 19l-7-7 7-7"
-                  stroke="#141816"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </Svg>
-            </TouchableOpacity>
-
+          {/* Step Pill Badge */}
+          <View style={styles.stepPillRow}>
             <View style={styles.stepBadge}>
               <Text style={styles.stepBadgeText}>
-                {initialStep === 2 ? 'RECALIBRATE TARGETS' : 'STEP 2 OF 2'}
+                {initialStep === 2 ? 'RECALIBRATE TARGETS · 2/3' : '🎯 STEP 2 OF 3 · TARGETS'}
               </Text>
             </View>
-
-            <View style={{ width: 40 }} />
           </View>
 
           {/* Goal Setting Title */}
@@ -451,15 +525,298 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, in
             </View>
           </View>
 
+          {/* Bottom Action: Continue to Screen 3 (Features & Trackers) */}
+          <TouchableOpacity
+            style={styles.primaryPillBtn}
+            onPress={() => goToStep(3)}
+            activeOpacity={0.88}
+          >
+            <Text style={styles.primaryPillBtnText}>
+              Continue to Features & Trackers
+            </Text>
+            <View style={styles.whiteArrowCircle}>
+              <Svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <Path
+                  d="M5 12h14M12 5l7 7-7 7"
+                  stroke="#181C1B"
+                  strokeWidth="2.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </Svg>
+            </View>
+          </TouchableOpacity>
+
+          {initialStep === 2 && (
+            <TouchableOpacity
+              style={styles.secondarySaveBtn}
+              onPress={handleComplete}
+              activeOpacity={0.75}
+            >
+              <Text style={styles.secondarySaveBtnText}>Save Targets & Return to App</Text>
+            </TouchableOpacity>
+          )}
+        </ScrollView>
+      ) : (
+        /* STEP 3: CHOOSE WHAT TO ENABLE (AI, HEVY, ULTRAHUMAN, ETC.) */
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.goalScrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Step Pill Badge */}
+          <View style={styles.stepPillRow}>
+            <View style={styles.stepBadge}>
+              <Text style={styles.stepBadgeText}>
+                {initialStep === 2 ? 'FEATURES · 3/3' : '⚡ STEP 3 OF 3 · WHAT TO ENABLE'}
+              </Text>
+            </View>
+          </View>
+
+          {/* Screen Title & Subtitle */}
+          <Text style={styles.goalTitle}>Choose What to Enable</Text>
+          <Text style={styles.goalSubtitle}>
+            Personalize your experience. Enable the wearables you own and the smart intelligence features you want active.
+          </Text>
+
+          {/* 1. WEARABLES & DATA SOURCES */}
+          <View style={styles.featureSection}>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Wearables & Data Streams</Text>
+              <Text style={styles.sectionHighlight}>⚡ Telemetry</Text>
+            </View>
+
+            {/* Fitbit / Wear OS Card */}
+            <View style={styles.featureItemCard}>
+              <View style={styles.featureItemRow}>
+                <View style={[styles.featureIconWrap, { backgroundColor: '#FEE2E2' }]}>
+                  <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <Path
+                      d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"
+                      stroke="#E11D48"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <Path
+                      d="M9 12l2 2l3 -4"
+                      stroke="#E11D48"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </Svg>
+                </View>
+                <View style={styles.featureTextCol}>
+                  <View style={styles.featureTitleRow}>
+                    <Text style={styles.featureItemTitle}>Fitbit / Wear OS</Text>
+                    <View style={[styles.featureTagPill, { backgroundColor: '#DCFCE7' }]}>
+                      <Text style={[styles.featureTagText, { color: '#15803D' }]}>RECOMMENDED</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.featureItemDesc}>
+                    Auto-read heart rate, sleep architecture & steps via Health Connect.
+                  </Text>
+                </View>
+                <Switch
+                  value={enabledSources.fitbit}
+                  onValueChange={(val) => handleToggleSource('fitbit', val)}
+                  trackColor={{ false: '#E2E8F0', true: '#CCE6DE' }}
+                  thumbColor={enabledSources.fitbit ? '#1F382E' : '#FFFFFF'}
+                />
+              </View>
+            </View>
+
+            {/* Hevy Strength Training Card */}
+            <View style={styles.featureItemCard}>
+              <View style={styles.featureItemRow}>
+                <View style={[styles.featureIconWrap, { backgroundColor: '#DBEAFE' }]}>
+                  <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <Path
+                      d="M6 4v16M18 4v16M2 8v8M22 8v8M6 12h12"
+                      stroke="#2563EB"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </Svg>
+                </View>
+                <View style={styles.featureTextCol}>
+                  <View style={styles.featureTitleRow}>
+                    <Text style={styles.featureItemTitle}>Hevy Strength Logging</Text>
+                    <View style={[styles.featureTagPill, { backgroundColor: '#DBEAFE' }]}>
+                      <Text style={[styles.featureTagText, { color: '#1E40AF' }]}>LIFTING</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.featureItemDesc}>
+                    Sync workout routines, weight volume, tonnage & muscle fatigue.
+                  </Text>
+                </View>
+                <Switch
+                  value={enabledSources.hevy}
+                  onValueChange={(val) => handleToggleSource('hevy', val)}
+                  trackColor={{ false: '#E2E8F0', true: '#CCE6DE' }}
+                  thumbColor={enabledSources.hevy ? '#1F382E' : '#FFFFFF'}
+                />
+              </View>
+            </View>
+
+            {/* Ultrahuman Ring AIR Card */}
+            <View style={styles.featureItemCard}>
+              <View style={styles.featureItemRow}>
+                <View style={[styles.featureIconWrap, { backgroundColor: '#CCFBF1' }]}>
+                  <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <Circle cx="12" cy="12" r="8" stroke="#0D9488" strokeWidth="2.2" />
+                    <Circle cx="12" cy="12" r="5" stroke="#0D9488" strokeWidth="1.2" strokeDasharray="3 3" />
+                  </Svg>
+                </View>
+                <View style={styles.featureTextCol}>
+                  <View style={styles.featureTitleRow}>
+                    <Text style={styles.featureItemTitle}>Ultrahuman Ring AIR</Text>
+                    <View style={[styles.featureTagPill, { backgroundColor: '#F1F5F9' }]}>
+                      <Text style={[styles.featureTagText, { color: '#64748B' }]}>DISABLED BY DEFAULT</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.featureItemDesc}>
+                    Smart ring telemetry, finger temperature & circadian rhythm.
+                  </Text>
+                </View>
+                <Switch
+                  value={enabledSources.ultrahuman}
+                  onValueChange={(val) => handleToggleSource('ultrahuman', val)}
+                  trackColor={{ false: '#E2E8F0', true: '#CCE6DE' }}
+                  thumbColor={enabledSources.ultrahuman ? '#1F382E' : '#FFFFFF'}
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* 2. SMART INTELLIGENCE & CAPABILITIES */}
+          <View style={styles.featureSection}>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Smart Capabilities</Text>
+              <Text style={styles.sectionHighlightLavender}>🧠 On-Device</Text>
+            </View>
+
+            {/* On-Device AI Health Coach */}
+            <View style={styles.featureItemCard}>
+              <View style={styles.featureItemRow}>
+                <View style={[styles.featureIconWrap, { backgroundColor: '#FEF3C7' }]}>
+                  <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <Path
+                      d="M12 2l2.4 7.2L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"
+                      stroke="#D97706"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </Svg>
+                </View>
+                <View style={styles.featureTextCol}>
+                  <View style={styles.featureTitleRow}>
+                    <Text style={styles.featureItemTitle}>On-Device AI Coach</Text>
+                    <View style={[styles.featureTagPill, { backgroundColor: '#FEF3C7' }]}>
+                      <Text style={[styles.featureTagText, { color: '#B45309' }]}>100% PRIVATE</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.featureItemDesc}>
+                    Synthesizes strain, sleep debt & recovery guidance locally without cloud leaks.
+                  </Text>
+                </View>
+                <Switch
+                  value={aiEnabled}
+                  onValueChange={(val) => handleToggleFeature(setAiEnabled, val)}
+                  trackColor={{ false: '#E2E8F0', true: '#CCE6DE' }}
+                  thumbColor={aiEnabled ? '#1F382E' : '#FFFFFF'}
+                />
+              </View>
+            </View>
+
+            {/* Zen Mindfulness & Breathwork */}
+            <View style={styles.featureItemCard}>
+              <View style={styles.featureItemRow}>
+                <View style={[styles.featureIconWrap, { backgroundColor: '#EAF2EE' }]}>
+                  <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <Path d="M12 22V12" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" />
+                    <Path d="M12 12C12 12 7 10 5 6c2 0 5 1 7 6z" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    <Path d="M12 12C12 12 17 10 19 6c-2 0-5 1-7 6z" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    <Path d="M12 12C12 12 9 7 12 3c3 4 0 9 0 9z" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </Svg>
+                </View>
+                <View style={styles.featureTextCol}>
+                  <View style={styles.featureTitleRow}>
+                    <Text style={styles.featureItemTitle}>Zen Breath & Soundscapes</Text>
+                    <View style={[styles.featureTagPill, { backgroundColor: '#D1FAE5' }]}>
+                      <Text style={[styles.featureTagText, { color: '#065F46' }]}>HAPTIC PACING</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.featureItemDesc}>
+                    Guided breathwork with somatic vibration pulses & background binaural beats.
+                  </Text>
+                </View>
+                <Switch
+                  value={mindfulnessEnabled}
+                  onValueChange={(val) => handleToggleFeature(setMindfulnessEnabled, val)}
+                  trackColor={{ false: '#E2E8F0', true: '#CCE6DE' }}
+                  thumbColor={mindfulnessEnabled ? '#1F382E' : '#FFFFFF'}
+                />
+              </View>
+            </View>
+
+            {/* Anatomical Body Analysis */}
+            <View style={styles.featureItemCard}>
+              <View style={styles.featureItemRow}>
+                <View style={[styles.featureIconWrap, { backgroundColor: '#EDE9FE' }]}>
+                  <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <Path
+                      d="M6 5.5C7.2 4 9.5 3.5 12 3.5s4.8.5 6 2c1 1.2.9 2.8.2 4.2L17 12c-.5.9-.6 1.8-.5 2.7l.5 4.3c0 .8-.6 1.5-1.5 1.5H8.5c-.9 0-1.5-.7-1.5-1.5l.5-4.3c.1-.9 0-1.8-.5-2.7L5.8 9.7C5.1 8.3 5 6.7 6 5.5z"
+                      stroke="#7C3AED"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <Path d="M8.5 9.5c1 1.2 2.2 1.8 3.5 1.8s2.5-.6 3.5-1.8" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" />
+                  </Svg>
+                </View>
+                <View style={styles.featureTextCol}>
+                  <View style={styles.featureTitleRow}>
+                    <Text style={styles.featureItemTitle}>Body Recovery Heatmap</Text>
+                    <View style={[styles.featureTagPill, { backgroundColor: '#EDE9FE' }]}>
+                      <Text style={[styles.featureTagText, { color: '#6D28D9' }]}>3D MAP</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.featureItemDesc}>
+                    Interactive muscle recovery visualization & fatigue timers from workouts.
+                  </Text>
+                </View>
+                <Switch
+                  value={bodyAnalysisEnabled}
+                  onValueChange={(val) => handleToggleFeature(setBodyAnalysisEnabled, val)}
+                  trackColor={{ false: '#E2E8F0', true: '#CCE6DE' }}
+                  thumbColor={bodyAnalysisEnabled ? '#1F382E' : '#FFFFFF'}
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* Privacy & Hardware Trust Badge */}
+          <View style={styles.trustBanner}>
+            <Svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ marginRight: 6 }}>
+              <Rect x="3" y="11" width="18" height="11" rx="2" stroke="#1F382E" strokeWidth="2" fill="#E8F4F0" />
+              <Path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#1F382E" strokeWidth="2" strokeLinecap="round" />
+            </Svg>
+            <Text style={styles.trustBannerText}>
+              Preferences stored in local encrypted vault. You can toggle any feature in Settings anytime.
+            </Text>
+          </View>
+
           {/* Bottom Confirmation Action Button */}
           <TouchableOpacity
             style={styles.primaryPillBtn}
             onPress={handleComplete}
             activeOpacity={0.88}
           >
-            <Text style={styles.primaryPillBtnText}>
-              {initialStep === 2 ? 'Save Targets & Return to App' : 'Complete Setup & Enter App'}
-            </Text>
+            <Text style={styles.primaryPillBtnText}>Complete Setup & Launch</Text>
             <View style={styles.whiteArrowCircle}>
               <Svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <Path
@@ -1030,5 +1387,147 @@ const styles = StyleSheet.create({
   presetChipSubLavenderSelected: {
     color: '#3B2D54',
     fontWeight: '700',
+  },
+  secondarySaveBtn: {
+    alignItems: 'center',
+    paddingVertical: 14,
+    marginTop: 4,
+  },
+  secondarySaveBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#63706B',
+  },
+  featureSection: {
+    marginBottom: 20,
+  },
+  featureItemCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 15,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(24, 28, 27, 0.06)',
+    shadowColor: '#181C1B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  featureItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  featureIconWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  featureTextCol: {
+    flex: 1,
+    marginLeft: 12,
+    marginRight: 8,
+  },
+  featureTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  featureItemTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#141816',
+  },
+  featureTagPill: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  featureTagText: {
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  featureItemDesc: {
+    fontSize: 11.5,
+    color: '#63706B',
+    lineHeight: 16,
+    marginTop: 2,
+  },
+  topProgressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 10,
+    backgroundColor: '#F8FAFA',
+    gap: 12,
+  },
+  topBrandPill: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#E3F1EC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(31, 56, 46, 0.08)',
+  },
+  topBrandEmoji: {
+    fontSize: 16,
+  },
+  topProgressBackBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(24, 28, 27, 0.08)',
+    shadowColor: '#181C1B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  progressBarWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  segmentTrackRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  segmentBar: {
+    flex: 1,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#E2E8F0',
+  },
+  segmentBarActive: {
+    backgroundColor: '#1F382E',
+  },
+  stepFractionBadge: {
+    backgroundColor: '#E3F1EC',
+    paddingHorizontal: 11,
+    paddingVertical: 5,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(31, 56, 46, 0.12)',
+  },
+  stepFractionText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#152920',
+    letterSpacing: 0.5,
+  },
+  stepPillRow: {
+    marginBottom: 12,
   },
 });

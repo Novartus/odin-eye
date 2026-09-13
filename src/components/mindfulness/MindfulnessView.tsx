@@ -23,6 +23,7 @@ import {
   SoundscapeItem,
 } from '../../services/mindfulness/mindfulnessService';
 import { credentialsStorage } from '../../services/storage/credentialsStorage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ambientAudioService } from '../../services/audio/ambientAudioService';
 
 // ─── Types & Data ─────────────────────────────────────────────────────────────
@@ -304,6 +305,7 @@ const MoodFaceIcon: React.FC<{ moodId: string; color?: string; size?: number }> 
 // ─── Main Mindfulness View Component ──────────────────────────────────────────
 
 export const MindfulnessView: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const [selectedTechnique, setSelectedTechnique] = useState<BreathTechnique>(TECHNIQUES[0]);
   const [selectedDateKey, setSelectedDateKey] = useState<string>(mindfulnessService.getTodayKey());
   const [activeSoundscape, setActiveSoundscape] = useState<SoundscapeItem>(SOUNDSCAPES[0]);
@@ -623,7 +625,10 @@ export const MindfulnessView: React.FC = () => {
     <View style={styles.container}>
       <ScrollView
         style={styles.container}
-        contentContainerStyle={styles.mainScroll}
+        contentContainerStyle={[
+          styles.mainScroll,
+          { paddingBottom: Math.max(insets.bottom + 70, 120) },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         {/* 1. Top Header Banner with Streak Badge */}
@@ -826,7 +831,15 @@ export const MindfulnessView: React.FC = () => {
         onRequestClose={handleStopSession}
       >
         <StatusBar barStyle="dark-content" backgroundColor={selectedTechnique.bgColor} />
-        <View style={[styles.immersiveModalContainer, { backgroundColor: selectedTechnique.bgColor }]}>
+        <View
+          style={[
+            styles.immersiveModalContainer,
+            {
+              backgroundColor: selectedTechnique.bgColor,
+              paddingBottom: Math.max(insets.bottom + 16, 44),
+            },
+          ]}
+        >
           {/* Subtle Decorative Ambient Background Blobs (Reference Image 1) */}
           <View style={[styles.ambientSoftDisc1, { backgroundColor: selectedTechnique.outerRingColor }]} />
           <View style={[styles.ambientSoftDisc2, { backgroundColor: selectedTechnique.outerRingColor }]} />

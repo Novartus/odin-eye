@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Vibration } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { TabKey } from '../../types/navigation';
 export { TabKey } from '../../types/navigation';
@@ -24,6 +25,14 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = React.memo(({
   showBodyAnalysisTab = true,
   showMindfulnessTab = true,
 }) => {
+  const insets = useSafeAreaInsets();
+
+  // Detect whether the device has an on-screen navigation bar (3-button [Back, Home, Recent] or gesture bar).
+  // On Android with 3-button navigation, insets.bottom is typically ~48dp.
+  // On gesture navigation, insets.bottom is typically ~16-24dp (or 34dp on modern iPhones).
+  // If an on-screen navigation bar exists (insets.bottom > 0), we elevate the floating capsule above it with 10dp breathing room.
+  // If insets.bottom is 0 (hardware buttons or edge-to-edge off), we use a clean 20dp baseline.
+  const dynamicBottom = Math.max(insets.bottom + 10, 20);
   const allTabs: TabItemConfig[] = [
     { key: 'home', label: 'Home' },
     { key: 'meds', label: 'Meds' },
@@ -186,7 +195,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = React.memo(({
   };
 
   return (
-    <View style={styles.floatingContainer} pointerEvents="box-none">
+    <View style={[styles.floatingContainer, { bottom: dynamicBottom }]} pointerEvents="box-none">
       <View style={styles.capsule}>
         {tabs.map((tab) => {
           const isActive = activeTab === tab.key;

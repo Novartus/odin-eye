@@ -61,15 +61,15 @@ export const MetricCardsGrid: React.FC<MetricCardsGridProps> = ({
   if (hasLiveFitbitWorkout && cardio.averageWorkoutHeartRate) {
     heartRateSource = 'Fitbit';
   } else if (recovery.currentHeartRate) {
-    heartRateSource = isHealthConnectRecovery ? 'Health Connect' : 'Ring AIR';
+    heartRateSource = (enabledSources.ultrahuman && !isHealthConnectRecovery) ? 'Ring AIR' : 'Health Connect';
   } else if (recovery.restingHeartRate) {
-    heartRateSource = isHealthConnectRecovery ? 'Health Connect (RHR)' : 'Ring AIR (RHR)';
+    heartRateSource = (enabledSources.ultrahuman && !isHealthConnectRecovery) ? 'Ring AIR (RHR)' : 'Health Connect (RHR)';
   }
 
   // Recovery Index: Real score
   const recoveryVal = recovery.recoveryScore > 0 ? `${recovery.recoveryScore}` : '—';
   const recoverySource = recovery.recoveryScore > 0
-    ? (isHealthConnectRecovery ? 'Health Connect' : 'Ring AIR')
+    ? ((enabledSources.ultrahuman && !isHealthConnectRecovery) ? 'Ring AIR' : 'Health Connect')
     : 'Awaiting sync';
 
   // Strength Volume: Real Hevy tonnage
@@ -211,7 +211,19 @@ export const MetricCardsGrid: React.FC<MetricCardsGridProps> = ({
               <View style={styles.lilacPill}>
                 <Text style={styles.lilacPillText}>Recovery</Text>
               </View>
-              <SmartRingIcon size={16} color="#4A4560" accentColor="#7C73A8" />
+              {enabledSources.ultrahuman ? (
+                <SmartRingIcon size={16} color="#4A4560" accentColor="#7C73A8" />
+              ) : (
+                <Svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M22 12h-4l-3 9L9 3l-3 9H2"
+                    stroke="#4A4560"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+              )}
             </View>
 
             <View style={styles.lilacContentCenter}>
@@ -372,6 +384,7 @@ export const MetricCardsGrid: React.FC<MetricCardsGridProps> = ({
         metricType={selectedMetric}
         onClose={() => setSelectedMetric(null)}
         data={data}
+        enabledSources={enabledSources}
       />
     </View>
   );
