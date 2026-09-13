@@ -99,9 +99,9 @@ class OdinEyeWidgetModule(private val reactContext: ReactApplicationContext) : R
     @ReactMethod
     fun getRequestedTab(promise: Promise) {
         try {
-            val intentTab = currentActivity?.intent?.getStringExtra("open_tab")
+            val intentTab = reactContext.currentActivity?.intent?.getStringExtra("open_tab")
             if (intentTab != null) {
-                currentActivity?.intent?.removeExtra("open_tab")
+                reactContext.currentActivity?.intent?.removeExtra("open_tab")
                 promise.resolve(intentTab)
                 return
             }

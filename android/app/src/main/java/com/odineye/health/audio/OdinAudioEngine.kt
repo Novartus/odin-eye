@@ -84,13 +84,13 @@ class OdinAudioEngine {
         try {
             synthesisThread?.interrupt()
             synthesisThread?.join(300)
-        } catch (_: Exception) {}
+        } catch (e: Exception) {}
         synthesisThread = null
 
         try {
             audioTrack?.stop()
             audioTrack?.release()
-        } catch (_: Exception) {}
+        } catch (e: Exception) {}
         audioTrack = null
     }
 

@@ -56,7 +56,7 @@ class ZenVitalsWidgetProvider : AppWidgetProvider() {
         val progressPercent = if (stepGoal > 0) ((steps.toFloat() / stepGoal) * 100).toInt().coerceIn(0, 100) else 0
         views.setProgressBar(R.id.widget_step_progress, 100, progressPercent, false)
 
-        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val pendingFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         } else {
             PendingIntent.FLAG_UPDATE_CURRENT
@@ -65,19 +65,19 @@ class ZenVitalsWidgetProvider : AppWidgetProvider() {
         // Tap on "Breathe" button -> Open app directly to Zen tab
         val zenIntent = Intent(context, MainActivity::class.java).apply {
             action = Intent.ACTION_VIEW
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             putExtra("open_tab", "zen")
         }
-        val zenPendingIntent = PendingIntent.getActivity(context, 201, zenIntent, flags)
+        val zenPendingIntent = PendingIntent.getActivity(context, 201, zenIntent, pendingFlags)
         views.setOnClickPendingIntent(R.id.widget_breathe_btn, zenPendingIntent)
 
         // Tap on widget card -> Open app to Home / Zen tab
         val cardIntent = Intent(context, MainActivity::class.java).apply {
             action = Intent.ACTION_VIEW
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             putExtra("open_tab", "zen")
         }
-        val cardPendingIntent = PendingIntent.getActivity(context, 202, cardIntent, flags)
+        val cardPendingIntent = PendingIntent.getActivity(context, 202, cardIntent, pendingFlags)
         views.setOnClickPendingIntent(R.id.widget_card_container, cardPendingIntent)
 
         appWidgetManager.updateAppWidget(appWidgetId, views)

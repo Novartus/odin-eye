@@ -81,7 +81,7 @@ class PillReminderWidgetProvider : AppWidgetProvider() {
         }
 
         // Tap on Take button -> Broadcast to mark dose taken
-        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val pendingFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         } else {
             PendingIntent.FLAG_UPDATE_CURRENT
@@ -90,16 +90,16 @@ class PillReminderWidgetProvider : AppWidgetProvider() {
         val takeIntent = Intent(context, PillReminderWidgetProvider::class.java).apply {
             action = ACTION_TAKE_PILL
         }
-        val takePendingIntent = PendingIntent.getBroadcast(context, 101, takeIntent, flags)
+        val takePendingIntent = PendingIntent.getBroadcast(context, 101, takeIntent, pendingFlags)
         views.setOnClickPendingIntent(R.id.widget_take_btn, takePendingIntent)
 
         // Tap on widget card -> Open app to Meds tab
         val launchIntent = Intent(context, MainActivity::class.java).apply {
             action = Intent.ACTION_VIEW
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             putExtra("open_tab", "meds")
         }
-        val launchPendingIntent = PendingIntent.getActivity(context, 102, launchIntent, flags)
+        val launchPendingIntent = PendingIntent.getActivity(context, 102, launchIntent, pendingFlags)
         views.setOnClickPendingIntent(R.id.widget_card_container, launchPendingIntent)
 
         appWidgetManager.updateAppWidget(appWidgetId, views)
