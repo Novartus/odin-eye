@@ -9,7 +9,6 @@ import { medicationNotificationService } from './medicationNotificationService';
 
 import {
   Medication,
-  MedicationForm,
   ScheduledDoseItem,
   ReminderAlertEvent,
 } from './medicationTypes';
@@ -17,8 +16,6 @@ export * from './medicationTypes';
 
 const STORAGE_KEY = 'odineye_medications_data_v2';
 const FILE_BACKUP_NAME = 'odineye_medications_backup.json';
-
-const DEFAULT_MEDICATIONS: Medication[] = [];
 
 type ReminderListener = (alert: ReminderAlertEvent) => void;
 
@@ -138,6 +135,25 @@ class MedicationService {
     // 3. Sync OS-level background alarms so notifications fire when app is closed
     const activeMeds = this.medications.filter((m) => !m.isArchived);
     medicationNotificationService.scheduleAllMedicationAlarms(activeMeds).catch(() => {});
+
+    this.notify();
+  }
+
+  private listeners: (() => void)[] = [];
+
+  public subscribe(listener: () => void): () => void {
+    this.listeners.push(listener);
+    return () => {
+      this.listeners = this.listeners.filter((l) => l !== listener);
+    };
+  }
+
+  private notify() {
+    for (const l of this.listeners) {
+      try {
+        l();
+      } catch {}
+    }
   }
 
   public getMedicationsSync(): Medication[] {

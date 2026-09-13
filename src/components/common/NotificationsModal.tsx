@@ -13,7 +13,6 @@ import {
   Vibration,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { Colors } from '../../theme/colors';
 import { medicationService, ScheduledDoseItem } from '../../services/medication/medicationService';
 import { medicationNotificationService } from '../../services/medication/medicationNotificationService';
 

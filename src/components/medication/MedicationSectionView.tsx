@@ -11,11 +11,9 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
-  Platform,
   Alert,
 } from 'react-native';
-import Svg, { Path, Circle } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 import { Colors } from '../../theme/colors';
 import {
   Medication,
@@ -23,7 +21,6 @@ import {
   ReminderAlertEvent,
   medicationService,
 } from '../../services/medication/medicationService';
-import { medicationNotificationService } from '../../services/medication/medicationNotificationService';
 import {
   TabletIcon,
   CapsuleIcon,
@@ -261,20 +258,8 @@ export const MedicationSectionView: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* Top Header: Profile Avatar, Test Reminder Alert button, and Edit & (+) Add Buttons */}
+      {/* Top Header: Edit & (+) Add Buttons */}
       <View style={styles.topHeader}>
-        <View style={styles.avatarCircle}>
-          <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <Path
-              d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
-              stroke={Colors.bentoMintDark}
-              strokeWidth="2.2"
-              strokeLinecap="round"
-            />
-            <Circle cx="12" cy="7" r="4" stroke={Colors.bentoMintDark} strokeWidth="2.2" />
-          </Svg>
-        </View>
-
         <View style={styles.headerRightActions}>
           {/* Quick Edit Schedule Routine Button */}
           <TouchableOpacity
@@ -712,23 +697,8 @@ const styles = StyleSheet.create({
   topHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     marginBottom: 16,
-  },
-  avatarCircle: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#D5E5DF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(44, 74, 62, 0.1)',
-    shadowColor: '#1F342C',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
   },
   headerRightActions: {
     flexDirection: 'row',

@@ -45,5 +45,31 @@
         <category android:name="android.intent.category.HEALTH_PERMISSIONS"/>
       </intent-filter>
     </activity-alias>
+
+    <!-- OdinEye Home Screen Widgets -->
+    <receiver
+        android:name=".widget.PillReminderWidgetProvider"
+        android:label="OdinEye Medication"
+        android:exported="true">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="com.odineye.health.widget.ACTION_TAKE_PILL" />
+      </intent-filter>
+      <meta-data
+          android:name="android.appwidget.provider"
+          android:resource="@xml/widget_pill_reminder_info" />
+    </receiver>
+
+    <receiver
+        android:name=".widget.ZenVitalsWidgetProvider"
+        android:label="OdinEye Zen &amp; Vitals"
+        android:exported="true">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+          android:name="android.appwidget.provider"
+          android:resource="@xml/widget_zen_vitals_info" />
+    </receiver>
   </application>
 </manifest>

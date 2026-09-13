@@ -4,7 +4,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { Colors } from '../../theme/colors';
 import { medicationService, ScheduledDoseItem } from '../../services/medication/medicationService';
 import { CheckCircleIcon, TabletIcon, CapsuleIcon, DropletIcon } from '../medication/MedicationIcons';
 

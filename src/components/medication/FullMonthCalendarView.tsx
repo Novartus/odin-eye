@@ -58,7 +58,7 @@ export const FullMonthCalendarView: React.FC<FullMonthCalendarViewProps> = ({
   };
 
   const handleJumpToToday = () => {
-    const [y, m, d] = todayKey.split('-').map(Number);
+    const [y, m] = todayKey.split('-').map(Number);
     setViewYear(y);
     setViewMonth(m);
     onSelectDate(todayKey);

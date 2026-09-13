@@ -9,10 +9,8 @@ import {
   StyleSheet,
   Modal,
   TouchableOpacity,
-  Animated,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { Colors } from '../../theme/colors';
 import { ReminderAlertEvent, medicationService } from '../../services/medication/medicationService';
 import { TabletIcon, CapsuleIcon, DropletIcon, InjectionIcon } from './MedicationIcons';
 

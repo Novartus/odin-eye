@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OdinEye — Privacy Policy</title>
+  <style>
+    :root {
+      --bg: #F8FAFA;
+      --surface: #FFFFFF;
+      --primary: #1F382E;
+      --secondary: #63706B;
+      --mint: #CCE6DE;
+      --mint-light: #EAF2EE;
+      --peach: #FAF5EE;
+      --border: rgba(31, 56, 46, 0.08);
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: #141816;
+      font-family: var(--font);
+      line-height: 1.65;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      background: var(--surface);
+      border-radius: 28px;
+      padding: 48px;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 30px rgba(31, 56, 46, 0.04);
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+      margin-bottom: 32px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--mint-light);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .meta {
+      font-size: 13px;
+      color: var(--secondary);
+      font-weight: 600;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-top: 36px;
+      margin-bottom: 14px;
+      border-left: 4px solid var(--primary);
+      padding-left: 12px;
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #141816;
+      margin-top: 20px;
+      margin-bottom: 8px;
+    }
+
+    p,
+    li {
+      font-size: 14px;
+      color: #333C38;
+      margin-bottom: 12px;
+    }
+
+    ul,
+    ol {
+      padding-left: 24px;
+      margin-bottom: 16px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    .alert-box {
+      background: var(--mint-light);
+      border-radius: 18px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 1px solid rgba(31, 56, 46, 0.12);
+    }
+
+    .alert-box h4 {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    .alert-box p {
+      margin-bottom: 0;
+      font-size: 13px;
+      color: #244237;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: #F4F8F6;
+      color: var(--primary);
+      font-weight: 800;
+    }
+
+    code {
+      background: #EFF3F1;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: monospace;
+      color: var(--primary);
+    }
+
+    footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 12px;
+      color: var(--secondary);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <span class="badge">Privacy Policy & Health Data Governance</span>
+      <h1>OdinEye Privacy Policy</h1>
+      <div class="meta">
+        <strong>Application:</strong> OdinEye (com.odineye.health) &bull;
+        <strong>Effective Date:</strong> September 13, 2026 &bull;
+        <strong>Contact:</strong> N/A
+      </div>
+    </header>
+
+    <h2>1. Core Architecture: Local-First & Zero-Knowledge</h2>
+    <p>OdinEye is engineered on a strict <strong>local-first computing architecture</strong>. We do not operate, host,
+      or maintain centralized cloud servers, tracking pixels, or remote databases that collect, transmit, or process
+      your personal health records.</p>
+    <div class="alert-box">
+      <h4>Zero Plaintext & Zero Monetization Guarantee</h4>
+      <p>Your health and biometric data remains exclusively on your Android device in hardware-isolated encrypted
+        storage. We never sell, lease, broker, trade, or monetize your health information under any circumstances.</p>
+    </div>
+
+    <h2>2. Android Health Connect Data (Read-Only)</h2>
+    <p>With your explicit, granular permission, OdinEye accesses data from Android Health Connect strictly in
+      <strong>read-only mode</strong> to synthesize your daily recovery score, activity pillars, and sleep telemetry:
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Data Category</th>
+          <th>Android Health Permission</th>
+          <th>Purpose in Application</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Sleep</strong></td>
+          <td><code>android.permission.health.READ_SLEEP</code></td>
+          <td>Sleep duration, cycles, and restorative index</td>
+        </tr>
+        <tr>
+          <td><strong>Heart Rate & RHR</strong></td>
+          <td><code>READ_HEART_RATE</code>, <code>READ_RESTING_HEART_RATE</code></td>
+          <td>Cardiovascular strain & recovery baselines</td>
+        </tr>
+        <tr>
+          <td><strong>HRV</strong></td>
+          <td><code>READ_HEART_RATE_VARIABILITY</code></td>
+          <td>Autonomic nervous system readiness & HRV trends</td>
+        </tr>
+        <tr>
+          <td><strong>Exercise</strong></td>
+          <td><code>android.permission.health.READ_EXERCISE</code></td>
+          <td>Workout duration and muscle fatigue timers</td>
+        </tr>
+        <tr>
+          <td><strong>Calories</strong></td>
+          <td><code>READ_ACTIVE_CALORIES_BURNED</code>, <code>READ_TOTAL_CALORIES_BURNED</code></td>
+          <td>Daily energy expenditure equilibrium</td>
+        </tr>
+        <tr>
+          <td><strong>Steps & Distance</strong></td>
+          <td><code>READ_STEPS</code>, <code>READ_DISTANCE</code></td>
+          <td>Daily step targets & walking volume</td>
+        </tr>
+        <tr>
+          <td><strong>Vitals</strong></td>
+          <td><code>READ_SKIN_TEMPERATURE</code>, <code>READ_OXYGEN_SATURATION</code>,
+            <code>READ_RESPIRATORY_RATE</code>
+          </td>
+          <td>Nocturnal recovery & respiratory equilibrium</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>3. Google Play Health Connect Policy & Limited Use Disclosure</h2>
+    <p>OdinEye strictly complies with the <strong>Google Play Health Connect Permissions Policy</strong>, including the
+      <strong>Limited Use Requirements</strong>:
+    </p>
+    <ul>
+      <li><strong>Specific Permitted Use:</strong> Health Connect data is accessed solely to provide user-facing
+        wellness, fitness, and recovery features visible directly inside the OdinEye user interface.</li>
+      <li><strong>No Commercial Sale or Transfer:</strong> Health Connect data is <strong>never</strong> sold, rented,
+        leased, traded, or transferred to any third party, data broker, advertising exchange, or data aggregator.</li>
+      <li><strong>No Advertising or Marketing:</strong> Health Connect data is <strong>never</strong> used or disclosed
+        for advertising, retargeting, promotional communications, profiling, or interest-based marketing.</li>
+      <li><strong>No Creditworthiness or Lending Evaluation:</strong> Health Connect data is <strong>never</strong> used
+        to assess, determine, or evaluate creditworthiness, consumer credit eligibility, or lending terms.</li>
+      <li><strong>Prohibition of Human Access:</strong> No human is permitted to read user Health Connect data unless
+        explicit user consent is provided for technical support, required by law, or aggregated and de-identified.</li>
+    </ul>
+
+    <h2>4. AI Coach & Telemetry Processing</h2>
+    <ul>
+      <li><strong>On-Device AI (Android AICore / Gemini Nano):</strong> Whenever supported by your hardware, AI
+        inference runs 100% locally inside device NPU memory. Biometrics never leave the device.</li>
+      <li><strong>Offline Rule Engine:</strong> A built-in sports science knowledge base operates entirely offline with
+        zero network connectivity.</li>
+      <li><strong>Optional Cloud Gemini API:</strong> If you supply your personal Gemini API key, requests are sent
+        directly via encrypted HTTPS to Google AI Studio. You can disable AI at any time in Config.</li>
+    </ul>
+
+    <h2>5. Data Retention & Unilateral User Deletion</h2>
+    <p>Because all data is stored on-device and not on remote servers, you maintain complete unilateral control:</p>
+    <ul>
+      <li><strong>In-App Data Deletion:</strong> Open OdinEye &rarr; <strong>Config</strong> &rarr; <strong>Category 04
+          (Vault Audit)</strong> &rarr; Tap <strong>Wipe Vault & Delete Keys</strong>. All tokens, medication records,
+        mindfulness streak logs, and local caches are instantly and permanently erased.</li>
+      <li><strong>App Uninstall:</strong> Uninstalling OdinEye from your Android device immediately destroys all
+        sandboxed local databases and encrypted keys.</li>
+    </ul>
+
+    <h2>6. Legal Rights (GDPR & CCPA / CPRA)</h2>
+    <p>Users in the European Union (GDPR) and California (CCPA/CPRA) possess full rights to access, rectify, port, and
+      delete their data. We do not sell or share personal or sensitive health data.</p>
+
+    <h2>7. Medical Advice Disclaimer</h2>
+    <div class="alert-box">
+      <h4>Informational & Wellness Purposes Only</h4>
+      <p>OdinEye is not a certified medical device and is not evaluated by the FDA or EMA. It is not intended to
+        diagnose, treat, cure, or prevent any disease. Always consult a certified physician for medical decisions.</p>
+    </div>
+
+    <h2>8. Contact Information</h2>
+    <p>If you have any questions regarding this Privacy Policy or our data governance, please contact us at:</p>
+    <p><strong>OdinEye Health Operations</strong><br>
+      Email: <code>N/A</code><br>
+      Repository: <code>https://github.com/Novartus/odin-eye</code></p>
+
+    <footer>
+      &copy; 2026 OdinEye Health. All rights reserved. Built with privacy-by-design principles.
+    </footer>
+  </div>
+</body>
+
+</html>

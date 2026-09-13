@@ -1,7 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Easing } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { Colors } from '../../theme/colors';
 
 interface HomeTopBarProps {
   onOpenSettings: () => void;

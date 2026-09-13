@@ -11,6 +11,8 @@ import {
   Keyboard,
   Platform,
   RefreshControl,
+  AppState,
+  Vibration,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
@@ -21,6 +23,7 @@ import { Colors } from '../theme/colors';
 import { HomeTopBar } from '../components/home/HomeTopBar';
 import { MetricCardsGrid } from '../components/home/MetricCardsGrid';
 import { TodayWellnessCard } from '../components/home/TodayWellnessCard';
+import { SleepArchitectureBentoCard } from '../components/home/SleepArchitectureBentoCard';
 import { TodayInsightCard } from '../components/home/TodayInsightCard';
 import { HealthOverviewView } from '../components/overview/HealthOverviewView';
 import { BodyAnalysisView } from '../components/body/BodyAnalysisView';
@@ -32,13 +35,16 @@ import { liveHealthService } from '../services/live/liveHealthService';
 import { HealthConnectPromptModal } from '../components/common/HealthConnectPromptModal';
 import { DevModeBanner } from '../components/common/DevModeBanner';
 import { MedicationSectionView } from '../components/medication/MedicationSectionView';
+import { MindfulnessView } from '../components/mindfulness/MindfulnessView';
 import { TodayMedicationCard } from '../components/home/TodayMedicationCard';
+import { TodayZenCard } from '../components/home/TodayZenCard';
 import { MedicationReminderAlertModal } from '../components/medication/MedicationReminderAlertModal';
 import { NotificationsModal } from '../components/common/NotificationsModal';
 import { healthConnect } from '../services/healthConnect/healthConnectService';
 import { credentialsStorage } from '../services/storage/credentialsStorage';
 import { medicationService } from '../services/medication/medicationService';
 import { medicationNotificationService } from '../services/medication/medicationNotificationService';
+import { widgetSyncService } from '../services/widgets/widgetSyncService';
 
 interface DashboardScreenProps {
   onResetOnboarding?: () => void;
@@ -54,6 +60,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
   // User Goals from Onboarding / Settings
   const [dailyStepsGoal, setDailyStepsGoal] = useState(10000);
   const [dailyCaloriesGoal, setDailyCaloriesGoal] = useState(500);
+  const [targetSleepGoal, setTargetSleepGoal] = useState(8.0);
 
   // Manual Sync & Device Sources State
   const [isSyncing, setIsSyncing] = useState(false);
@@ -70,6 +77,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
   // Body Analysis State (Optional Biomechanical & Muscle Clock Modules)
   const [isBodyAnalysisEnabled, setIsBodyAnalysisEnabled] = useState(true);
 
+  // Mindfulness & Breathing State (Optional Zen Module)
+  const [isMindfulnessEnabled, setIsMindfulnessEnabled] = useState(true);
+
   // Health Connect Read-Only Permission Prompt State
   const [showHealthConnectModal, setShowHealthConnectModal] = useState(false);
   const [isHealthConnectConnected, setIsHealthConnectConnected] = useState(
@@ -84,6 +94,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
   // Fluid 60 FPS tab transition without layout jumping
   const switchTab = (nextTab: TabKey) => {
     if (nextTab === activeTab) return;
+    try {
+      Vibration.vibrate(28);
+    } catch {}
     Animated.timing(tabFadeAnim, {
       toValue: 0,
       duration: 70,
@@ -102,6 +115,14 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
   const handleToggleBodyAnalysis = (val: boolean) => {
     setIsBodyAnalysisEnabled(val);
     if (!val && activeTab === 'body') {
+      switchTab('home');
+    }
+  };
+
+  const handleToggleMindfulness = (val: boolean) => {
+    setIsMindfulnessEnabled(val);
+    credentialsStorage.saveCredentials({ mindfulnessEnabled: val });
+    if (!val && activeTab === 'zen') {
       switchTab('home');
     }
   };
@@ -145,13 +166,42 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
       if (creds.bodyAnalysisEnabled !== undefined) {
         setIsBodyAnalysisEnabled(creds.bodyAnalysisEnabled);
       }
+      if (creds.mindfulnessEnabled !== undefined) {
+        setIsMindfulnessEnabled(creds.mindfulnessEnabled);
+      }
       if (creds.dailyStepsGoal) {
         setDailyStepsGoal(creds.dailyStepsGoal);
       }
       if (creds.dailyCaloriesGoal) {
         setDailyCaloriesGoal(creds.dailyCaloriesGoal);
       }
+      if (creds.targetSleepDurationHours) {
+        setTargetSleepGoal(creds.targetSleepDurationHours);
+      }
     });
+
+    // Initialize Android Home Screen AppWidgets synchronization & deep-link check
+    widgetSyncService.init();
+    widgetSyncService.getRequestedTab().then((tab) => {
+      if (tab === 'meds' || tab === 'zen') {
+        switchTab(tab as TabKey);
+      }
+    });
+
+    const appStateSub = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') {
+        widgetSyncService.processPendingWidgetActions();
+        widgetSyncService.getRequestedTab().then((tab) => {
+          if (tab === 'meds' || tab === 'zen') {
+            switchTab(tab as TabKey);
+          }
+        });
+      }
+    });
+
+    return () => {
+      appStateSub.remove();
+    };
   }, []);
 
   // Subscribe to live telemetry updates from Hevy, Ultrahuman, Fitbit, and Health Connect
@@ -301,6 +351,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
               {activeTab === 'meds' && 'Meds'}
               {activeTab === 'overview' && 'Vitals'}
               {activeTab === 'body' && 'Body'}
+              {activeTab === 'zen' && 'Zen'}
               {activeTab === 'coach' && 'AI'}
               {activeTab === 'settings' && 'Config'}
             </Text>
@@ -454,8 +505,19 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
                   tonnageKg={data.strength.todayWorkout?.totalVolumeKg || data.strength.weeklyVolumeKg}
                   onPress={() => switchTab('overview')}
                 />
+                {/* 7-Day Sleep Debt & Physical vs. Cognitive Sleep Architecture */}
+                <SleepArchitectureBentoCard
+                  recovery={data.recovery}
+                  targetSleepHours={targetSleepGoal}
+                  onPress={() => switchTab('overview')}
+                />
                 {/* Today's Medication Overview Quick Widget */}
                 <TodayMedicationCard onOpenMedications={() => switchTab('meds')} />
+
+                {/* Today's Mindfulness & Zen Quick Widget */}
+                {isMindfulnessEnabled && (
+                  <TodayZenCard onOpenZen={() => switchTab('zen')} />
+                )}
 
                 {isAiEnabled && (
                   <TodayInsightCard
@@ -495,6 +557,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
               </>
             )}
 
+            {/* 5. ZEN — MINDFULNESS & BREATHING SCREEN */}
+            {activeTab === 'zen' && (
+              <MindfulnessView />
+            )}
+
             {/* 4. SETTINGS & DEVICES SCREEN (Smooth In-Place View, No Jarring Modal) */}
             {activeTab === 'settings' && (
               <SettingsView
@@ -508,6 +575,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
                 onToggleAi={setIsAiEnabled}
                 bodyAnalysisEnabled={isBodyAnalysisEnabled}
                 onToggleBodyAnalysis={handleToggleBodyAnalysis}
+                mindfulnessEnabled={isMindfulnessEnabled}
+                onToggleMindfulness={handleToggleMindfulness}
                 onResetOnboarding={onResetOnboarding}
               />
             )}
@@ -524,6 +593,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
           onSelectTab={(tab) => switchTab(tab)}
           showAiTab={isAiEnabled}
           showBodyAnalysisTab={isBodyAnalysisEnabled}
+          showMindfulnessTab={isMindfulnessEnabled}
         />
       )}
 

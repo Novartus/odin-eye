@@ -12,10 +12,17 @@ export interface SavedCredentials {
   aiProvider?: 'gemini_nano' | 'ondevice' | 'gemini' | 'openai';
   aiEnabled?: boolean;
   bodyAnalysisEnabled?: boolean;
+  mindfulnessEnabled?: boolean;
+  dailyMindfulnessGoal?: number;
+  mindfulnessAmbientSound?: string;
+  mindfulnessVolume?: number;
+  todayMood?: string;
   lastSyncTime?: string;
   hasCompletedOnboarding?: boolean;
   dailyStepsGoal?: number;
   dailyCaloriesGoal?: number;
+  targetSleepDurationHours?: number;
+  hapticBreathPacingEnabled?: boolean;
 }
 
 export interface SecurityVaultStatus {

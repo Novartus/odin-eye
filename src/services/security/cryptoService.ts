@@ -47,8 +47,8 @@ export class CryptoService {
       'sha256'
     );
 
-    const encKey = derivedBytes.substring(0, 32);
-    const macKey = derivedBytes.substring(32, 64);
+    const encKey = derivedBytes.substring(0, this.KEY_LENGTH_BYTES);
+    const macKey = derivedBytes.substring(this.KEY_LENGTH_BYTES, this.KEY_LENGTH_BYTES * 2);
     return { encKey, macKey };
   }
 

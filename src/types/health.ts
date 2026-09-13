@@ -1,7 +1,6 @@
 // Unified Health Data Models for Ultrahuman, Fitbit, and Hevy
 
 export { DeviceSource, DeviceMetadata, EnabledSources, SyncReport, TelemetryListener } from './devices';
-import { DeviceSource, DeviceMetadata } from './devices';
 
 // 1. Ultrahuman Ring AIR: Passive Biological Recovery & Circadian
 export interface SleepStageRecord {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { TriPillarHealthSummary } from '../../types/health';
-import { Colors } from '../../theme/colors';
 import { SmartRingIcon } from '../common/SmartRingIcon';
 import { SleepBarChart } from '../sleep/SleepBarChart';
 import { sleepHistoryService } from '../../services/sleep/sleepHistoryService';
@@ -52,7 +51,6 @@ export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = (
   let scoreUnit = 'Out of 100';
   let scoreStatus = 'No Data';
   let outerPct = 0;
-  let innerPct = 0;
   let diskVal = '—';
   let diskSub = 'pct';
   let rangePos: DimensionValue = '10%';
@@ -83,7 +81,6 @@ export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = (
         ? recovery.recoveryScore >= 80 ? 'Optimal Recovery' : recovery.recoveryScore >= 60 ? 'Moderate Recovery' : 'Rest Advised'
         : 'Awaiting Telemetry';
       outerPct = recovery.recoveryScore || 0;
-      innerPct = recovery.sleepIndex || 0;
       diskVal = hasRecovery ? `${outerPct}%` : '0%';
       diskSub = 'readiness';
       rangePos = hasRecovery ? `${Math.min(94, Math.max(10, outerPct))}%` : '0%';
@@ -131,7 +128,6 @@ export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = (
         ? (recovery.sleepIndex >= 80 ? 'Deep Sleep Optimal' : 'Restorative Sleep')
         : 'No Sleep Records Today';
       outerPct = hasSleep ? Math.min(100, Math.round(((sleepH * 60 + sleepM) / 480) * 100)) : 0;
-      innerPct = (recovery.deepSleepPct || 0) * 2;
       diskVal = `${sleepH}h`;
       diskSub = 'sleep';
       rangePos = hasSleep ? `${Math.min(94, Math.max(15, outerPct))}%` : '0%';
@@ -181,7 +177,6 @@ export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = (
         ? (liveHr! <= 75 ? 'Optimal Basal Rhythm' : 'Elevated Exertion')
         : 'Awaiting Pulse Stream';
       outerPct = hasHr ? Math.min(100, Math.round((liveHr! / 160) * 100)) : 0;
-      innerPct = hasHr ? 70 : 0;
       diskVal = hasHr ? `${liveHr}` : '—';
       diskSub = 'bpm';
       rangePos = hasHr ? `${Math.min(90, Math.max(10, Math.round((liveHr! / 160) * 100)))}%` : '0%';
@@ -232,7 +227,6 @@ export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = (
         ? `${strength.todayWorkout?.totalSets || 0} Sets Completed`
         : (strength.weeklyWorkoutsCount > 0 ? `${strength.weeklyWorkoutsCount} Sessions This Week` : 'All Muscle Groups Primed');
       outerPct = todayVol > 0 ? 85 : (weeklyVol > 0 ? 60 : 0);
-      innerPct = hasStrengthLogs ? 100 : 0;
       diskVal = `${volTons}t`;
       diskSub = 'load';
       rangePos = hasStrengthLogs ? '85%' : '0%';
@@ -278,7 +272,6 @@ export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = (
       scoreUnit = 'kCal Active Expenditure';
       scoreStatus = hasCalories ? `${Math.round((activeCals / 500) * 100)}% of 500 kcal Goal` : '0% of 500 kcal Goal';
       outerPct = Math.min(100, Math.round((activeCals / 500) * 100));
-      innerPct = totalCals > 0 ? Math.min(100, Math.round((totalCals / 2400) * 100)) : 0;
       diskVal = `${activeCals}`;
       diskSub = 'kcal';
       rangePos = hasCalories ? `${Math.min(94, Math.max(10, outerPct))}%` : '0%';
@@ -325,7 +318,6 @@ export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = (
       scoreUnit = hasSteps ? `${Math.round((steps / 10000) * 100)}% of 10,000 Step Goal (${dist.toFixed(1)} km)` : '0% of 10,000 Step Goal (0.0 km)';
       scoreStatus = hasSteps ? 'Total in this day' : 'Awaiting Movement';
       outerPct = Math.min(100, Math.round((steps / 10000) * 100));
-      innerPct = Math.min(100, Math.round((dist / 8) * 100));
       diskVal = steps >= 1000 ? `${(steps / 1000).toFixed(1)}k` : `${steps}`;
       diskSub = 'steps';
       rangePos = hasSteps ? `${Math.min(94, Math.max(10, outerPct))}%` : '0%';

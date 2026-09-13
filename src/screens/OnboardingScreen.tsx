@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Dimensions,
   Animated,
   Image,
 } from 'react-native';
@@ -14,7 +13,7 @@ import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { credentialsStorage } from '../services/storage/credentialsStorage';
 
 interface OnboardingScreenProps {
-  onFinish: (goals: { stepsGoal: number; caloriesGoal: number }) => void;
+  onFinish: (goals: { stepsGoal: number; caloriesGoal: number; mindfulnessGoal?: number }) => void;
   initialStep?: 1 | 2;
 }
 
@@ -24,11 +23,13 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, in
   // Goal selections with recommended defaults
   const [stepsGoal, setStepsGoal] = useState<number>(10000);
   const [caloriesGoal, setCaloriesGoal] = useState<number>(500);
+  const [mindfulnessGoal, setMindfulnessGoal] = useState<number>(10);
 
   useEffect(() => {
     credentialsStorage.loadCredentials().then((creds) => {
       if (creds.dailyStepsGoal) setStepsGoal(creds.dailyStepsGoal);
       if (creds.dailyCaloriesGoal) setCaloriesGoal(creds.dailyCaloriesGoal);
+      if (creds.dailyMindfulnessGoal) setMindfulnessGoal(creds.dailyMindfulnessGoal);
     });
   }, []);
 
@@ -83,13 +84,21 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, in
     { val: 900, label: 'Intense', sub: 'Athlete Volume' },
   ];
 
+  const mindfulnessPresets = [
+    { val: 5, label: 'Gentle', sub: '5m Reset' },
+    { val: 10, label: 'Balanced', sub: 'Daily Habit' },
+    { val: 15, label: 'Deep', sub: 'Restorative' },
+    { val: 20, label: 'Immersion', sub: 'Zen Master' },
+  ];
+
   const handleComplete = async () => {
     await credentialsStorage.saveCredentials({
       hasCompletedOnboarding: true,
       dailyStepsGoal: stepsGoal,
       dailyCaloriesGoal: caloriesGoal,
+      dailyMindfulnessGoal: mindfulnessGoal,
     });
-    onFinish({ stepsGoal, caloriesGoal });
+    onFinish({ stepsGoal, caloriesGoal, mindfulnessGoal });
   };
 
   const handleStepIncrement = (delta: number) => {
@@ -98,6 +107,10 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, in
 
   const handleCaloriesIncrement = (delta: number) => {
     setCaloriesGoal((prev) => Math.max(150, Math.min(3000, prev + delta)));
+  };
+
+  const handleMindfulnessIncrement = (delta: number) => {
+    setMindfulnessGoal((prev) => Math.max(2, Math.min(60, prev + delta)));
   };
 
   return (
@@ -267,7 +280,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, in
           {/* Goal Setting Title */}
           <Text style={styles.goalTitle}>Set Your Daily Targets</Text>
           <Text style={styles.goalSubtitle}>
-            Customize your baseline movement and calorie goals. You can fine-tune these anytime in Settings.
+            Customize your baseline movement, active calorie, and mindfulness goals. You can fine-tune these anytime in Settings.
           </Text>
 
           {/* 1. STEPS GOAL SECTION */}
@@ -374,6 +387,62 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, in
                       {p.val}
                     </Text>
                     <Text style={[styles.presetChipSub, isSelected && styles.presetChipSubPeachSelected]}>
+                      {p.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* 3. MINDFULNESS GOAL SECTION */}
+          <View style={styles.goalSection}>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Daily Mindfulness Goal</Text>
+              <Text style={styles.sectionHighlightLavender}>🌿 Zen & Breath</Text>
+            </View>
+
+            {/* Live Visual Card in Twilight Lavender */}
+            <View style={styles.goalLiveCardLavender}>
+              <View style={styles.goalLiveCardLeft}>
+                <Text style={styles.goalLiveNumber}>{mindfulnessGoal}</Text>
+                <Text style={styles.goalLiveUnitLavender}>mins mindful focus / day</Text>
+              </View>
+
+              {/* Stepper Buttons */}
+              <View style={styles.stepperContainer}>
+                <TouchableOpacity
+                  style={styles.stepperBtnLavender}
+                  onPress={() => handleMindfulnessIncrement(-2)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.stepperBtnText}>−</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.stepperBtnLavender}
+                  onPress={() => handleMindfulnessIncrement(2)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.stepperBtnText}>+</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Preset Option Chips */}
+            <View style={styles.presetGrid}>
+              {mindfulnessPresets.map((p) => {
+                const isSelected = mindfulnessGoal === p.val;
+                return (
+                  <TouchableOpacity
+                    key={p.val}
+                    style={[styles.presetChipLavender, isSelected && styles.presetChipLavenderSelected]}
+                    onPress={() => setMindfulnessGoal(p.val)}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={[styles.presetChipVal, isSelected && styles.presetChipValLavenderSelected]}>
+                      {p.val}m
+                    </Text>
+                    <Text style={[styles.presetChipSub, isSelected && styles.presetChipSubLavenderSelected]}>
                       {p.label}
                     </Text>
                   </TouchableOpacity>
@@ -900,6 +969,66 @@ const styles = StyleSheet.create({
   },
   presetChipSubPeachSelected: {
     color: '#8C4724',
+    fontWeight: '700',
+  },
+
+  // Lavender Mindfulness Goal Card & Chips
+  sectionHighlightLavender: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#3B2D54',
+  },
+  goalLiveCardLavender: {
+    backgroundColor: '#EDE7F6',
+    borderRadius: 22,
+    padding: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    shadowColor: '#3B2D54',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  goalLiveUnitLavender: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#5C4E75',
+    marginTop: 2,
+  },
+  stepperBtnLavender: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#3B2D54',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  presetChipLavender: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(59, 45, 84, 0.08)',
+  },
+  presetChipLavenderSelected: {
+    backgroundColor: '#EDE7F6',
+    borderColor: '#3B2D54',
+  },
+  presetChipValLavenderSelected: {
+    color: '#3B2D54',
+  },
+  presetChipSubLavenderSelected: {
+    color: '#3B2D54',
     fontWeight: '700',
   },
 });

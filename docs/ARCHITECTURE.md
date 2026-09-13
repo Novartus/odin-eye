@@ -17,6 +17,7 @@ flowchart TD
     Meds["Meds Tab"]
     Vitals["Vitals Tab"]
     Body["Body Tab"]
+    Zen["Zen Tab\n(Mindfulness & Breath)"]
     AI["AI Tab"]
     Config["Config Tab"]
 
@@ -35,7 +36,7 @@ flowchart TD
     Entry --> Onboarding
     Entry --> Dashboard
     Dashboard --> TabBar
-    TabBar --> Home & Meds & Vitals & Body & AI & Config
+    TabBar --> Home & Meds & Vitals & Body & Zen & AI & Config
 
     Dashboard <--> LiveSvc
     Dashboard <--> MedSvc
@@ -59,6 +60,7 @@ flowchart TD
 | `src/components/home/` | Home tab UI — metric cards grid, top bar, wellness card, medication preview, AI insight |
 | `src/components/overview/` | Vitals tab — 3-pillar health overview, cardio, sleep, and strength breakdown cards |
 | `src/components/body/` | Body tab — per-muscle recovery analysis, hypertrophy readiness, body composition |
+| `src/components/mindfulness/` | Zen tab — breathing exercises, 7-day streak calendar, mood check-in, ambient soundscapes |
 | `src/components/medication/` | Meds tab — schedule calendar, dose logging, add/edit/archive modals, reminder alert modal, icons |
 | `src/components/ai/` | AI tab — chat interface, formatted message renderer |
 | `src/components/settings/` | Config tab — 4-category settings view (modules, wearables, targets, security) |
@@ -73,6 +75,7 @@ flowchart TD
 | `src/services/ai/sportsScienceKnowledge.ts` | Static sports science knowledge base (fatigue thresholds, recovery rules, training recommendations) |
 | `src/services/medication/medicationService.ts` | Medication CRUD, dose tracking, real-time reminder watcher, dual-layer storage (SecureStore + FileSystem) |
 | `src/services/medication/medicationNotificationService.ts` | OS-level exact alarm scheduling + Expo notification delivery |
+| `src/services/mindfulness/mindfulnessService.ts` | Mindfulness streak tracking, session logging, and ambient sound management |
 | `src/services/storage/credentialsStorage.ts` | Encrypted credential vault — reads/writes AES-256-CBC encrypted JSON via `expo-secure-store` |
 | `src/services/security/cryptoService.ts` | AES-256-CBC + HMAC-SHA256 + PBKDF2 crypto primitives |
 | `src/services/sleep/sleepHistoryService.ts` | Sleep history rolling buffer and trend analysis |
@@ -184,13 +187,14 @@ FloatingTabBar
   props:
     activeTab: TabKey
     onSelectTab: (key: TabKey) => void
-    showAiTab: boolean          ← hidden when AI is disabled in Config
-    showBodyAnalysisTab: boolean ← hidden when Body Analysis is disabled
+    showAiTab: boolean             ← hidden when AI is disabled in Config
+    showBodyAnalysisTab: boolean   ← hidden when Body Analysis is disabled
+    showMindfulnessTab: boolean    ← hidden when Mindfulness is disabled
 
   tabs (always defined):
-    home · meds · overview · body · coach · settings
+    home · meds · overview · body · zen · coach · settings
 
-  rendered tabs: filtered at runtime based on showAiTab / showBodyAnalysisTab
+  rendered tabs: filtered at runtime based on showAiTab / showBodyAnalysisTab / showMindfulnessTab
 ```
 
 Tab transitions use `Animated.timing` on `tabFadeAnim` in `DashboardScreen` for a 70ms fade-out / 130ms fade-in transition at 60 fps.

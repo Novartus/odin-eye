@@ -1,6 +1,6 @@
 // On-Device AI Health Coach Types
 
-import { TriPillarHealthSummary, MuscleGroup } from './health';
+import { MuscleGroup } from './health';
 
 export interface AiCoachRecommendation {
   id: string;

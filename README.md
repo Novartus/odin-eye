@@ -22,12 +22,45 @@ OdinEye is a **centralized personal health hub** for Android. It aggregates live
 
 | Tab | What you get |
 |:----|:------------|
-| **Home** | Live metric cards (steps, calories, heart rate, recovery score), wellness snapshot, today's medication preview, AI daily insight |
+| **Home** | Live metric cards (steps, calories, heart rate, recovery score), **Sleep Architecture & 7-Day Debt Balance card**, wellness snapshot, today's medication preview, today's zen preview, AI daily insight |
 | **Meds** | Medication routine tracker with week/month calendar view, dose logging, and OS-level push notifications |
-| **Vitals** | Health overview — Activity / Sleep / Recover pillar breakdown, cardio stats, sleep quality, strength telemetry |
+| **Vitals** | Health overview — Activity / Sleep / Recovery pillar breakdown, cardio stats, 7-day sleep duration chart, strength telemetry |
 | **Body** | Per-muscle-group recovery analysis, hypertrophy readiness, body composition _(can be toggled off in Config)_ |
+| **Zen** | Mindfulness & breathwork sanctuary with **Tactile Haptic Pacing** (eyes-closed meditation), **Ambient Binaural Audio Engine** (432Hz, 40Hz Gamma, Brown noise), **Dynamic Reactive Mood Face**, and 7-day streak calendar |
 | **AI** | On-device AI health coach via Android AICore (Gemini Nano) with Gemini Cloud API fallback |
-| **Config** | Module toggles, wearable credentials, daily targets, AES-256 encrypted security vault |
+| **Config** | Module toggles, wearable credentials, daily targets, Android Home Screen AppWidgets hub, AES-256 encrypted security vault |
+
+---
+
+## Key highlights & new capabilities
+
+### 🌙 Sleep Debt & Sleep Architecture Balance
+- **7-Day Cumulative Sleep Debt**: Computes personal sleep debt against your biological baseline (default 8.0h/night) with a strict **zero-dummy data** guarantee (calculated solely against recorded nights).
+- **Physical vs. Cognitive Restoration**:
+  - **Physical Restoration (Deep Sleep)**: Tracks slow-wave delta sleep against the clinical 15%–25% target for cellular turnover and human growth hormone release.
+  - **Cognitive Resilience (REM Sleep)**: Tracks paradoxical REM sleep against the clinical 20%–25% target for emotional memory consolidation and synaptic pruning.
+- **Scandinavian Bento Card**: Full-width spacious bento layout with target range indicator brackets, status badges (`Optimal`, `Sub-optimal`, `Abundant`), and somatic bedtime coaching advice.
+
+### 📳 Tactile Haptic Pacing & Navigation Feedback
+- **Somatic Eyes-Closed Meditation**: Inhale (rising double micro-pulse), Hold (subtle anchor tap), and Exhale (smooth soothing release) vibration cues so you can meditate with closed eyes.
+- **In-Chamber Toggle**: Instant `📳 Haptics: ON / OFF` toggle pill in the full-screen breathing chamber header with persistent storage.
+- **Crisp Navigation Haptics**: Responsive micro-vibrations (`28ms`) on bottom tab bar presses (`FloatingTabBar`) and programmatic in-app card jump links.
+
+### 📱 Android Home Screen AppWidgets (RemoteViews)
+- **Pill Reminder 4×2 Widget**: Displays the next scheduled dose with a direct **"Take"** action button right on the Android home screen without opening the app, updating live adherence.
+- **Zen Streak & Vitals 4×2 Widget**: Displays daily steps with progress bar, real-time/resting heart rate, current mindfulness streak, and a one-tap **"Breathe"** launcher.
+- **Widget Hub in Settings**: Live visual preview, step-by-step setup guide, and manual instant sync.
+
+### 🎧 Procedural Ambient Audio & Binaural Beats Engine
+- **Background Sound Engine (`OdinAudioEngine`)**: Real-time mathematical sound synthesis running on a dedicated thread via native Android `AudioTrack` (44.1 kHz 16-bit stereo PCM) that plays continuously with the screen dimmed.
+- **14 Bespoke Soundscapes**:
+  - **Binaural Beats**: 40Hz Gamma (focus), 10Hz Alpha (flow), 6Hz Theta (meditation), 2Hz Delta (restoration).
+  - **Solfeggio Frequencies**: 432Hz Harmonic Peace, 528Hz Cellular Transformation, 639Hz Compassion.
+  - **Colored Noise**: Velvet Brown Noise (1/f² Brownian walk), Organic Pink Noise, Tranquil White Noise.
+  - **Procedural Nature**: Resonant ocean waves with LFO modulation, gentle rain, forest breeze, chirping birds.
+
+### 😊 Reactive Dynamic Mood Face
+- Morphing vector SVG face (`MoodFaceIcon`) across 5 emotional states (Unhappy, Sad, Normal, Good, Happy) paired with reactive pastel concentric ripple auras, spring bounce physics, and persistent daily state.
 
 ---
 
@@ -36,15 +69,18 @@ OdinEye is a **centralized personal health hub** for Android. It aggregates live
 | Layer | Technology |
 |:------|:-----------|
 | Framework | React Native 0.86.3 + Expo 57 |
-| Language | TypeScript 6 (strict mode) |
-| Navigation | Custom `FloatingTabBar` (no React Navigation dependency) |
-| Icons | Bespoke vector SVGs via `react-native-svg` 15 |
+| Language | TypeScript 6 (strict mode — zero unused locals/parameters) |
+| Navigation | Custom `FloatingTabBar` with tactile haptic feedback |
+| Audio | Native Kotlin `OdinAudioEngine` (44.1 kHz stereo PCM) + Web Audio API fallback |
+| AppWidgets | Native Android `RemoteViews` + Kotlin Widget Providers + `OdinEyeWidgetModule` |
+| Haptics | Somatic tactile breath pacing & UI micro-vibrations via React Native `Vibration` |
+| Icons | Bespoke vector SVGs via `react-native-svg` 15 (no emojis in code) |
 | Health data | `react-native-health-connect` 4.1.3 (Android Health Connect, read-only) |
 | Secure storage | `expo-secure-store` — AES-256-CBC encrypted credential vault |
 | AI (on-device) | Android AICore / Gemini Nano via `androidAiCoreService` |
 | AI (cloud fallback) | Google Gemini API via `aiService` |
 | Notifications | OS-level exact alarm scheduling via `expo-notifications` |
-| Design system | Scandinavian Pastel Bento (porcelain, sage mint, forest green, peach) |
+| Design system | Scandinavian Pastel Bento (porcelain, sage mint, forest green, peach, lilac) |
 
 ---
 
@@ -96,6 +132,8 @@ All wearable tokens and API keys are stored in an **on-device AES-256-CBC encryp
 
 | Document | What it covers |
 |:---------|:--------------|
+| [docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md) | **Google Play & Health Connect Privacy Policy, Limited Use disclosures & legal governance** |
+| [docs/privacy-policy.html](docs/privacy-policy.html) | Standalone responsive HTML privacy policy for web/store hosting |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, data flow, module map, security & AI architecture |
 | [docs/FEATURES.md](docs/FEATURES.md) | Complete feature reference for all 6 tabs |
 | [docs/API_INTEGRATIONS.md](docs/API_INTEGRATIONS.md) | Step-by-step setup for every wearable and API |
@@ -114,21 +152,32 @@ centralized-health-app/
 ├── eas.json                         # EAS build profiles
 ├── LICENSE
 ├── docs/
+│   ├── PRIVACY_POLICY.md            # Google Play Privacy Policy (Markdown)
+│   ├── privacy-policy.html          # Web-hosted Privacy Policy (HTML)
 │   ├── ARCHITECTURE.md
 │   ├── FEATURES.md
 │   ├── API_INTEGRATIONS.md
 │   ├── BUILD.md
 │   └── CONTRIBUTING.md
+├── android/
+│   └── app/src/main/java/com/odineye/health/
+│       ├── audio/                   # Native AudioTrack procedural sound engine
+│       │   └── OdinAudioEngine.kt
+│       └── widget/                  # Native Android RemoteViews AppWidgets
+│           ├── PillReminderWidgetProvider.kt
+│           ├── ZenVitalsWidgetProvider.kt
+│           └── OdinEyeWidgetModule.kt
 └── src/
     ├── components/
     │   ├── ai/              # AI coach view + message renderer
     │   ├── body/            # Body & muscle recovery analysis
     │   ├── common/          # Shared UI (splash, modals, loaders)
-    │   ├── home/            # Home tab cards and top bar
+    │   ├── home/            # Home tab cards, SleepArchitectureBentoCard, top bar
     │   ├── medication/      # Medication tracker, modals, icons
-    │   ├── navigation/      # FloatingTabBar
+    │   ├── mindfulness/     # Full-screen Zen chamber, breath orb, mood check-in
+    │   ├── navigation/      # FloatingTabBar with haptics
     │   ├── overview/        # Vitals tab (HealthOverviewView)
-    │   ├── settings/        # Config tab (SettingsView)
+    │   ├── settings/        # Config tab (SettingsView & Widget Hub)
     │   └── sleep/           # Sleep bar chart
     ├── screens/
     │   ├── DashboardScreen.tsx   # Root shell — all tabs and global state
@@ -136,12 +185,15 @@ centralized-health-app/
     ├── services/
     │   ├── ai/              # AI engine, local coach, sports science KB
     │   ├── api/             # Ultrahuman, Fitbit, Hevy API clients
+    │   ├── audio/           # Ambient sound service (native audio track bridge)
     │   ├── healthConnect/   # Android Health Connect integration
     │   ├── live/            # Live telemetry aggregator
     │   ├── medication/      # Medication service + OS notifications
+    │   ├── mindfulness/     # Mindfulness streak & session logging service
     │   ├── security/        # AES-256 crypto utilities
-    │   ├── sleep/           # Sleep history service
-    │   └── storage/         # Encrypted credentials vault
+    │   ├── sleep/           # Sleep history, debt & architecture analytics
+    │   ├── storage/         # Encrypted credentials vault
+    │   └── widgets/         # AppWidgets synchronization service
     ├── theme/
     │   └── colors.ts        # Scandinavian Pastel Bento palette
     └── types/               # Canonical TypeScript interfaces

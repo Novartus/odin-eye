@@ -15,6 +15,38 @@ export interface DailySleepRecord {
   isToday: boolean;
 }
 
+export interface SleepDebtAnalysis {
+  targetHoursPerNight: number;
+  totalTargetHours: number;
+  totalActualHours: number;
+  sleepDebtHours: number; // positive = debt, negative = surplus
+  debtStatus: 'rested' | 'mild_debt' | 'moderate_debt' | 'severe_debt' | 'surplus';
+  debtStatusLabel: string;
+  advice: string;
+  daysRecorded: number;
+  dailyAverageHours: number;
+}
+
+export interface SleepArchitectureBalance {
+  totalSleepMinutes: number;
+  deepSleepMinutes: number;
+  deepSleepPct: number;
+  remSleepMinutes: number;
+  remSleepPct: number;
+  lightSleepMinutes: number;
+  lightSleepPct: number;
+  awakeMinutes: number;
+  awakePct: number;
+  deepEvaluation: 'optimal' | 'low' | 'high';
+  deepEvaluationLabel: string;
+  remEvaluation: 'optimal' | 'low' | 'high';
+  remEvaluationLabel: string;
+  balanceRating: 'harmonious' | 'physical_bias' | 'cognitive_bias' | 'insufficient_rest';
+  balanceLabel: string;
+  physicalRestorationAdvice: string;
+  cognitiveResilienceAdvice: string;
+}
+
 export interface DailyStepRecord {
   date: string;
   dayLabel: string;
@@ -107,7 +139,9 @@ export class SleepHistoryService {
   public getWeeklySleepHistory(
     todayMinutes: number = 0,
     todayIndex: number = 0,
-    todayEfficiency: number = 0
+    todayEfficiency: number = 0,
+    todayDeepPct: number = 0,
+    todayRemPct: number = 0
   ): DailySleepRecord[] {
     const result: DailySleepRecord[] = [];
     const now = new Date();
@@ -133,6 +167,14 @@ export class SleepHistoryService {
           ? todayIndex
           : (this.storedSleepRecords[key]?.sleepIndex || 0);
 
+        const finalDeep = todayDeepPct > 0
+          ? todayDeepPct
+          : (this.storedSleepRecords[key]?.deepPct || 22);
+
+        const finalRem = todayRemPct > 0
+          ? todayRemPct
+          : (this.storedSleepRecords[key]?.remPct || 24);
+
         result.push({
           date: key,
           dayLabel: dayLetter,
@@ -140,14 +182,14 @@ export class SleepHistoryService {
           durationMinutes: finalMinutes,
           sleepIndex: finalIndex,
           efficiencyPct: todayEfficiency > 0 ? todayEfficiency : 88,
-          deepPct: 22,
-          remPct: 24,
+          deepPct: finalDeep,
+          remPct: finalRem,
           isToday: true,
         });
 
         // Automatically sync to storage if valid
         if (todayMinutes > 0) {
-          this.recordDailySleep(todayMinutes, todayIndex, todayEfficiency);
+          this.recordDailySleep(todayMinutes, todayIndex, todayEfficiency > 0 ? todayEfficiency : 88, finalDeep, finalRem);
         }
       } else {
         const stored = this.storedSleepRecords[key];
@@ -206,6 +248,172 @@ export class SleepHistoryService {
     }
 
     return result;
+  }
+
+  /**
+   * Calculates rolling 7-day sleep debt against optimal baseline (e.g. 8.0 hours/night).
+   * Adheres strictly to Zero-Dummy data: computes against recorded days only.
+   */
+  public getSleepDebtAnalysis(
+    targetHoursPerNight: number = 8.0,
+    todayMinutes: number = 0,
+    todayIndex: number = 0,
+    todayEfficiency: number = 0,
+    todayDeepPct: number = 0,
+    todayRemPct: number = 0
+  ): SleepDebtAnalysis {
+    const weekly = this.getWeeklySleepHistory(todayMinutes, todayIndex, todayEfficiency, todayDeepPct, todayRemPct);
+    const recordedDays = weekly.filter(d => d.durationMinutes > 0);
+    const count = recordedDays.length;
+
+    if (count === 0) {
+      return {
+        targetHoursPerNight,
+        totalTargetHours: targetHoursPerNight,
+        totalActualHours: 0,
+        sleepDebtHours: 0,
+        debtStatus: 'rested',
+        debtStatusLabel: 'Baseline Synced',
+        advice: 'Wear your ring or connect Health Connect tonight to begin tracking cumulative sleep debt.',
+        daysRecorded: 0,
+        dailyAverageHours: 0,
+      };
+    }
+
+    const totalActualHours = Math.round(recordedDays.reduce((acc, d) => acc + (d.durationMinutes / 60), 0) * 10) / 10;
+    const totalTargetHours = Math.round(count * targetHoursPerNight * 10) / 10;
+    const sleepDebtHours = Math.round((totalTargetHours - totalActualHours) * 10) / 10;
+    const dailyAverageHours = Math.round((totalActualHours / count) * 10) / 10;
+
+    let debtStatus: SleepDebtAnalysis['debtStatus'] = 'rested';
+    let debtStatusLabel = 'Fully Rested';
+    let advice = 'Your sleep architecture is synchronized with your biological recovery baseline.';
+
+    if (sleepDebtHours <= -0.5) {
+      debtStatus = 'surplus';
+      debtStatusLabel = `+${Math.abs(sleepDebtHours)}h Surplus`;
+      advice = 'Sleep reserves are well-stocked. Nervous system recovery and physical readiness are primed.';
+    } else if (sleepDebtHours <= 1.0) {
+      debtStatus = 'rested';
+      debtStatusLabel = `${sleepDebtHours > 0 ? `+${sleepDebtHours}h` : '0h'} Optimal`;
+      advice = 'Minimal sleep deficit. Consistent sleep rhythms keep your circadian clock finely tuned.';
+    } else if (sleepDebtHours <= 3.5) {
+      debtStatus = 'mild_debt';
+      debtStatusLabel = `-${sleepDebtHours}h Mild Debt`;
+      advice = 'Slight deficit detected. An extra 30–45 min wind-down buffer tonight will fully restore balance.';
+    } else if (sleepDebtHours <= 6.0) {
+      debtStatus = 'moderate_debt';
+      debtStatusLabel = `-${sleepDebtHours}h Moderate Debt`;
+      advice = 'Cumulative fatigue accumulating. Prioritize an earlier bedtime (+60m) and avoid late caffeine.';
+    } else {
+      debtStatus = 'severe_debt';
+      debtStatusLabel = `-${sleepDebtHours}h Severe Debt`;
+      advice = 'High cumulative sleep debt. Extend your sleep opportunity window and utilize Zen breathing to reduce cortisol.';
+    }
+
+    return {
+      targetHoursPerNight,
+      totalTargetHours,
+      totalActualHours,
+      sleepDebtHours,
+      debtStatus,
+      debtStatusLabel,
+      advice,
+      daysRecorded: count,
+      dailyAverageHours,
+    };
+  }
+
+  /**
+   * Computes Physical Restoration (Deep Sleep) vs. Cognitive & Emotional Resilience (REM Sleep).
+   */
+  public getSleepArchitectureBalance(
+    totalSleepMinutes: number = 0,
+    deepPct: number = 0,
+    remPct: number = 0
+  ): SleepArchitectureBalance {
+    const safeMinutes = totalSleepMinutes > 0 ? totalSleepMinutes : 0;
+    const safeDeepPct = deepPct > 0 ? deepPct : 0;
+    const safeRemPct = remPct > 0 ? remPct : 0;
+
+    const deepSleepMinutes = Math.round((safeMinutes * safeDeepPct) / 100);
+    const remSleepMinutes = Math.round((safeMinutes * safeRemPct) / 100);
+
+    const awakePct = safeMinutes > 0 ? 6 : 0;
+    const awakeMinutes = Math.round((safeMinutes * awakePct) / 100);
+    const lightPct = Math.max(0, 100 - (safeDeepPct + safeRemPct + awakePct));
+    const lightSleepMinutes = Math.max(0, safeMinutes - deepSleepMinutes - remSleepMinutes - awakeMinutes);
+
+    // Deep evaluation (Target: 15 - 25%)
+    let deepEvaluation: SleepArchitectureBalance['deepEvaluation'] = 'optimal';
+    let deepEvaluationLabel = 'Optimal (15–25%)';
+    let physicalRestorationAdvice = 'Robust slow-wave delta sleep facilitates muscular repair, cellular turnover, and human growth hormone release.';
+
+    if (safeDeepPct < 15) {
+      deepEvaluation = 'low';
+      deepEvaluationLabel = 'Sub-optimal (<15%)';
+      physicalRestorationAdvice = 'Low slow-wave sleep. Limit alcohol and heavy meals within 3 hours of bed to enhance somatic muscle restoration.';
+    } else if (safeDeepPct > 25) {
+      deepEvaluation = 'high';
+      deepEvaluationLabel = 'Abundant (>25%)';
+      physicalRestorationAdvice = 'Slow-wave rebound active. Your body is prioritizing intensive musculoskeletal recovery and physical restitution.';
+    }
+
+    // REM evaluation (Target: 20 - 25%)
+    let remEvaluation: SleepArchitectureBalance['remEvaluation'] = 'optimal';
+    let remEvaluationLabel = 'Optimal (20–25%)';
+    let cognitiveResilienceAdvice = 'Balanced REM sleep supports neural synaptic pruning, creative problem-solving, and emotional regulation.';
+
+    if (safeRemPct < 20) {
+      remEvaluation = 'low';
+      remEvaluationLabel = 'Sub-optimal (<20%)';
+      cognitiveResilienceAdvice = 'Restricted REM phase. Keep bedroom cool (18°C) and avoid late-night blue light to foster deeper dream cycles.';
+    } else if (safeRemPct > 25) {
+      remEvaluation = 'high';
+      remEvaluationLabel = 'Abundant (>25%)';
+      cognitiveResilienceAdvice = 'Extended rapid eye movement phase. Brain is actively synthesizing recent memories and emotional experiences.';
+    }
+
+    // Balance evaluation
+    let balanceRating: SleepArchitectureBalance['balanceRating'] = 'harmonious';
+    let balanceLabel = 'Harmonious Architecture';
+
+    if (safeMinutes < 300 && safeMinutes > 0) {
+      balanceRating = 'insufficient_rest';
+      balanceLabel = 'Compressed Sleep Window';
+    } else if (deepEvaluation === 'optimal' && remEvaluation === 'optimal') {
+      balanceRating = 'harmonious';
+      balanceLabel = 'Harmonious Architecture';
+    } else if ((deepEvaluation === 'optimal' || deepEvaluation === 'high') && remEvaluation === 'low') {
+      balanceRating = 'physical_bias';
+      balanceLabel = 'Physical Restoration Leaning';
+    } else if ((remEvaluation === 'optimal' || remEvaluation === 'high') && deepEvaluation === 'low') {
+      balanceRating = 'cognitive_bias';
+      balanceLabel = 'Cognitive Processing Leaning';
+    } else {
+      balanceRating = 'harmonious';
+      balanceLabel = 'Balanced Restoration';
+    }
+
+    return {
+      totalSleepMinutes: safeMinutes,
+      deepSleepMinutes,
+      deepSleepPct: safeDeepPct,
+      remSleepMinutes,
+      remSleepPct: safeRemPct,
+      lightSleepMinutes,
+      lightSleepPct: lightPct,
+      awakeMinutes,
+      awakePct,
+      deepEvaluation,
+      deepEvaluationLabel,
+      remEvaluation,
+      remEvaluationLabel,
+      balanceRating,
+      balanceLabel,
+      physicalRestorationAdvice,
+      cognitiveResilienceAdvice,
+    };
   }
 }
 

@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  ActivityIndicator,
   ScrollView,
   Keyboard,
   Platform,
@@ -27,13 +26,6 @@ interface DedicatedAiCoachViewProps {
 }
 
 export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data, recommendation }) => {
-  const rawVolumeKg = data.strength.todayWorkout?.totalVolumeKg || data.strength.weeklyVolumeKg || 0;
-  const volumeTons = rawVolumeKg > 0 ? (rawVolumeKg / 1000).toFixed(1) : '0.0';
-  const fatiguedNames = data.strength.muscleStatuses
-    .filter((m) => m.state === 'fatigued')
-    .map((m) => m.displayName)
-    .join(' & ');
-
   const [aiProvider, setAiProvider] = useState<'gemini_nano' | 'ondevice' | 'gemini' | 'openai'>('gemini_nano');
 
   useEffect(() => {

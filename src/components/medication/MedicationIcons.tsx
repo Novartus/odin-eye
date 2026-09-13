@@ -1,8 +1,7 @@
 // Vector SVG Icons for Medication Reminder System
 // Precise match to high-end medical UI design mockup
 
-import React from 'react';
-import Svg, { Path, Circle, Rect, G } from 'react-native-svg';
+import Svg, { Path, Circle } from 'react-native-svg';
 
 interface IconProps {
   size?: number;

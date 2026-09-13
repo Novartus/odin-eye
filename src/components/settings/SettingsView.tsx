@@ -9,20 +9,24 @@ import {
   ActivityIndicator,
   Platform,
   Vibration,
+  Modal,
+  ScrollView,
 } from 'react-native';
-import Svg, { Path, Circle, Rect, Line, G } from 'react-native-svg';
+import Svg, { Path, Circle, Rect, Line } from 'react-native-svg';
 import { Colors } from '../../theme/colors';
 import { SmartRingIcon } from '../common/SmartRingIcon';
 import { hevyApiClient } from '../../services/api/hevyApiClient';
 import { ultrahumanApiClient } from '../../services/api/ultrahumanApiClient';
 import { fitbitApiClient } from '../../services/api/fitbitApiClient';
-import { credentialsStorage, SecurityVaultStatus } from '../../services/storage/credentialsStorage';
+import { credentialsStorage } from '../../services/storage/credentialsStorage';
 import { liveHealthService } from '../../services/live/liveHealthService';
 import { androidAiCoreService } from '../../services/ai/androidAiCoreService';
 import { aiHealthService } from '../../services/ai/aiService';
 import { healthConnect, isNativeHealthConnectLinked } from '../../services/healthConnect/healthConnectService';
 import { medicationService } from '../../services/medication/medicationService';
 import { medicationNotificationService } from '../../services/medication/medicationNotificationService';
+import { mindfulnessService } from '../../services/mindfulness/mindfulnessService';
+import { widgetSyncService } from '../../services/widgets/widgetSyncService';
 import { EnabledSources } from '../../types';
 export { EnabledSources } from '../../types';
 
@@ -198,6 +202,15 @@ const BodyAnatomyIcon: React.FC<{ size?: number; color?: string }> = ({ size = 1
   </Svg>
 );
 
+const BentoGridIcon: React.FC<{ size?: number; color?: string }> = ({ size = 18, color = '#1F382E' }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Rect x="3" y="3" width="7" height="7" rx="2" stroke={color} strokeWidth="2" />
+    <Rect x="14" y="3" width="7" height="4" rx="2" stroke={color} strokeWidth="2" />
+    <Rect x="14" y="11" width="7" height="10" rx="2" stroke={color} strokeWidth="2" />
+    <Rect x="3" y="14" width="7" height="7" rx="2" stroke={color} strokeWidth="2" />
+  </Svg>
+);
+
 interface SettingsViewProps {
   enabledSources: EnabledSources;
   onToggleSource: (sourceKey: keyof EnabledSources, value: boolean) => void;
@@ -209,6 +222,8 @@ interface SettingsViewProps {
   onToggleAi?: (enabled: boolean) => void;
   bodyAnalysisEnabled?: boolean;
   onToggleBodyAnalysis?: (enabled: boolean) => void;
+  mindfulnessEnabled?: boolean;
+  onToggleMindfulness?: (enabled: boolean) => void;
   onResetOnboarding?: () => void;
 }
 
@@ -223,6 +238,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onToggleAi,
   bodyAnalysisEnabled = true,
   onToggleBodyAnalysis,
+  mindfulnessEnabled = true,
+  onToggleMindfulness,
   onResetOnboarding,
 }) => {
   // Credentials State
@@ -230,13 +247,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [ultrahumanToken, setUltrahumanToken] = useState('');
   const [fitbitToken, setFitbitToken] = useState('');
   const [geminiApiKey, setGeminiApiKey] = useState('');
-  const [aiProvider, setAiProvider] = useState<'gemini_nano' | 'ondevice' | 'gemini' | 'openai'>('gemini_nano');
   const [isAiActive, setIsAiActive] = useState<boolean>(aiEnabled);
   const [isBodyAnalysisActive, setIsBodyAnalysisActive] = useState<boolean>(bodyAnalysisEnabled);
+  const [isMindfulnessActive, setIsMindfulnessActive] = useState<boolean>(mindfulnessEnabled);
 
   // Daily Goals State
   const [stepsGoal, setStepsGoal] = useState<number>(10000);
   const [caloriesGoal, setCaloriesGoal] = useState<number>(500);
+  const [mindfulnessGoal, setMindfulnessGoal] = useState<number>(10);
+  const [mindfulnessSound, setMindfulnessSound] = useState<string>('birds');
+  const [mindfulnessStreak, setMindfulnessStreak] = useState<number>(0);
 
   // Key Visibility Toggles
   const [showHevyKey, setShowHevyKey] = useState(false);
@@ -245,8 +265,19 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [showGeminiKey, setShowGeminiKey] = useState(false);
 
   // Security Vault & Audit State
-  const [securityStatus, setSecurityStatus] = useState<SecurityVaultStatus | null>(null);
   const [vaultNotice, setVaultNotice] = useState<string | null>(null);
+  const [showPrivacyModal, setShowPrivacyModal] = useState<boolean>(false);
+  const [widgetSyncNotice, setWidgetSyncNotice] = useState<string | null>(null);
+
+  const handleSyncWidgets = async () => {
+    try {
+      await widgetSyncService.syncAllWidgets();
+      setWidgetSyncNotice('✓ Android Home Screen widgets updated');
+      setTimeout(() => setWidgetSyncNotice(null), 3000);
+    } catch {
+      setWidgetSyncNotice('Sync completed');
+    }
+  };
 
   // Testing & Status State
   const [testingService, setTestingService] = useState<'hevy' | 'ultrahuman' | 'fitbit' | 'gemini' | 'aicore' | null>(null);
@@ -265,9 +296,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const handleTestNotificationInSettings = () => {
     try {
       Vibration.vibrate([0, 300, 150, 300]);
-    } catch {}
+    } catch { }
     medicationService.triggerTestReminder();
-    medicationNotificationService.sendTestPopNotification().catch(() => {});
+    medicationNotificationService.sendTestPopNotification().catch(() => { });
     setTestNotificationStatus('✓ Notification alert dispatched! Dose reminder popped up on screen.');
     setTimeout(() => setTestNotificationStatus(null), 3500);
   };
@@ -279,15 +310,25 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       if (creds.ultrahumanToken) setUltrahumanToken(creds.ultrahumanToken);
       if (creds.fitbitToken) setFitbitToken(creds.fitbitToken);
       if (creds.geminiApiKey) setGeminiApiKey(creds.geminiApiKey);
-      if (creds.aiProvider) setAiProvider(creds.aiProvider);
       if (creds.aiEnabled !== undefined) setIsAiActive(creds.aiEnabled);
       if (creds.bodyAnalysisEnabled !== undefined) setIsBodyAnalysisActive(creds.bodyAnalysisEnabled);
       if (creds.healthConnectPermissionsGranted) setIsHealthConnectGranted(true);
       if (creds.dailyStepsGoal) setStepsGoal(creds.dailyStepsGoal);
       if (creds.dailyCaloriesGoal) setCaloriesGoal(creds.dailyCaloriesGoal);
-      setSecurityStatus(credentialsStorage.getSecurityStatus());
+      if (creds.dailyMindfulnessGoal) setMindfulnessGoal(creds.dailyMindfulnessGoal);
+      if (creds.mindfulnessAmbientSound) setMindfulnessSound(creds.mindfulnessAmbientSound);
     });
   }, [isSyncing]);
+
+  useEffect(() => {
+    mindfulnessService.loadLogs().then(() => {
+      setMindfulnessStreak(mindfulnessService.getWeeklyStats().currentStreak);
+    });
+    const unsubscribe = mindfulnessService.subscribe((stats) => {
+      setMindfulnessStreak(stats.currentStreak);
+    });
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     if (aiEnabled !== undefined) {
@@ -313,6 +354,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     await credentialsStorage.saveCredentials({ dailyCaloriesGoal: updated });
   };
 
+  const handleUpdateMindfulnessGoal = async (delta: number) => {
+    const updated = Math.max(2, Math.min(60, mindfulnessGoal + delta));
+    setMindfulnessGoal(updated);
+    await credentialsStorage.saveCredentials({ dailyMindfulnessGoal: updated });
+  };
+
+  const handleSelectMindfulnessSound = async (soundId: string) => {
+    setMindfulnessSound(soundId);
+    await credentialsStorage.saveCredentials({ mindfulnessAmbientSound: soundId });
+  };
+
   const handleToggleAi = async (val: boolean) => {
     setIsAiActive(val);
     if (onToggleAi) onToggleAi(val);
@@ -325,14 +377,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     await credentialsStorage.saveCredentials({ bodyAnalysisEnabled: val });
   };
 
+  const handleToggleMindfulness = async (val: boolean) => {
+    setIsMindfulnessActive(val);
+    if (onToggleMindfulness) onToggleMindfulness(val);
+    await credentialsStorage.saveCredentials({ mindfulnessEnabled: val });
+  };
+
   const handleClearVault = async () => {
     await credentialsStorage.clearVault();
+    await mindfulnessService.clearLogs();
     setHevyApiKey('');
     setUltrahumanToken('');
     setFitbitToken('');
     setGeminiApiKey('');
-    setSecurityStatus(credentialsStorage.getSecurityStatus());
-    setVaultNotice('Secure vault wiped. All encrypted keys purged from device storage.');
+    setVaultNotice('Secure vault wiped. All encrypted keys & logs purged from device storage.');
     setTimeout(() => setVaultNotice(null), 3500);
   };
 
@@ -624,7 +682,116 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </View>
       </View>
 
-      {/* 1.3 Notifications & Medication Alerts Control */}
+      {/* 1.3 Mindfulness & Breathing Module Control */}
+      <View style={styles.moduleCard}>
+        <View style={styles.moduleRow}>
+          <View style={styles.moduleLeft}>
+            <View style={[styles.moduleIconBubbleBody, { backgroundColor: '#EAF2EE' }]}>
+              <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+                <Path d="M12 22V12" stroke="#1F382E" strokeWidth="1.8" strokeLinecap="round" />
+                <Path d="M12 12C12 12 7 10 5 6c2 0 5 1 7 6z" stroke="#1F382E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                <Path d="M12 12C12 12 17 10 19 6c-2 0-5 1-7 6z" stroke="#1F382E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                <Path d="M12 12C12 12 9 7 12 3c3 4 0 9 0 9z" stroke="#1F382E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </Svg>
+            </View>
+            <View style={styles.moduleTextCol}>
+              <Text style={styles.moduleTitle}>Mindfulness & Breathing</Text>
+              <Text style={styles.moduleSubtitle}>
+                {isMindfulnessActive
+                  ? 'Active · Guided breathing sessions, mood check-in & Zen tab'
+                  : 'Disabled · Zen tab hidden'}
+              </Text>
+            </View>
+          </View>
+          <Switch
+            value={isMindfulnessActive}
+            onValueChange={handleToggleMindfulness}
+            trackColor={{ false: '#E2E8F0', true: '#CCE6DE' }}
+            thumbColor={isMindfulnessActive ? '#1F382E' : '#FFFFFF'}
+          />
+        </View>
+
+        {/* Expanded Mindfulness Settings */}
+        {isMindfulnessActive && (
+          <View style={{ marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(31,56,46,0.06)' }}>
+            {/* Daily Target Stepper */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <View>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: '#1F382E' }}>Daily Mindful Target</Text>
+                <Text style={{ fontSize: 11, color: '#63706B', marginTop: 1 }}>{mindfulnessGoal} minutes per day</Text>
+              </View>
+              <View style={styles.goalStepperBtns}>
+                <TouchableOpacity
+                  style={styles.goalStepperBtn}
+                  onPress={() => handleUpdateMindfulnessGoal(-2)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.goalStepperBtnText}>−</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.goalStepperBtn}
+                  onPress={() => handleUpdateMindfulnessGoal(2)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.goalStepperBtnText}>+</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Streak & Calendar Status */}
+            <View style={{ backgroundColor: '#EAF2EE', borderRadius: 12, padding: 10, flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <Text style={{ fontSize: 14 }}>🔥</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 12, fontWeight: '800', color: '#1F382E' }}>
+                  {mindfulnessStreak > 0 ? `${mindfulnessStreak}-Day Active Streak` : 'No Active Streak Yet'}
+                </Text>
+                <Text style={{ fontSize: 11, color: '#2C4A3E' }}>
+                  {mindfulnessStreak > 0
+                    ? 'Check the Zen tab to view your interactive 7-day streak calendar'
+                    : 'Complete a breathing session in Zen tab to begin your streak'}
+                </Text>
+              </View>
+            </View>
+
+            {/* Ambient Soundscape Preference */}
+            <Text style={{ fontSize: 11, fontWeight: '800', color: '#63706B', letterSpacing: 0.5, marginBottom: 8 }}>
+              DEFAULT AMBIENT SOUND
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+              {[
+                { id: 'birds', label: '🐦 Birds' },
+                { id: 'rain', label: '🌧️ Rain' },
+                { id: 'waves', label: '🌊 Ocean' },
+                { id: 'breeze', label: '🍃 Breeze' },
+                { id: 'silent', label: '🤫 Silent' },
+              ].map((s) => {
+                const isSelected = mindfulnessSound === s.id;
+                return (
+                  <TouchableOpacity
+                    key={s.id}
+                    style={{
+                      backgroundColor: isSelected ? '#1F382E' : '#F8FAFA',
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                      borderRadius: 12,
+                      borderWidth: 1,
+                      borderColor: isSelected ? '#1F382E' : 'rgba(0,0,0,0.06)',
+                    }}
+                    onPress={() => handleSelectMindfulnessSound(s.id)}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: isSelected ? '#FFFFFF' : '#495057' }}>
+                      {s.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        )}
+      </View>
+
+      {/* 1.4 Notifications & Medication Alerts Control */}
       <View style={styles.moduleCard}>
         <View style={styles.moduleRow}>
           <View style={styles.moduleLeft}>
@@ -692,10 +859,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       !isNativeLinked && __DEV__
                         ? '#FEF3C7'
                         : !isNativeLinked
-                        ? '#F1F5F9'
-                        : isHealthConnectGranted
-                        ? '#E8F9F1'
-                        : '#FFF3EB',
+                          ? '#F1F5F9'
+                          : isHealthConnectGranted
+                            ? '#E8F9F1'
+                            : '#FFF3EB',
                   },
                 ]}
               >
@@ -707,20 +874,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                         !isNativeLinked && __DEV__
                           ? '#B45309'
                           : !isNativeLinked
-                          ? '#64748B'
-                          : isHealthConnectGranted
-                          ? '#10B981'
-                          : '#D97706',
+                            ? '#64748B'
+                            : isHealthConnectGranted
+                              ? '#10B981'
+                              : '#D97706',
                     },
                   ]}
                 >
                   {!isNativeLinked && __DEV__
                     ? 'EXPO GO — NATIVE BUILD REQUIRED'
                     : !isNativeLinked
-                    ? 'REQUIRES NATIVE BUILD'
-                    : isHealthConnectGranted
-                    ? '100% READ-ONLY ✓'
-                    : 'PERMISSIONS NEEDED'}
+                      ? 'REQUIRES NATIVE BUILD'
+                      : isHealthConnectGranted
+                        ? '100% READ-ONLY ✓'
+                        : 'PERMISSIONS NEEDED'}
                 </Text>
               </View>
             </View>
@@ -728,10 +895,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               {!isNativeLinked && __DEV__
                 ? 'Running in Expo Go. Health Connect requires a standalone native APK. Use your Ultrahuman Token below for instant live sync, or see the build guide.'
                 : !isNativeLinked
-                ? 'A standalone native APK is required for Health Connect OS integration.'
-                : isHealthConnectGranted
-                ? 'Auto-reads sleep sessions, resting pulse, HRV & steps from Ultrahuman Ring AIR & phone sensors without cloud tokens.'
-                : 'Grant Read-Only access to auto-import sleep & biometrics without entering an Ultrahuman API key.'}
+                  ? 'A standalone native APK is required for Health Connect OS integration.'
+                  : isHealthConnectGranted
+                    ? 'Auto-reads sleep sessions, resting pulse, HRV & steps from Ultrahuman Ring AIR & phone sensors without cloud tokens.'
+                    : 'Grant Read-Only access to auto-import sleep & biometrics without entering an Ultrahuman API key.'}
             </Text>
           </View>
         </View>
@@ -778,12 +945,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       backgroundColor: !enabledSources.ultrahuman
                         ? '#94A3B8'
                         : ultrahumanStatus?.connected
-                        ? '#10B981'
-                        : ultrahumanToken
-                        ? '#F59E0B'
-                        : isNativeLinked && isHealthConnectGranted
-                        ? '#10B981'
-                        : '#94A3B8',
+                          ? '#10B981'
+                          : ultrahumanToken
+                            ? '#F59E0B'
+                            : isNativeLinked && isHealthConnectGranted
+                              ? '#10B981'
+                              : '#94A3B8',
                     },
                   ]}
                 />
@@ -793,12 +960,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 {!enabledSources.ultrahuman
                   ? 'Source Disabled'
                   : ultrahumanStatus?.connected
-                  ? 'Live API Connected ✓'
-                  : ultrahumanToken
-                  ? 'Token Configured • Tap Test Below'
-                  : isNativeLinked && isHealthConnectGranted
-                  ? 'Auto-synced via Native Health Connect ✓'
-                  : 'Awaiting Token or Health Connect'}
+                    ? 'Live API Connected ✓'
+                    : ultrahumanToken
+                      ? 'Token Configured • Tap Test Below'
+                      : isNativeLinked && isHealthConnectGranted
+                        ? 'Auto-synced via Native Health Connect ✓'
+                        : 'Awaiting Token or Health Connect'}
               </Text>
             </View>
           </View>
@@ -875,10 +1042,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       backgroundColor: !enabledSources.fitbit
                         ? '#94A3B8'
                         : fitbitStatus?.connected
-                        ? '#10B981'
-                        : fitbitToken
-                        ? '#F59E0B'
-                        : '#94A3B8',
+                          ? '#10B981'
+                          : fitbitToken
+                            ? '#F59E0B'
+                            : '#94A3B8',
                     },
                   ]}
                 />
@@ -888,10 +1055,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 {!enabledSources.fitbit
                   ? 'Source Disabled'
                   : fitbitStatus?.connected
-                  ? 'Live API Connected ✓'
-                  : fitbitToken
-                  ? 'Token Configured • Tap Test Below'
-                  : 'Not Configured (Enter token below)'}
+                    ? 'Live API Connected ✓'
+                    : fitbitToken
+                      ? 'Token Configured • Tap Test Below'
+                      : 'Not Configured (Enter token below)'}
               </Text>
             </View>
           </View>
@@ -968,10 +1135,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       backgroundColor: !enabledSources.hevy
                         ? '#94A3B8'
                         : hevyStatus?.connected
-                        ? '#10B981'
-                        : hevyApiKey
-                        ? '#F59E0B'
-                        : '#94A3B8',
+                          ? '#10B981'
+                          : hevyApiKey
+                            ? '#F59E0B'
+                            : '#94A3B8',
                     },
                   ]}
                 />
@@ -981,10 +1148,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 {!enabledSources.hevy
                   ? 'Source Disabled'
                   : hevyStatus?.connected
-                  ? 'Live API Connected ✓'
-                  : hevyApiKey
-                  ? 'API Key Configured • Tap Test Below'
-                  : 'Not Configured (Enter key below)'}
+                    ? 'Live API Connected ✓'
+                    : hevyApiKey
+                      ? 'API Key Configured • Tap Test Below'
+                      : 'Not Configured (Enter key below)'}
               </Text>
             </View>
           </View>
@@ -1103,6 +1270,30 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Mindful Target Row */}
+        <View style={[styles.goalSettingRow, { borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.05)', paddingTop: 12, marginTop: 12 }]}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.goalSettingLabel}>Daily Mindful Goal</Text>
+            <Text style={[styles.goalSettingValText, { color: '#1F382E' }]}>{mindfulnessGoal} mins</Text>
+          </View>
+          <View style={styles.goalStepperBtns}>
+            <TouchableOpacity
+              style={styles.goalStepperBtn}
+              onPress={() => handleUpdateMindfulnessGoal(-2)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.goalStepperBtnText}>−</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.goalStepperBtn}
+              onPress={() => handleUpdateMindfulnessGoal(2)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.goalStepperBtnText}>+</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
 
       {/* Recalibrate Goals Action Card */}
@@ -1201,6 +1392,192 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* 4.25 Android Home Screen Widgets Hub */}
+      <View style={styles.widgetsHubCard}>
+        <View style={styles.widgetsHubHeader}>
+          <View style={styles.widgetsIconBubble}>
+            <BentoGridIcon size={18} color="#1F382E" />
+          </View>
+          <View style={styles.widgetsTextCol}>
+            <Text style={styles.widgetsHubTitle}>Android Home Screen Widgets (Glance)</Text>
+            <Text style={styles.widgetsHubSub}>
+              Live interactive Scandinavian bento widgets on your phone home screen
+            </Text>
+          </View>
+        </View>
+
+        {/* Live Widget Previews */}
+        <View style={styles.widgetPreviewsWrap}>
+          {/* Pill Reminder Widget Preview */}
+          <View style={styles.widgetPreviewItem}>
+            <View style={styles.widgetPreviewTop}>
+              <Text style={styles.widgetPreviewTag}>PILL REMINDER · 4x2</Text>
+              <View style={styles.widgetPreviewBadge}>
+                <Text style={styles.widgetPreviewBadgeText}>UPCOMING</Text>
+              </View>
+            </View>
+            <View style={styles.widgetPreviewBody}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.widgetPreviewMedTitle}>Vitamin D3</Text>
+                <Text style={styles.widgetPreviewMedSub}>2,000 IU · 1 capsule</Text>
+                <Text style={styles.widgetPreviewMedTime}>Due at 08:00 AM</Text>
+              </View>
+              <View style={styles.widgetPreviewTakeBtn}>
+                <Text style={styles.widgetPreviewTakeText}>Take</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Zen & Vitals Widget Preview */}
+          <View style={styles.widgetPreviewItem}>
+            <View style={styles.widgetPreviewTop}>
+              <Text style={styles.widgetPreviewTag}>ZEN &amp; VITALS · 4x2</Text>
+              <View style={styles.widgetPreviewBadge}>
+                <Text style={styles.widgetPreviewBadgeText}>{mindfulnessStreak > 0 ? `${mindfulnessStreak} D STREAK` : '3 D STREAK'}</Text>
+              </View>
+            </View>
+            <View style={styles.widgetPreviewBody}>
+              <View style={{ flex: 1.2 }}>
+                <Text style={styles.widgetPreviewStepsVal}>
+                  {String(stepsGoal).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}{' '}
+                  <Text style={styles.widgetPreviewStepsSub}>steps</Text>
+                </Text>
+                <View style={styles.widgetPreviewBarTrack}>
+                  <View style={[styles.widgetPreviewBarFill, { width: '74%' }]} />
+                </View>
+              </View>
+              <View style={{ flex: 0.8, paddingLeft: 12 }}>
+                <Text style={styles.widgetPreviewHrSub}>HEART RATE</Text>
+                <Text style={styles.widgetPreviewHrVal}>64 bpm</Text>
+              </View>
+              <View style={styles.widgetPreviewTakeBtn}>
+                <Text style={styles.widgetPreviewTakeText}>Breathe</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Instructions */}
+        <View style={styles.widgetInstructionsBox}>
+          <Text style={styles.widgetInstructionsTitle}>How to add to your Home Screen:</Text>
+          <Text style={styles.widgetInstructionsStep}>1. Go to your Android phone home screen</Text>
+          <Text style={styles.widgetInstructionsStep}>2. Long-press any empty space &amp; tap &quot;Widgets&quot;</Text>
+          <Text style={styles.widgetInstructionsStep}>3. Select &quot;OdinEye Medication&quot; or &quot;OdinEye Zen&quot;</Text>
+        </View>
+
+        {widgetSyncNotice && (
+          <View style={styles.widgetSyncNoticeBox}>
+            <Text style={styles.widgetSyncNoticeText}>{widgetSyncNotice}</Text>
+          </View>
+        )}
+
+        <TouchableOpacity
+          style={styles.syncWidgetsBtn}
+          onPress={handleSyncWidgets}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.syncWidgetsBtnText}>Sync Widgets Now</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* 4.3 Privacy Policy & Legal Governance Card */}
+      <View style={styles.privacyGovCard}>
+        <View style={styles.privacyGovHeader}>
+          <View style={styles.privacyIconBubble}>
+            <VaultShieldIcon size={18} color="#1F382E" />
+          </View>
+          <View style={styles.privacyTextCol}>
+            <Text style={styles.privacyGovTitle}>Privacy Policy & Legal Governance</Text>
+            <Text style={styles.privacyGovSub}>
+              Zero-knowledge, local-first computing. 100% compliant with Google Play Health Connect Limited Use Policy.
+            </Text>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          style={styles.viewPrivacyBtn}
+          onPress={() => setShowPrivacyModal(true)}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.viewPrivacyBtnText}>View Full Privacy Policy</Text>
+          <ChevronRightIcon size={14} color="#1F382E" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Privacy Policy In-App Modal */}
+      <Modal
+        visible={showPrivacyModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowPrivacyModal(false)}
+      >
+        <View style={styles.privacyModalBackdrop}>
+          <View style={styles.privacyModalCard}>
+            <View style={styles.privacyModalHeader}>
+              <View>
+                <Text style={styles.privacyModalBadge}>LEGAL & GOVERNANCE</Text>
+                <Text style={styles.privacyModalTitle}>Privacy Policy</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.privacyModalCloseBtn}
+                onPress={() => setShowPrivacyModal(false)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.privacyModalCloseText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.privacyModalScroll} showsVerticalScrollIndicator={false}>
+              <Text style={styles.privacyP}>
+                <Text style={{ fontWeight: '800', color: '#1F382E' }}>OdinEye (com.odineye.health)</Text> operates on a decentralized, <Text style={{ fontWeight: '700' }}>Local-First Architecture</Text>. We do not operate remote tracking servers or cloud databases.
+              </Text>
+
+              <Text style={styles.privacyH3}>1. Google Play Health Connect Limited Use</Text>
+              <Text style={styles.privacyP}>
+                In strict adherence to Google Play Developer Policies:
+              </Text>
+              <Text style={styles.privacyBullet}>• Health Connect data is accessed <Text style={{ fontWeight: '700' }}>strictly read-only</Text> to calculate your personal recovery index, activity pillars, and sleep scores.</Text>
+              <Text style={styles.privacyBullet}>• Health Connect data is <Text style={{ fontWeight: '700' }}>NEVER sold, rented, or leased</Text> to data brokers or advertisers.</Text>
+              <Text style={styles.privacyBullet}>• Data is <Text style={{ fontWeight: '700' }}>NEVER used for advertising, retargeting, or marketing</Text>.</Text>
+              <Text style={styles.privacyBullet}>• Data is <Text style={{ fontWeight: '700' }}>NEVER used to determine creditworthiness</Text> or for lending purposes.</Text>
+              <Text style={styles.privacyBullet}>• No human is permitted to read your health records.</Text>
+
+              <Text style={styles.privacyH3}>2. AES-256 On-Device Vault</Text>
+              <Text style={styles.privacyP}>
+                All third-party credentials (Ultrahuman, Fitbit, Hevy, Gemini) and personal medication/mindfulness logs are encrypted with AES-256-CBC, PBKDF2 (10,000 iterations), and HMAC-SHA256 authenticated integrity inside Android Hardware-Backed Keystore.
+              </Text>
+
+              <Text style={styles.privacyH3}>3. Complete Data Deletion</Text>
+              <Text style={styles.privacyP}>
+                You retain complete unilateral control. Tapping "Wipe Vault & Delete Keys" in Settings immediately, permanently, and irreversibly destroys all keys, caches, and logs from device storage.
+              </Text>
+
+              <Text style={styles.privacyH3}>4. Medical Disclaimer</Text>
+              <Text style={styles.privacyP}>
+                OdinEye is intended solely for general fitness and wellness purposes. It is not an FDA/EMA-cleared medical device and does not diagnose, treat, cure, or prevent any illness or disease.
+              </Text>
+
+              <Text style={styles.privacyH3}>5. Contact & Official Documentation</Text>
+              <Text style={styles.privacyP}>
+                Publisher: OdinEye Health{'\n'}
+                Email: N/A{'\n'}
+                Full Policy: docs/PRIVACY_POLICY.md
+              </Text>
+
+              <View style={{ height: 20 }} />
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.privacyModalDoneBtn}
+              onPress={() => setShowPrivacyModal(false)}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.privacyModalDoneText}>I Understand & Agree</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -2153,5 +2530,335 @@ const styles = StyleSheet.create({
     color: '#63706B',
     marginTop: 2,
     lineHeight: 15,
+  },
+
+  // Android Widgets Hub Card Styles
+  widgetsHubCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    padding: 18,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(31, 56, 46, 0.08)',
+    shadowColor: '#1F382E',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  widgetsHubHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  widgetsIconBubble: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#EAF2EE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  widgetsTextCol: {
+    flex: 1,
+  },
+  widgetsHubTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#1F382E',
+  },
+  widgetsHubSub: {
+    fontSize: 11,
+    color: '#63706B',
+    marginTop: 2,
+    lineHeight: 15,
+  },
+  widgetPreviewsWrap: {
+    gap: 12,
+    marginBottom: 14,
+  },
+  widgetPreviewItem: {
+    backgroundColor: '#F8FAF9',
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(44, 74, 62, 0.08)',
+  },
+  widgetPreviewTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  widgetPreviewTag: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#2C4A3E',
+    letterSpacing: 0.5,
+  },
+  widgetPreviewBadge: {
+    backgroundColor: '#EAF2EE',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  widgetPreviewBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#1F382E',
+  },
+  widgetPreviewBody: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  widgetPreviewMedTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1F382E',
+  },
+  widgetPreviewMedSub: {
+    fontSize: 12,
+    color: '#60776D',
+    marginTop: 2,
+  },
+  widgetPreviewMedTime: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#2C4A3E',
+    marginTop: 4,
+  },
+  widgetPreviewTakeBtn: {
+    backgroundColor: '#1F382E',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  widgetPreviewTakeText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  widgetPreviewStepsVal: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1F382E',
+  },
+  widgetPreviewStepsSub: {
+    fontSize: 11,
+    color: '#7A9187',
+    fontWeight: '600',
+  },
+  widgetPreviewBarTrack: {
+    height: 5,
+    backgroundColor: '#D9E5E0',
+    borderRadius: 2.5,
+    marginTop: 6,
+    overflow: 'hidden',
+  },
+  widgetPreviewBarFill: {
+    height: '100%',
+    backgroundColor: '#2C4A3E',
+    borderRadius: 2.5,
+  },
+  widgetPreviewHrSub: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#7A9187',
+  },
+  widgetPreviewHrVal: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#1F382E',
+    marginTop: 2,
+  },
+  widgetInstructionsBox: {
+    backgroundColor: '#F3F7F5',
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 12,
+  },
+  widgetInstructionsTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#1F382E',
+    marginBottom: 4,
+  },
+  widgetInstructionsStep: {
+    fontSize: 11,
+    color: '#52665E',
+    lineHeight: 16,
+  },
+  widgetSyncNoticeBox: {
+    backgroundColor: '#DCFCE7',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  widgetSyncNoticeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#15803D',
+  },
+  syncWidgetsBtn: {
+    backgroundColor: '#EAF2EE',
+    borderRadius: 14,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#CCE6DE',
+  },
+  syncWidgetsBtnText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#1F382E',
+  },
+
+  // Privacy Policy & Governance Card & Modal Styles
+  privacyGovCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    padding: 16,
+    marginTop: 16,
+    marginBottom: 40,
+    borderWidth: 1,
+    borderColor: 'rgba(31, 56, 46, 0.08)',
+    shadowColor: '#1F382E',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  privacyGovHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  privacyIconBubble: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#EAF2EE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  privacyTextCol: {
+    flex: 1,
+  },
+  privacyGovTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#1F382E',
+  },
+  privacyGovSub: {
+    fontSize: 11,
+    color: '#63706B',
+    marginTop: 2,
+    lineHeight: 15,
+  },
+  viewPrivacyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F8FAFA',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(31, 56, 46, 0.08)',
+  },
+  viewPrivacyBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#1F382E',
+  },
+
+  // Modal styles
+  privacyModalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  privacyModalCard: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 40,
+    maxHeight: '85%',
+  },
+  privacyModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.06)',
+    paddingBottom: 12,
+  },
+  privacyModalBadge: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    color: '#1F382E',
+    marginBottom: 2,
+  },
+  privacyModalTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#141816',
+  },
+  privacyModalCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F1F5F3',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  privacyModalCloseText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#1F382E',
+  },
+  privacyModalScroll: {
+    paddingVertical: 8,
+  },
+  privacyH3: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#1F382E',
+    marginTop: 14,
+    marginBottom: 6,
+  },
+  privacyP: {
+    fontSize: 12,
+    color: '#4B5563',
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  privacyBullet: {
+    fontSize: 12,
+    color: '#374151',
+    lineHeight: 18,
+    marginLeft: 6,
+    marginBottom: 4,
+  },
+  privacyModalDoneBtn: {
+    backgroundColor: '#1F382E',
+    borderRadius: 18,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  privacyModalDoneText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
   },
 });

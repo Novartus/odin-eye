@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Colors } from '../../theme/colors';
 
 interface TodayInsightCardProps {
   headline: string;

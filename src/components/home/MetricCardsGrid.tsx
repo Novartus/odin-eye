@@ -87,20 +87,6 @@ export const MetricCardsGrid: React.FC<MetricCardsGridProps> = ({
     strengthSource = 'Muscles Primed';
   }
 
-  // Svg circular progress calculations for Walking Hero card
-  const ringRadius = 38;
-  const ringCircumference = 2 * Math.PI * ringRadius;
-  const outerStrokeOffset = stepsGoalPct > 0
-    ? ringCircumference - (ringCircumference * stepsGoalPct) / 100
-    : ringCircumference;
-
-  const innerRadius = 28;
-  const innerCircumference = 2 * Math.PI * innerRadius;
-  const innerProgressPct = Math.min(100, Math.round((activeDistance / 8) * 100));
-  const innerStrokeOffset = innerProgressPct > 0
-    ? innerCircumference - (innerCircumference * innerProgressPct) / 100
-    : innerCircumference;
-
   return (
     <View style={styles.container}>
       {/* Signature Headline matching user's style */}
@@ -330,7 +316,7 @@ export const MetricCardsGrid: React.FC<MetricCardsGridProps> = ({
               <Text style={styles.peachValueText}>{caloriesVal}</Text>
               <Text style={styles.peachUnitText}>kcal</Text>
             </View>
-            <Text style={styles.peachLabel}>Burned today</Text>
+            <Text style={styles.peachLabel}>{caloriesGoal > 0 ? `Target: ${caloriesGoal} kcal` : 'Burned today'}</Text>
 
             <View style={styles.sourceBottomRow}>
               <Text style={styles.cardSourceText}>{caloriesSource}</Text>

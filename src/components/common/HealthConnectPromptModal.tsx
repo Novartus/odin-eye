@@ -9,7 +9,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import Svg, { Path, Circle } from 'react-native-svg';
 import { Colors } from '../../theme/colors';
 import { healthConnect, isNativeHealthConnectLinked } from '../../services/healthConnect/healthConnectService';
 

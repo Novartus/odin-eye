@@ -30,13 +30,19 @@ A complete reference for every feature in OdinEye.
 | Hypertrophy readiness scoring | Body | ✅ |
 | Body composition analysis | Body | ✅ |
 | Body Analysis tab toggle (hide/show) | Config | ✅ |
+| Mindfulness & Breathing exercises | Zen | ✅ |
+| Interactive 7-day streak calendar | Zen | ✅ |
+| Animated breathing orb with phase timer | Zen | ✅ |
+| Ambient soundscapes (Birds, Rain, Ocean, Breeze) | Zen | ✅ |
+| Daily mood check-in with concentric tracker | Zen | ✅ |
+| Daily mindful minutes goal stepper | Config | ✅ |
 | On-device AI coach (Android AICore / Gemini Nano) | AI | ✅ |
 | Cloud Gemini AI fallback | AI | ✅ |
 | Offline rule-based coaching | AI | ✅ |
 | AI toggle (disable AI modules entirely) | Config | ✅ |
-| Module toggles (AI, Body, Medication) | Config | ✅ |
+| Module toggles (AI, Body, Mindfulness, Medication) | Config | ✅ |
 | Unified wearable credential cards | Config | ✅ |
-| Daily steps + calorie target steppers | Config | ✅ |
+| Daily steps, calorie & mindful target steppers | Config | ✅ |
 | Goal recalibration flow | Config | ✅ |
 | AES-256 encrypted credential vault | Config | ✅ |
 | Vault wipe / key deletion | Config | ✅ |
@@ -169,6 +175,51 @@ Estimates of muscle-to-fat ratio trends from wearable telemetry over time.
 
 ---
 
+## Zen (Mindfulness & Breathing)
+
+A dedicated sanctuary for nervous system regulation, breathing exercises, and daily streak tracking.
+
+### Interactive 7-Day Streak Calendar
+
+- Visual week strip (Mon–Sun) showing completion status for each day
+- Glowing indicator dots on completed mindfulness days
+- Day selection to review past sessions or view scheduled targets
+- Weekly progress banner (e.g. "3 of 7 days completed this week")
+
+### Today's Plan & Progress Ring
+
+- Circular weekly completion ring (e.g. 75% weekly target reached)
+- Daily target countdown and session summary
+- One-tap quick jump to daily mood check-in
+
+### Animated Breathing Orb (Interactive Sessions)
+
+- Smooth expanding and contracting concentric ripple rings
+- Clear visual phase coaching: **Breathe In...**, **Hold...**, **Breathe Out...**
+- 4 curated breathing techniques:
+  - **Breathing Exercise (4·4·4·4 Box)** — resets nervous system & lowers cortisol
+  - **Deep Calm & Sleep (4·7·8)** — parasympathetic activation for sleep & anxiety
+  - **Coherent Harmony (5·5)** — rhythm tuned to maximize Heart Rate Variability (HRV)
+  - **Morning Energy Flow (5·2·5)** — elevates oxygenation and mental clarity
+- Live countdown timer, cycle counters, and play / pause / stop controls
+
+### Ambient Soundscapes
+
+- Background audio pill selector embedded directly in the session header:
+  - 🐦 Chirping Birds
+  - 🌧️ Gentle Rain
+  - 🌊 Ocean Waves
+  - 🍃 Forest Breeze
+  - 🤫 Silent Clarity
+
+### Daily Mood Check-In
+
+- Serene concentric pastel ripple interface with calm Zen icon
+- 5-point mood slider: Unhappy, Sad, Normal, Good, Happy
+- "Note Mood" action that records daily emotional balance
+
+---
+
 ## AI
 
 An intelligent health coaching interface powered by on-device and cloud AI.
@@ -240,7 +291,7 @@ Each device has its data stream toggle, credential input, and test button in a *
 A 2-step flow that runs once on first launch:
 
 1. **Step 1 — Personal info** — name, age range, fitness level
-2. **Step 2 — Daily targets** — step goal and active calorie goal via interactive steppers
+2. **Step 2 — Daily targets** — step goal, active calorie goal, and daily mindfulness goal via interactive steppers and preset chips
 
 Can be re-entered in **recalibration mode** from Config → Category 03. In recalibration mode the header shows "RECALIBRATE TARGETS" and the confirm button reads "Save Targets & Return to App".
 

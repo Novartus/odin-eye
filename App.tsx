@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, Animated } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -14,10 +14,11 @@ export default function App() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
     credentialsStorage.loadCredentials().then((creds) => {
       setHasCompletedOnboarding(Boolean(creds.hasCompletedOnboarding));
       // Smooth handoff after brief presentation
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         setIsLoading(false);
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -26,6 +27,9 @@ export default function App() {
         }).start();
       }, 750);
     });
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [fadeAnim]);
 
   const [onboardingInitialStep, setOnboardingInitialStep] = useState<1 | 2>(1);

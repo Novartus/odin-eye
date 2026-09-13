@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Svg, { Path, Circle } from 'react-native-svg';
+import { View, Text, StyleSheet, TouchableOpacity, Vibration } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import { TabKey } from '../../types/navigation';
 export { TabKey } from '../../types/navigation';
 
@@ -9,6 +9,7 @@ interface FloatingTabBarProps {
   onSelectTab: (tab: TabKey) => void;
   showAiTab?: boolean;
   showBodyAnalysisTab?: boolean;
+  showMindfulnessTab?: boolean;
 }
 
 interface TabItemConfig {
@@ -16,23 +17,28 @@ interface TabItemConfig {
   label: string;
 }
 
-export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
+export const FloatingTabBar: React.FC<FloatingTabBarProps> = React.memo(({
   activeTab,
   onSelectTab,
   showAiTab = true,
   showBodyAnalysisTab = true,
+  showMindfulnessTab = true,
 }) => {
   const allTabs: TabItemConfig[] = [
     { key: 'home', label: 'Home' },
     { key: 'meds', label: 'Meds' },
     { key: 'overview', label: 'Vitals' },
     { key: 'body', label: 'Body' },
+    { key: 'zen', label: 'Zen' },
     { key: 'coach', label: 'AI' },
     { key: 'settings', label: 'Config' },
   ];
 
   const tabs = allTabs.filter(
-    (t) => (showAiTab || t.key !== 'coach') && (showBodyAnalysisTab || t.key !== 'body')
+    (t) =>
+      (showAiTab || t.key !== 'coach') &&
+      (showBodyAnalysisTab || t.key !== 'body') &&
+      (showMindfulnessTab || t.key !== 'zen')
   );
 
   const renderIcon = (key: TabKey, color: string, isActive: boolean) => {
@@ -106,6 +112,42 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
             />
           </Svg>
         );
+      case 'zen':
+        return (
+          <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+            {/* Lotus / leaf icon for Zen */}
+            <Path
+              d="M12 22V12"
+              stroke={color}
+              strokeWidth={isActive ? 2.2 : 1.8}
+              strokeLinecap="round"
+            />
+            <Path
+              d="M12 12C12 12 7 10 5 6c2 0 5 1 7 6z"
+              stroke={color}
+              strokeWidth={isActive ? 2 : 1.6}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill={isActive ? 'rgba(255,255,255,0.20)' : 'none'}
+            />
+            <Path
+              d="M12 12C12 12 17 10 19 6c-2 0-5 1-7 6z"
+              stroke={color}
+              strokeWidth={isActive ? 2 : 1.6}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill={isActive ? 'rgba(255,255,255,0.20)' : 'none'}
+            />
+            <Path
+              d="M12 12C12 12 9 7 12 3c3 4 0 9 0 9z"
+              stroke={color}
+              strokeWidth={isActive ? 2 : 1.6}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill={isActive ? 'rgba(255,255,255,0.25)' : 'none'}
+            />
+          </Svg>
+        );
       case 'coach':
         return (
           <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -134,6 +176,15 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
     }
   };
 
+  const handleTabPress = (key: TabKey) => {
+    if (key !== activeTab) {
+      try {
+        Vibration.vibrate(28);
+      } catch {}
+    }
+    onSelectTab(key);
+  };
+
   return (
     <View style={styles.floatingContainer} pointerEvents="box-none">
       <View style={styles.capsule}>
@@ -144,7 +195,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
               key={tab.key}
               style={[styles.tabButton, isActive && styles.activePill]}
               activeOpacity={0.78}
-              onPress={() => onSelectTab(tab.key)}
+              onPress={() => handleTabPress(tab.key)}
             >
               {renderIcon(tab.key, isActive ? '#FFFFFF' : '#6F7F78', isActive)}
               {isActive && (
@@ -156,7 +207,7 @@ export const FloatingTabBar: React.FC<FloatingTabBarProps> = ({
       </View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   floatingContainer: {

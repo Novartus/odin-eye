@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, ViewStyle, DimensionValue } from 'react-native';
+import { StyleSheet, Animated, ViewStyle, DimensionValue } from 'react-native';
 
 interface ShimmerPlaceholderProps {
   width?: DimensionValue;
@@ -16,7 +16,6 @@ export const ShimmerPlaceholder: React.FC<ShimmerPlaceholderProps> = ({
   borderRadius = 10,
   style,
   baseColor = '#EAEFEA',
-  highlightColor = '#F5F9F6',
 }) => {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
 

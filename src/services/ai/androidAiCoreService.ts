@@ -22,7 +22,6 @@ export interface AndroidAiCoreStatus {
 
 export class AndroidAiCoreService {
   private static instance: AndroidAiCoreService;
-  private isInitialized = false;
 
   public static getInstance(): AndroidAiCoreService {
     if (!AndroidAiCoreService.instance) {
@@ -89,7 +88,7 @@ ${query}
   public async generateInference(
     query: string,
     data: TriPillarHealthSummary,
-    history: ChatMessage[] = []
+    _history: ChatMessage[] = []
   ): Promise<ChatMessage> {
     const p = query
       .toLowerCase()

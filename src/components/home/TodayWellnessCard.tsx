@@ -10,7 +10,7 @@ interface TodayWellnessCardProps {
   onPress?: () => void;
 }
 
-export const TodayWellnessCard: React.FC<TodayWellnessCardProps> = ({
+export const TodayWellnessCard: React.FC<TodayWellnessCardProps> = React.memo(({
   score = 0,
   sleepQualityPct = 0,
   activeZoneMinutes = 0,
@@ -103,7 +103,7 @@ export const TodayWellnessCard: React.FC<TodayWellnessCardProps> = ({
       </View>
     </TouchableOpacity>
   );
-};
+});
 
 const styles = StyleSheet.create({
   card: {

@@ -184,7 +184,6 @@ export class LocalAiCoachEngine {
 
     const fatigued = strength.muscleStatuses.filter((m) => m.state === 'fatigued');
     const primed = strength.muscleStatuses.filter((m) => m.state === 'primed');
-    const recovering = strength.muscleStatuses.filter((m) => m.state === 'recovering');
 
     let response = '';
     let referenced: string[] = [];

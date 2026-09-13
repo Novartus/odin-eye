@@ -1,5 +1,4 @@
-import React from 'react';
-import Svg, { Circle, Path, Rect } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 interface SmartRingIconProps {
   size?: number;
