@@ -307,13 +307,18 @@ class MedicationService {
     const doses = this.getScheduledDosesForDate(today);
     const targetDose = doses.find((d) => !d.isTaken) || doses[0];
 
-    const medToAlert: Medication =
+    const medToAlert: Medication | undefined =
       targetDose?.medication ||
       this.medications.find((m) => !m.isArchived) ||
-      this.medications[0] ||
-      DEFAULT_MEDICATIONS[0];
+      this.medications[0];
 
-    const timeToAlert = targetDose?.time || medToAlert?.times?.[0] || '08:00 AM';
+    // No medications exist yet — silently skip; nothing to alert about
+    if (!medToAlert) {
+      console.warn('[MedicationService] triggerTestReminder: no medications found, skipping.');
+      return;
+    }
+
+    const timeToAlert = targetDose?.time || medToAlert.times?.[0] || '08:00 AM';
 
     this.dispatchReminderAlert({
       medication: medToAlert,
@@ -361,6 +366,12 @@ class MedicationService {
   }
 
   private dispatchReminderAlert(alert: ReminderAlertEvent) {
+    // Defensive guard: never dispatch if medication data is incomplete
+    if (!alert?.medication) {
+      console.warn('[MedicationService] Attempted to dispatch alert with undefined medication — skipped.');
+      return;
+    }
+
     try {
       Vibration.vibrate([0, 300, 150, 300]);
     } catch {}

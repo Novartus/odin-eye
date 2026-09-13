@@ -298,11 +298,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
 
             {/* Centered Sub-screen Title */}
             <Text style={styles.subScreenTitle}>
-              {activeTab === 'meds' && 'Medication Routine'}
-              {activeTab === 'overview' && 'Health Overview'}
-              {activeTab === 'body' && 'Body Analysis'}
-              {activeTab === 'coach' && 'AI Health Coach'}
-              {activeTab === 'settings' && 'Devices & Settings'}
+              {activeTab === 'meds' && 'Meds'}
+              {activeTab === 'overview' && 'Vitals'}
+              {activeTab === 'body' && 'Body'}
+              {activeTab === 'coach' && 'AI'}
+              {activeTab === 'settings' && 'Config'}
             </Text>
 
             {/* Symmetrical Sync Action Button */}

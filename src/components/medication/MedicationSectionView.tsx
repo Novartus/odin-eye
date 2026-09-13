@@ -14,7 +14,6 @@ import {
   ScrollView,
   Platform,
   Alert,
-  Vibration,
 } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { Colors } from '../../theme/colors';
@@ -243,32 +242,6 @@ export const MedicationSectionView: React.FC = () => {
     }
   };
 
-  const handleTestAlert = () => {
-    try {
-      Vibration.vibrate([0, 300, 150, 300]);
-    } catch {}
-
-    const today = medicationService.getTodayDateKey();
-    const doses = medicationService.getScheduledDosesForDate(today);
-    const targetDose = doses.find((d) => !d.isTaken) || doses[0];
-    const targetMed =
-      targetDose?.medication ||
-      medications.find((m) => !m.isArchived) ||
-      medications[0];
-    const targetTime = targetDose?.time || targetMed?.times?.[0] || '08:00 AM';
-
-    if (targetMed) {
-      setActiveAlert({
-        medication: targetMed,
-        time: targetTime,
-        dateKey: today,
-        triggeredAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      });
-    }
-
-    medicationService.triggerTestReminder();
-    medicationNotificationService.sendTestPopNotification().catch(() => {});
-  };
 
   const renderMedIcon = (form: string, color: string) => {
     switch (form) {
@@ -303,15 +276,6 @@ export const MedicationSectionView: React.FC = () => {
         </View>
 
         <View style={styles.headerRightActions}>
-          {/* On-screen Reminder Alert Trigger Test */}
-          <TouchableOpacity
-            style={styles.alertTestBtn}
-            onPress={handleTestAlert}
-            activeOpacity={0.75}
-          >
-            <Text style={styles.alertTestBtnText}>🔔 Test Alert</Text>
-          </TouchableOpacity>
-
           {/* Quick Edit Schedule Routine Button */}
           <TouchableOpacity
             style={[styles.editHeaderBtn, isEditMode && styles.editHeaderBtnActive]}
@@ -770,19 +734,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  alertTestBtn: {
-    backgroundColor: '#FEF7D9',
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(160, 130, 20, 0.12)',
-  },
-  alertTestBtnText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#9C7A1A',
   },
   editHeaderBtn: {
     width: 42,

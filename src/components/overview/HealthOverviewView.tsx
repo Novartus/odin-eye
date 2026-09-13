@@ -160,20 +160,20 @@ export const HealthOverviewView: React.FC<HealthOverviewViewProps> = ({ data }) 
         <View style={styles.pillarsRow}>
           <View style={styles.pillarPill}>
             <View style={[styles.pillarDot, { backgroundColor: '#FFFFFF' }]} />
-            <Text style={styles.pillarTitle}>Activity</Text>
-            <Text style={styles.pillarVal}>{activityPct}%</Text>
+            <Text style={styles.pillarTitle} numberOfLines={1}>Activity</Text>
+            <Text style={styles.pillarVal} numberOfLines={1}>{activityPct}%</Text>
           </View>
 
           <View style={styles.pillarPill}>
             <View style={[styles.pillarDot, { backgroundColor: '#181C1B' }]} />
-            <Text style={styles.pillarTitle}>Sleep</Text>
-            <Text style={styles.pillarVal}>{sleepPct}%</Text>
+            <Text style={styles.pillarTitle} numberOfLines={1}>Sleep</Text>
+            <Text style={styles.pillarVal} numberOfLines={1}>{sleepPct}%</Text>
           </View>
 
           <View style={styles.pillarPill}>
             <View style={[styles.pillarDot, { backgroundColor: '#E07A5F' }]} />
-            <Text style={styles.pillarTitle}>Recovery</Text>
-            <Text style={styles.pillarVal}>{strengthPct}%</Text>
+            <Text style={styles.pillarTitle} numberOfLines={1}>Recover</Text>
+            <Text style={styles.pillarVal} numberOfLines={1}>{strengthPct}%</Text>
           </View>
         </View>
       </View>
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
   },
   pillarsRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
   },
   pillarPill: {
     flex: 1,
@@ -346,24 +346,28 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.85)',
     borderRadius: 12,
     paddingVertical: 8,
-    paddingHorizontal: 10,
-    gap: 6,
+    paddingHorizontal: 8,
+    gap: 4,
+    overflow: 'hidden',
   },
   pillarDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
+    flexShrink: 0,
   },
   pillarTitle: {
     fontSize: 11,
     fontWeight: '700',
     color: '#493D78',
     flex: 1,
+    flexShrink: 1,
   },
   pillarVal: {
     fontSize: 12,
     fontWeight: '800',
     color: '#181C1B',
+    flexShrink: 0,
   },
   mintCard: {
     backgroundColor: '#CCE6DE',
