@@ -1,10 +1,5 @@
 import Svg, { Circle, Path } from 'react-native-svg';
-
-interface SmartRingIconProps {
-  size?: number;
-  color?: string;
-  accentColor?: string;
-}
+import type { SmartRingIconProps } from '../../types';
 
 export const SmartRingIcon: React.FC<SmartRingIconProps> = ({
   size = 18,

@@ -23,17 +23,11 @@ import {
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { isNativeHealthConnectLinked } from '../../services/healthConnect/healthConnectService';
+import type { DevModeStep } from '../../types';
 
 const DISMISSED_KEY = 'dev_banner_dismissed_v1';
 
-interface Step {
-  num: string;
-  title: string;
-  cmd?: string;
-  note?: string;
-}
-
-const BUILD_STEPS: Step[] = [
+const BUILD_STEPS: DevModeStep[] = [
   {
     num: '1',
     title: 'Install EAS CLI (once)',

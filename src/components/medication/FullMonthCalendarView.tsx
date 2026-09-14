@@ -6,12 +6,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { Colors } from '../../theme/colors';
 import { medicationService } from '../../services/medication/medicationService';
-
-interface FullMonthCalendarViewProps {
-  selectedDateKey: string;
-  onSelectDate: (dateKey: string) => void;
-  onClose: () => void;
-}
+import type { FullMonthCalendarViewProps } from '../../types';
 
 export const FullMonthCalendarView: React.FC<FullMonthCalendarViewProps> = ({
   selectedDateKey,

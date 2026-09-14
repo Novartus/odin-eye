@@ -11,14 +11,9 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { ReminderAlertEvent, medicationService } from '../../services/medication/medicationService';
+import { medicationService } from '../../services/medication/medicationService';
+import type { MedicationReminderAlertModalProps } from '../../types';
 import { TabletIcon, CapsuleIcon, DropletIcon, InjectionIcon } from './MedicationIcons';
-
-interface MedicationReminderAlertModalProps {
-  alert: ReminderAlertEvent | null;
-  onClose: () => void;
-  onDoseTaken: () => void;
-}
 
 export const MedicationReminderAlertModal: React.FC<MedicationReminderAlertModalProps> = ({
   alert,

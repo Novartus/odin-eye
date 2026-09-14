@@ -6,32 +6,17 @@ import * as SecureStore from 'expo-secure-store';
 
 const MINDFULNESS_LOG_KEY = 'odineye_mindfulness_logs_v1';
 
-export interface MindfulSessionLog {
-  id: string;
-  dateKey: string; // 'YYYY-MM-DD'
-  techniqueId: string;
-  techniqueName: string;
-  durationSeconds: number;
-  completedAt: string; // ISO string
-  mood?: string;
-}
+import {
+  MindfulSessionLog,
+  MindfulnessWeeklyStats,
+  SoundscapeItem,
+} from '../../types';
 
-export interface MindfulnessWeeklyStats {
-  currentStreak: number;
-  bestStreak: number;
-  totalMinutesThisWeek: number;
-  completedDates: string[]; // ['YYYY-MM-DD', ...]
-}
-
-export interface SoundscapeItem {
-  id: string;
-  label: string;
-  description: string;
-  category?: 'binaural' | 'solfeggio' | 'noise' | 'nature';
-  benefit?: string;
-  carrierFreq?: string;
-  requiresHeadphones?: boolean;
-}
+export {
+  MindfulSessionLog,
+  MindfulnessWeeklyStats,
+  SoundscapeItem,
+};
 
 export const SOUNDSCAPES: SoundscapeItem[] = [
   // Binaural Beats

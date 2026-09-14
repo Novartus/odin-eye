@@ -2,48 +2,9 @@
 // Connects to Ultrahuman Partner & Metric APIs for real sleep architecture, recovery index, HRV, and circadian phases
 
 import { UltrahumanRecoveryData, SleepStageRecord } from '../../types/health';
+import { RawUltrahumanMetric } from '../../types';
 
-export interface RawUltrahumanMetric {
-  date?: string;
-  recovery_index?: number;
-  recovery_score?: number;
-  recoveryIndex?: number;
-  score?: number;
-  sleep_index?: number;
-  sleep_score?: number;
-  sleepIndex?: number;
-  movement_index?: number;
-  movement_score?: number;
-  movementIndex?: number;
-  resting_hr?: number;
-  resting_heart_rate?: number;
-  rhr?: number;
-  restingHeartRate?: number;
-  hrv?: number;
-  hrv_rmssd?: number;
-  rmssd?: number;
-  temp_deviation?: number;
-  temperature_deviation?: number;
-  temp_delta?: number;
-  total_sleep_time_seconds?: number;
-  total_sleep_seconds?: number;
-  total_sleep_minutes?: number;
-  deep_sleep_seconds?: number;
-  deep_sleep_minutes?: number;
-  rem_sleep_seconds?: number;
-  rem_sleep_minutes?: number;
-  light_sleep_seconds?: number;
-  light_sleep_minutes?: number;
-  awake_seconds?: number;
-  awake_minutes?: number;
-  sleep_efficiency?: number;
-  efficiency?: number;
-  steps?: number;
-  total_steps?: number;
-  step_count?: number;
-  steps_count?: number;
-  [key: string]: any;
-}
+export { RawUltrahumanMetric };
 
 export class UltrahumanApiClient {
   private static instance: UltrahumanApiClient;

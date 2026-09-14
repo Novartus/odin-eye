@@ -11,8 +11,10 @@ import {
   Animated,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { TriPillarHealthSummary } from '../../types/health';
-import { ChatMessage, AiCoachRecommendation } from '../../types/aiCoach';
+import type {
+  ChatMessage,
+  DedicatedAiCoachViewProps,
+} from '../../types';
 import { localAiCoach } from '../../services/ai/localCoachEngine';
 import { aiHealthService } from '../../services/ai/aiService';
 import { credentialsStorage } from '../../services/storage/credentialsStorage';
@@ -20,11 +22,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FormattedMessage } from './FormattedMessage';
 import { BouncingDotsLoader } from '../common/BouncingDotsLoader';
 import { Colors } from '../../theme/colors';
-
-interface DedicatedAiCoachViewProps {
-  data: TriPillarHealthSummary;
-  recommendation: AiCoachRecommendation;
-}
 
 export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data, recommendation }) => {
   const insets = useSafeAreaInsets();

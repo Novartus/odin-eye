@@ -10,31 +10,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { TriPillarHealthSummary } from '../../types/health';
 import { SmartRingIcon } from '../common/SmartRingIcon';
 import { SleepBarChart } from '../sleep/SleepBarChart';
 import { sleepHistoryService } from '../../services/sleep/sleepHistoryService';
-import { MetricType, EnabledSources } from '../../types';
-export { MetricType } from '../../types';
-
-interface MetricDetailExpandModalProps {
-  visible: boolean;
-  onClose: () => void;
-  metricType: MetricType | null;
-  data: TriPillarHealthSummary;
-  enabledSources?: EnabledSources;
-}
-
-interface ThemeConfig {
-  heroBg: string;
-  heroBorder: string;
-  heroTextColor: string;
-  heroSubColor: string;
-  heroBadgeText: string;
-  isDark: boolean;
-  accentRing: string;
-  trackRing: string;
-}
+import type { MetricDetailExpandModalProps, ThemeConfig } from '../../types';
+export type { MetricType, MetricDetailExpandModalProps, ThemeConfig } from '../../types';
 
 export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = ({
   visible,

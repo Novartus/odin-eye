@@ -7,3 +7,8 @@ export * from './devices';
 export * from './medication';
 export * from './storage';
 export * from './navigation';
+export * from './mindfulness';
+export * from './sleep';
+export * from './healthConnect';
+export * from './api';
+export * from './components';

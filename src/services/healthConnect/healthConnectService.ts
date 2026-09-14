@@ -21,50 +21,19 @@ export const isNativeHealthConnectLinked = (): boolean => {
   );
 };
 
-export interface HealthConnectPermissionState {
-  isAvailable: boolean;
-  hasPermissions: boolean;
-  permissions: {
-    sleep: boolean;
-    heartRate: boolean;
-    restingHeartRate: boolean;
-    heartRateVariability: boolean;
-    steps: boolean;
-    distance: boolean;
-    activeCalories: boolean;
-    totalCalories: boolean;
-    exercise: boolean;
-    skinTemperature: boolean;
-    oxygenSaturation: boolean;
-    respiratoryRate: boolean;
-  };
-}
+import {
+  HealthConnectPermissionState,
+  HealthConnectDailyTelemetry,
+  HealthConnectValidationResult,
+  NormalizedHrSample,
+} from '../../types';
 
-export interface HealthConnectDailyTelemetry {
-  steps: number;
-  activeCalories: number;
-  totalCalories?: number;
-  restingHeartRate?: number;
-  latestHeartRate?: number;
-  hrvRmssd?: number;
-  skinTempDelta?: number;
-  distanceKm?: number;
-  activeZoneMinutes?: number;
-  sleepMinutes?: number;
-  sleepIndex?: number;
-  sleepEfficiencyPct?: number;
-  sleepStages?: SleepStageRecord[];
-  deepSleepPct?: number;
-  remSleepPct?: number;
-  lightSleepPct?: number;
-  awakePct?: number;
-  recoveryScore?: number;
-  heartRateTimeline?: HeartRateSample[];
-  lastSyncTime: string;
-  connectedSources: string[];
-  originWearable?: 'ultrahuman' | 'fitbit' | 'smart_ring' | 'wear_os' | 'other';
-  sourceDeviceName?: string;
-}
+export {
+  HealthConnectPermissionState,
+  HealthConnectDailyTelemetry,
+  HealthConnectValidationResult,
+  NormalizedHrSample,
+};
 
 export function detectWearableOrigin(dataOrigin?: string): 'ultrahuman' | 'fitbit' | 'smart_ring' | 'wear_os' | 'other' {
   if (!dataOrigin) return 'other';
@@ -99,15 +68,6 @@ export function formatOriginDisplayName(dataOrigin?: string): string {
   if (lower.includes('fitness') || lower.includes('google.android.apps.fitness')) return 'Google Fit';
   if (lower.includes('gms') || lower.includes('hardware') || lower.includes('pedometer')) return 'Phone Sensor';
   return 'Health Connect';
-}
-
-export interface HealthConnectValidationResult {
-  hasPermissions: boolean;
-  isConfigured: boolean;
-  grantedCount: number;
-  totalCount: number;
-  environment: 'expo_go' | 'standalone_android' | 'web';
-  statusMessage: string;
 }
 
 const READ_PERMISSIONS = [
@@ -617,12 +577,6 @@ export class HealthConnectService {
             let sampleCount = 0;
             let lowestBpm = 999;
 
-            interface NormalizedHrSample {
-              timeMs: number;
-              bpm: number;
-              origin: string;
-              timeStr: string;
-            }
             const allSamples: NormalizedHrSample[] = [];
 
             for (const rec of hrResult.records as any[]) {

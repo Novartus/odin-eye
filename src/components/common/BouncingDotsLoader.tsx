@@ -1,9 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
-
-interface BouncingDotsLoaderProps {
-  statusText?: string;
-}
+import type { BouncingDotsLoaderProps } from '../../types';
 
 export const BouncingDotsLoader: React.FC<BouncingDotsLoaderProps> = ({
   statusText = 'Synthesizing response...',

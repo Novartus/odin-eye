@@ -2,14 +2,12 @@
 // Delivers deep, empathetic, evidence-based, and personalized health coaching
 // grounded in real-time cross-device biometrics (Ultrahuman, Fitbit, Hevy, Health Connect, Meds).
 
-import { TriPillarHealthSummary, MuscleGroup } from '../../types/health';
-import { ChatMessage } from '../../types/aiCoach';
+import { TriPillarHealthSummary } from '../../types/health';
+import { ChatMessage, SemanticReasoningResult } from '../../types/aiCoach';
 
-export interface SemanticReasoningResult {
-  headline: string;
-  response: string;
-  referencedDataPoints: string[];
-}
+export { SemanticReasoningResult };
+
+declare const require: any;
 
 export class AiReasoningEngine {
   private static instance: AiReasoningEngine;
@@ -34,14 +32,13 @@ export class AiReasoningEngine {
    * Evaluates user query against comprehensive clinical sports science domains
    * and synthesizes personalized advice grounded in the user's exact live numbers.
    */
-  public reason(query: string, data: TriPillarHealthSummary, history: ChatMessage[] = []): SemanticReasoningResult {
+  public reason(query: string, data: TriPillarHealthSummary, _history: ChatMessage[] = []): SemanticReasoningResult {
     const raw = query.trim();
     const p = this.normalize(raw);
 
     const { recovery, cardio, strength } = data;
     const rawVolumeKg = strength.todayWorkout?.totalVolumeKg || 0;
     const volumeTons = rawVolumeKg > 0 ? (rawVolumeKg / 1000).toFixed(1) : '0.0';
-    const hasWorkoutToday = Boolean(strength.todayWorkout && rawVolumeKg > 0);
     const fatigued = strength.muscleStatuses.filter((m) => m.state === 'fatigued');
     const primed = strength.muscleStatuses.filter((m) => m.state === 'primed');
 
@@ -63,40 +60,274 @@ export class AiReasoningEngine {
     const steps = data.dailyActivity?.steps || 0;
 
     // =========================================================================
-    // 0. GREETINGS, CONVERSATIONAL CHECK-INS & HARDWARE ARCHITECTURE
+    // 0. CONVERSATIONAL INTELLIGENCE: GREETINGS, CHECK-INS, EMOTIONS & DIALOGUE
     // =========================================================================
-    const greetingWords = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 'howdy', 'yo', 'sup'];
-    const isGreeting = greetingWords.some((w) => p === w || p.startsWith(`${w} `) || p.startsWith(`${w}!`) || p.startsWith(`${w},`));
-    const isAskingHowAreYou = p.includes('how are you') || p.includes('how you doing') || p.includes('hows it going') || p.includes("how's it going");
+    const greetingWords = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 'howdy', 'yo', 'sup', 'whats up', "what's up"];
+    const isGreetingOnly = greetingWords.some((w) => p === w || p === `${w} coach` || p === `${w} odineye` || p === `${w} there`);
+    const isAskingHowAreYou =
+      p.includes('how are you') ||
+      p.includes('how you doing') ||
+      p.includes('hows it going') ||
+      p.includes("how's it going") ||
+      p.includes('how do you do') ||
+      p.includes('how are things') ||
+      p.includes('how have you been') ||
+      p.includes('how r u');
 
+    // 0.1 Mutual Check-in: "Hi, how are you?" / "How are you doing?"
     if (isAskingHowAreYou) {
+      let biometricRemark = '';
+      if (recoveryScore >= 80) {
+        biometricRemark = `\n\nI see your morning recovery is looking strong at **${recoveryScore}%** on Ring AIR, so you've got great physiological headroom today.`;
+      } else if (recoveryScore >= 60) {
+        biometricRemark = `\n\nYour recovery is sitting at a balanced **${recoveryScore}%** today.`;
+      } else if (recoveryScore > 0) {
+        biometricRemark = `\n\nI did notice your recovery score is sitting a bit lower this morning at **${recoveryScore}%**, so we might want to prioritize pacing and good hydration today.`;
+      }
+
+      const response =
+        `I'm doing great, thank you for asking! Feeling sharp and ready to help you with whatever you need today.${biometricRemark}\n\n` +
+        `More importantly—how are **you** feeling today? Did you wake up feeling refreshed or a bit sluggish?\n\n` +
+        `Let me know what you'd like to focus on—whether that's planning a workout, reviewing your sleep trends, dialing in your nutrition, or checking your supplements!`;
+
       return {
         headline: 'AI Coach Check-in',
-        response:
-          `I'm doing great, thank you for asking! Feeling sharp and ready to help you optimize your health and training.\n\n` +
-          `Your body is in a solid position today: **${recoveryScore}% Recovery** on Ring AIR and all muscle groups are **100% primed** with zero residual fatigue debt.\n\n` +
-          `How are you feeling yourself today? Looking to hit a workout, review your sleep, or dial in your nutrition?`,
-        referencedDataPoints: [
-          `Ultrahuman (${recoveryScore}% Recovery)`,
-          'Hevy (Zero Fatigue Debt)',
-        ],
+        response,
+        referencedDataPoints: recoveryScore > 0
+          ? [`Ultrahuman (${recoveryScore}% Recovery)`, 'Live Autonomic Tone']
+          : ['AI Health Companion'],
       };
     }
 
-    if (isGreeting) {
+    // 0.2 Warm Greeting: "Hi", "Hello", "Hey"
+    if (isGreetingOnly) {
+      const hour = new Date().getHours();
+      const timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+
+      const response =
+        `${timeGreeting}! Great to see you. How's your day going so far? 😊\n\n` +
+        (recoveryScore > 0
+          ? `Your recovery is currently sitting at **${recoveryScore}%** after **${sleepHours} hours** of rest.\n\n`
+          : `I'm here whenever you want to check workout ideas, analyze your recovery, or dial in your daily wellness habits.\n\n`) +
+        `What can I help you with today? Looking to plan a workout, talk about nutrition, or check in on your recovery?`;
+
       return {
         headline: 'Greetings from OdinEye',
-        response:
-          `Hey there! Great to see you! How are you feeling today? 😊\n\n` +
-          `Your biometrics are looking strong—your **Ultrahuman Recovery is at ${recoveryScore}%** and you logged **${sleepHours} hours** of rest last night.\n\n` +
-          `All your major muscle groups are fully refreshed and primed for action. What would you like to focus on today?`,
-        referencedDataPoints: [
-          `Ultrahuman (${recoveryScore}% Recovery)`,
-          `Sleep Duration (${sleepHours}h)`,
-        ],
+        response,
+        referencedDataPoints: recoveryScore > 0
+          ? [`Ultrahuman (${recoveryScore}% Recovery)`, `Sleep Duration (${sleepHours}h)`]
+          : ['OdinEye AI Health Coach'],
       };
     }
 
+    // 0.3 Identity & Capabilities: "Who are you?", "What can you do?", "Can you help me?"
+    const isAskingCapabilities =
+      p.includes('can you help') ||
+      p.includes('what can you do') ||
+      p.includes('who are you') ||
+      p.includes('what are you') ||
+      p.includes('how do you work') ||
+      p.includes('how can you help') ||
+      p.includes('tell me about yourself') ||
+      p === 'help' ||
+      p === 'help me';
+
+    if (isAskingCapabilities) {
+      return {
+        headline: 'Meet OdinEye: Your Private AI Coach',
+        response:
+          `### 🧠 I'm OdinEye, your private AI Health Coach & Sports Scientist!\n\n` +
+          `My purpose is to help you bridge the gap between your health telemetry and real-world actions—all running **100% privately on your device** with zero cloud tracking.\n\n` +
+          `### 🎯 Here is what we can do together:\n` +
+          `• 🏋️ **Workout & Muscle Planning**: I track your Hevy volume and calculate muscle recovery clocks so you know exactly which muscle groups are primed and which are still repairing.\n` +
+          `• 🌙 **Sleep & Circadian Optimization**: I analyze your Ultrahuman sleep stages (deep & REM), calculate your optimal morning sunlight window, and give you a precise caffeine cutoff.\n` +
+          `• 🏃 **Cardio & Daily Strain**: I monitor your Active Zone Minutes, heart rate zones, and step pacing from Health Connect and Fitbit.\n` +
+          `• 🥗 **Nutrition & Hydration**: Ask me for daily protein targets, pre/post-workout meal timing, or supplement protocols (creatine, caffeine, electrolytes).\n` +
+          `• 💊 **Medication & Supplement Guidance**: I help track adherence and provide clinical synergy tips for optimal absorption.\n\n` +
+          `What are you working towards today? Just ask me any question in plain English!`,
+        referencedDataPoints: ['Android AICore', 'On-Device Privacy Enclave', 'Cross-Device Integration'],
+      };
+    }
+
+    // 0.4 Gratitude & Appreciation: "Thanks", "Thank you"
+    const isThanking =
+      p === 'thanks' ||
+      p === 'thank you' ||
+      p === 'thx' ||
+      p === 'ty' ||
+      p.startsWith('thanks') ||
+      p.startsWith('thank you') ||
+      p.includes('appreciate it');
+
+    if (isThanking) {
+      return {
+        headline: 'Always in Your Corner',
+        response:
+          `You're very welcome! 😊\n\n` +
+          `I'm always right here in your corner whenever you need to check a workout idea, analyze your sleep, or dial in your daily habits.\n\n` +
+          `Keep up the great work today, and let me know whenever another question comes up! 💪`,
+        referencedDataPoints: ['OdinEye AI Health Coach'],
+      };
+    }
+
+    // 0.5 User State: Feeling Good / Energized
+    const isFeelingGood =
+      p === 'good' ||
+      p === 'im good' ||
+      p === "i'm good" ||
+      p === 'great' ||
+      p === 'im great' ||
+      p === "i'm great" ||
+      p === 'doing well' ||
+      p === 'feeling good' ||
+      p === 'feeling great' ||
+      p === 'not bad' ||
+      p === 'pretty good' ||
+      p === 'fine' ||
+      p === 'im fine' ||
+      p === "i'm fine" ||
+      p.includes('feeling energized') ||
+      p.includes('pumped');
+
+    if (isFeelingGood) {
+      const primedList = primed.length > 0
+        ? primed.slice(0, 3).map((m) => m.displayName).join(', ')
+        : 'compound movements';
+
+      return {
+        headline: 'Energy Check-in: Primed & Ready',
+        response:
+          `Love that energy! Positive momentum is the best foundation for great performance today.\n\n` +
+          (recoveryScore >= 70
+            ? `Your biometrics back that up with a strong **${recoveryScore}% Recovery score** and healthy autonomic tone.\n\n`
+            : '') +
+          `Your primed muscle groups ready for action today include: **${primedList}**.\n\n` +
+          `Would you like me to map out a targeted workout routine for today, or do you have specific cardio or strength goals in mind?`,
+        referencedDataPoints: ['Primed Muscular Clocks', 'Subjective Readiness'],
+      };
+    }
+
+    // 0.6 User State: Feeling Tired / Depleted / Low Energy
+    const isFeelingTired =
+      p === 'tired' ||
+      p === 'im tired' ||
+      p === "i'm tired" ||
+      p.includes('feeling tired') ||
+      p.includes('exhausted') ||
+      p.includes('sleepy') ||
+      p.includes('drained') ||
+      p.includes('low energy') ||
+      p.includes('worn out') ||
+      p.includes('sluggish') ||
+      p.includes('beat');
+
+    if (isFeelingTired) {
+      const sleepSnippet = recovery.sleepDurationMinutes > 0
+        ? `Last night you logged **${sleepHours} hours of sleep** with **${recovery.deepSleepPct}% deep restorative sleep**.`
+        : 'Honoring when your body asks for recovery is just as crucial as the days you train hard.';
+
+      return {
+        headline: 'Fatigue Management & Active Recovery',
+        response:
+          `I hear you, and it's completely okay to feel depleted. In sports science, we know adaptation and muscle growth occur during rest, not when you're grinding through exhaustion.\n\n` +
+          `${sleepSnippet}\n\n` +
+          `### 💡 3 Actionable Tips for Low-Energy Days:\n` +
+          `1. **Hydrate with Electrolytes**: Dehydration is one of the quickest stealth drains on energy. Drink a large glass of water with a pinch of salt or lemon.\n` +
+          `2. **Low-Stress Perfusion**: Instead of heavy lifting, a gentle **15–20 minute walk outdoors** increases blood flow and dopamine without raising cortisol.\n` +
+          `3. **Protect Tonight's Sleep**: Cut off caffeine by **${recovery.circadianPhase.caffeineCutoffTime || '2:00 PM'}** and consider getting to bed 30 minutes earlier.\n\n` +
+          `Would you like a gentle 5-minute mobility routine to loosen up, or would you prefer taking a complete rest day today?`,
+        referencedDataPoints: ['Sleep Debt Analysis', 'Autonomic Downshift Protocol'],
+      };
+    }
+
+    // 0.7 User State: Stressed / Anxious
+    const isFeelingStressed =
+      p.includes('stressed') ||
+      p.includes('stress') ||
+      p.includes('anxious') ||
+      p.includes('anxiety') ||
+      p.includes('overwhelmed') ||
+      p.includes('hectic') ||
+      p.includes('rough day') ||
+      p.includes('bad day');
+
+    if (isFeelingStressed) {
+      return {
+        headline: 'Autonomic Decompression & Stress Reset',
+        response:
+          `I'm really sorry you're dealing with stress right now. Psychological stress directly elevates sympathetic tone, which can increase resting heart rate and drain physical energy.\n\n` +
+          `### 🌿 Quick Nervous System Reset (Right Now):\n` +
+          `• **The Physiological Sigh**: Take two quick inhales through your nose (one full inhale, then a quick top-off breath), followed by a slow, gentle 6-second exhale through your mouth. Repeat 3 to 5 times—this is the fastest neurobiological trigger to activate your vagal nerve and lower heart rate.\n` +
+          `• **Zen Tab Guided Session**: You can jump into the **Zen** tab for a 2-minute box breathing or resonant frequency audio session.\n` +
+          `• **Lower Physical Expectations**: Don't force a brutal workout when life stress is peaking. A light walk or relaxing shower will serve your recovery much better.\n\n` +
+          `Take things one step at a time today. Is there anything specific on your mind, or would you like a quick relaxing breathing prompt?`,
+        referencedDataPoints: ['Parasympathetic Vagal Activation', 'Autonomic Balance'],
+      };
+    }
+
+    // 0.8 Multi-turn Affirmations & Contextual Follow-ups
+    const isAffirmative =
+      p === 'yes' ||
+      p === 'sure' ||
+      p === 'yeah' ||
+      p === 'yep' ||
+      p === 'okay' ||
+      p === 'ok' ||
+      p === 'sounds good' ||
+      p === 'lets do it' ||
+      p === "let's do it" ||
+      p === 'tell me more' ||
+      p.includes('what do you recommend') ||
+      p.includes('what should i do');
+
+    if (isAffirmative) {
+      const lastCoachMsg = _history.filter((m) => m.sender === 'coach').slice(-1)[0]?.text?.toLowerCase() || '';
+
+      if (lastCoachMsg.includes('mobility') || lastCoachMsg.includes('stretch') || lastCoachMsg.includes('loosen up') || lastCoachMsg.includes('tired')) {
+        return {
+          headline: '5-Minute Restorative Mobility Flow',
+          response:
+            `### 🧘 5-Minute Restorative Mobility Flow\n\n` +
+            `Here is a gentle routine to restore joint lubrication and calm your nervous system without fatigue:\n\n` +
+            `1. **Cat-Cow (60s)**: On hands and knees, inhale as you arch your back and look up, exhale as you round your spine toward the ceiling. Smooth, slow breathing.\n` +
+            `2. **World's Greatest Stretch (90s)**: Step into a deep lunge, place hands inside your front foot, rotate your torso toward the front knee and reach skyward. Switch sides after 45s.\n` +
+            `3. **90/90 Hip Flow (60s)**: Sit on the floor with both knees bent at 90 degrees. Gently rotate hips side to side to free up hip capsules.\n` +
+            `4. **Child's Pose with Deep Diaphragmatic Breaths (90s)**: Knees wide, hips back onto heels, arms reaching forward. Take slow 4-second inhales and 6-second exhales.\n\n` +
+            `How does that feel? Let me know if any area feels particularly tight!`,
+          referencedDataPoints: ['Joint Mobility Science', 'Active Perfusion Protocol'],
+        };
+      }
+
+      if (lastCoachMsg.includes('workout') || lastCoachMsg.includes('training') || lastCoachMsg.includes('routine')) {
+        const targetList = primed.length > 0 ? primed.slice(0, 3).map((m) => m.displayName) : ['Chest', 'Back', 'Quads'];
+        return {
+          headline: 'Custom Workout Prescription',
+          response:
+            `### 🏋️ Prescribed Workout Plan for Today\n\n` +
+            `Targeting your primed muscle groups: **${targetList.join(', ')}**\n\n` +
+            `• **Exercise 1 (Primary Compound)**: 3 sets of 6–8 reps @ RPE 8.0 (2 reps in reserve). 2.5 min rest.\n` +
+            `• **Exercise 2 (Secondary Compound)**: 3 sets of 8–10 reps @ RPE 8.0. 2 min rest.\n` +
+            `• **Exercise 3 (Targeted Hypertrophy)**: 3 sets of 10–12 reps @ RPE 8.5. 90s rest.\n` +
+            `• **Exercise 4 (Accessory / Core)**: 2–3 sets of 12–15 reps focusing on full range of motion.\n\n` +
+            `Log your lifts in Hevy as you complete them so I can calculate your new muscle fatigue clocks in real time!`,
+          referencedDataPoints: ['Hypertrophic Stimulus-to-Fatigue Ratio', 'Hevy Muscle Statuses'],
+        };
+      }
+
+      // Default contextual focus
+      return {
+        headline: 'Today\'s 3-Part Health Focus',
+        response:
+          `### 🎯 Your 3 Core Priorities for Today\n\n` +
+          `1. **Movement**: ${recoveryScore >= 70 ? 'Take advantage of your high readiness with a focused workout.' : 'Keep things moderate with 30 minutes of low-impact walking or mobility.'}\n` +
+          `2. **Fuel**: Target 1.6–2.0g protein/kg and keep hydration steady at ~3 liters.\n` +
+          `3. **Rest**: Adhere to your caffeine cutoff by **${recovery.circadianPhase.caffeineCutoffTime || '2:00 PM'}** to ensure deep restorative sleep tonight.\n\n` +
+          `What aspect would you like to dive into deeper?`,
+        referencedDataPoints: ['Tri-Pillar Balance', 'Circadian Windows'],
+      };
+    }
+
+    // 0.9 Hardware & Privacy Architecture
     if (p.includes('hardware') || p.includes('aicore') || p.includes('specs') || p.includes('nano') || p.includes('npu') || p.includes('privacy')) {
       return {
         headline: 'Android AICore & Gemini Nano Architecture',
@@ -255,13 +486,13 @@ export class AiReasoningEngine {
     if (
       p.includes('sleep') ||
       p.includes('insomnia') ||
-      p.includes('tired') ||
-      p.includes('exhausted') ||
       p.includes('wake up') ||
       p.includes('waking up') ||
       p.includes('deep sleep') ||
-      p.includes('rem') ||
-      p.includes('sleep debt')
+      p.includes('rem sleep') ||
+      p.includes('sleep debt') ||
+      p.includes('circadian') ||
+      p.includes('caffeine cutoff')
     ) {
       return {
         headline: 'Sleep Architecture & Restorative Protocols',

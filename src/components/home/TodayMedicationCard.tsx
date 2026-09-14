@@ -7,9 +7,9 @@ import Svg, { Path } from 'react-native-svg';
 import { medicationService, ScheduledDoseItem } from '../../services/medication/medicationService';
 import { CheckCircleIcon, TabletIcon, CapsuleIcon, DropletIcon } from '../medication/MedicationIcons';
 
-interface TodayMedicationCardProps {
-  onOpenMedications: () => void;
-}
+import { TodayMedicationCardProps } from '../../types';
+
+export { TodayMedicationCardProps };
 
 export const TodayMedicationCard: React.FC<TodayMedicationCardProps> = ({ onOpenMedications }) => {
   const [doses, setDoses] = useState<ScheduledDoseItem[]>([]);

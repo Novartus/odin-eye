@@ -25,26 +25,9 @@ import {
 import { credentialsStorage } from '../../services/storage/credentialsStorage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ambientAudioService } from '../../services/audio/ambientAudioService';
+import { BreathPhase, BreathTechnique, DayInfo } from '../../types';
 
-// ─── Types & Data ─────────────────────────────────────────────────────────────
-
-interface BreathPhase {
-  label: string;
-  duration: number; // seconds
-}
-
-interface BreathTechnique {
-  id: string;
-  name: string;
-  tagline: string;
-  phases: BreathPhase[];
-  totalCycles: number;
-  durationMinutes: number;
-  accentColor: string;
-  bgColor: string;
-  outerRingColor: string;
-  benefit: string;
-}
+// ─── Data ─────────────────────────────────────────────────────────────────────
 
 const TECHNIQUES: BreathTechnique[] = [
   {
@@ -112,14 +95,6 @@ const TECHNIQUES: BreathTechnique[] = [
     ],
   },
 ];
-
-interface DayInfo {
-  dayName: string;
-  dayNum: number;
-  dateKey: string;
-  isToday: boolean;
-  isCompleted: boolean;
-}
 
 const MOODS = [
   { id: 'unhappy', label: 'Unhappy', color: '#E07A5F' },

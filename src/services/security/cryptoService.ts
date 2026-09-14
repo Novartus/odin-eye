@@ -2,19 +2,10 @@
 // Provides military-grade AES-256-CBC authenticated encryption (Encrypt-then-MAC with HMAC-SHA256)
 // and PBKDF2 key derivation for on-device secure credential storage.
 
-const forge = require('node-forge');
+import { EncryptedPayload } from '../../types';
 
-export interface EncryptedPayload {
-  v: number;              // Vault format version
-  algo: string;           // Encryption algorithm
-  kdf: string;            // Key derivation function
-  iterations: number;     // PBKDF2 iteration count
-  salt: string;           // Hex salt for PBKDF2 key derivation
-  iv: string;             // Hex initialization vector (unique per encryption)
-  ciphertext: string;     // Base64 encrypted data
-  mac: string;            // Hex HMAC-SHA256 authentication tag (Encrypt-then-MAC)
-  timestamp: string;      // ISO timestamp of encryption
-}
+export { EncryptedPayload };
+const forge = require('node-forge');
 
 export class CryptoService {
   private static instance: CryptoService;

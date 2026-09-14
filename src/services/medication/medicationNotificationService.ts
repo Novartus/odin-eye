@@ -3,7 +3,7 @@
 // high-priority Heads-Up notifications even when the app is completely CLOSED.
 
 import { Platform, PermissionsAndroid, NativeModules } from 'react-native';
-import { Medication } from './medicationTypes';
+import { Medication } from '../../types/medication';
 
 const OdinEyeNotification = NativeModules.OdinEyeNotificationModule;
 
@@ -22,6 +22,16 @@ class MedicationNotificationService {
       MedicationNotificationService.instance = new MedicationNotificationService();
     }
     return MedicationNotificationService.instance;
+  }
+
+  public getIsInitialized(): boolean {
+    return this.isInitialized;
+  }
+
+  public triggerAlertCallback(medId: string, time: string): void {
+    if (this.onOpenAlertCallback) {
+      this.onOpenAlertCallback(medId, time);
+    }
   }
 
   constructor() {

@@ -1,14 +1,12 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
-import { UltrahumanRecoveryData } from '../../types/health';
-import { sleepHistoryService, SleepDebtAnalysis, SleepArchitectureBalance } from '../../services/sleep/sleepHistoryService';
-
-interface SleepArchitectureBentoCardProps {
-  recovery: UltrahumanRecoveryData;
-  targetSleepHours?: number;
-  onPress?: () => void;
-}
+import { sleepHistoryService } from '../../services/sleep/sleepHistoryService';
+import type {
+  SleepDebtAnalysis,
+  SleepArchitectureBalance,
+  SleepArchitectureBentoCardProps,
+} from '../../types';
 
 export const SleepArchitectureBentoCard: React.FC<SleepArchitectureBentoCardProps> = React.memo(({
   recovery,

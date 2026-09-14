@@ -32,3 +32,36 @@ export interface AiEngineConfig {
   modelName: string;
   lastInferenceLatencyMs: number;
 }
+
+export interface SemanticReasoningResult {
+  headline: string;
+  response: string;
+  referencedDataPoints: string[];
+}
+
+export interface AiModelStatus {
+  provider: 'gemini_nano' | 'ondevice' | 'gemini' | 'openai';
+  modelName: string;
+  isCloudLlm: boolean;
+  hasApiKey: boolean;
+}
+
+export interface AndroidAiCoreStatus {
+  isAvailable: boolean;
+  aicoreServiceConnected: boolean;
+  model: string;
+  hardwareAccelerator: string;
+  quantization: string;
+  contextWindowTokens: number;
+  memoryFootprintMb: number;
+  inferenceLatencyMs: number;
+  statusMessage: string;
+}
+
+export interface SportsScienceTopicResponse {
+  matched: boolean;
+  headline: string;
+  response: string;
+  referencedDataPoints: string[];
+}
+

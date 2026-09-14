@@ -9,18 +9,9 @@ import { NativeModules, Platform } from 'react-native';
 
 const { OdinAudioModule } = NativeModules;
 
-export type SoundCategory = 'binaural' | 'solfeggio' | 'noise' | 'nature';
+import { AmbientTrack, SoundCategory } from '../../types';
 
-export interface AmbientTrack {
-  id: string;
-  name: string;
-  category: SoundCategory;
-  carrierFreq?: string;
-  beatFreq?: string;
-  description: string;
-  benefit: string;
-  requiresHeadphones?: boolean;
-}
+export { AmbientTrack, SoundCategory };
 
 export const AMBIENT_CATALOG: AmbientTrack[] = [
   // ─── Binaural Beats ──────────────────────────────────────────────────────────

@@ -2,21 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Vibration } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
-import { TabKey } from '../../types/navigation';
-export { TabKey } from '../../types/navigation';
-
-interface FloatingTabBarProps {
-  activeTab: TabKey;
-  onSelectTab: (tab: TabKey) => void;
-  showAiTab?: boolean;
-  showBodyAnalysisTab?: boolean;
-  showMindfulnessTab?: boolean;
-}
-
-interface TabItemConfig {
-  key: TabKey;
-  label: string;
-}
+import type { TabKey, FloatingTabBarProps, TabItemConfig } from '../../types';
+export type { TabKey, FloatingTabBarProps, TabItemConfig } from '../../types';
 
 export const FloatingTabBar: React.FC<FloatingTabBarProps> = React.memo(({
   activeTab,

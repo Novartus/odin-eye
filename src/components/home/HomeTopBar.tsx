@@ -1,14 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Easing } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-
-interface HomeTopBarProps {
-  onOpenSettings: () => void;
-  onOpenNotifications?: () => void;
-  onManualSync: () => void;
-  isSyncing: boolean;
-  lastSyncText: string;
-}
+import type { HomeTopBarProps } from '../../types';
 
 export const HomeTopBar: React.FC<HomeTopBarProps> = ({
   onOpenSettings,

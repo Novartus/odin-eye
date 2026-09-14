@@ -15,19 +15,7 @@ import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { credentialsStorage } from '../services/storage/credentialsStorage';
 import { LegalModal } from '../components/legal/LegalModal';
 import { medicationNotificationService } from '../services/medication/medicationNotificationService';
-
-interface OnboardingScreenProps {
-  onFinish: (config: {
-    stepsGoal: number;
-    caloriesGoal: number;
-    mindfulnessGoal?: number;
-    enabledSources?: { ultrahuman: boolean; fitbit: boolean; hevy: boolean };
-    aiEnabled?: boolean;
-    bodyAnalysisEnabled?: boolean;
-    mindfulnessEnabled?: boolean;
-  }) => void;
-  initialStep?: 1 | 2 | 3;
-}
+import type { OnboardingScreenProps } from '../types';
 
 export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, initialStep = 1 }) => {
   const [step, setStep] = useState<1 | 2 | 3>(initialStep);

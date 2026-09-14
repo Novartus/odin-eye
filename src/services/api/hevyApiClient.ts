@@ -3,34 +3,19 @@
 
 import { HevyWorkoutSession, HevyExercise, ExerciseSet, MuscleGroup, MuscleRecoveryStatus } from '../../types/health';
 
-interface RawHevySet {
-  set_type?: string; // 'normal' | 'warmup' | 'failure' | 'drop'
-  weight_kg?: number | null;
-  reps?: number | null;
-  rpe?: number | null;
-}
+import {
+  RawHevySet,
+  RawHevyExercise,
+  RawHevyWorkout,
+  HevyWorkoutsResponse,
+} from '../../types';
 
-interface RawHevyExercise {
-  title?: string;
-  notes?: string;
-  exercise_template_id?: string;
-  sets?: RawHevySet[];
-}
-
-export interface RawHevyWorkout {
-  id: string;
-  title: string;
-  start_time: string; // ISO string
-  end_time: string;   // ISO string
-  description?: string;
-  exercises?: RawHevyExercise[];
-}
-
-export interface HevyWorkoutsResponse {
-  page: number;
-  page_count: number;
-  workouts: RawHevyWorkout[];
-}
+export {
+  RawHevySet,
+  RawHevyExercise,
+  RawHevyWorkout,
+  HevyWorkoutsResponse,
+};
 
 // Map common exercise names to primary muscle groups
 const EXERCISE_MUSCLE_MAP: Record<string, MuscleGroup[]> = {

@@ -5,21 +5,11 @@
 
 import { Platform } from 'react-native';
 import { TriPillarHealthSummary } from '../../types/health';
-import { ChatMessage } from '../../types/aiCoach';
+import { ChatMessage, AndroidAiCoreStatus } from '../../types/aiCoach';
 import { sportsScienceKnowledge } from './sportsScienceKnowledge';
 import { aiReasoningEngine } from './aiReasoningEngine';
 
-export interface AndroidAiCoreStatus {
-  isAvailable: boolean;
-  aicoreServiceConnected: boolean;
-  model: string;
-  hardwareAccelerator: string;
-  quantization: string;
-  contextWindowTokens: number;
-  memoryFootprintMb: number;
-  inferenceLatencyMs: number;
-  statusMessage: string;
-}
+export { AndroidAiCoreStatus };
 
 export class AndroidAiCoreService {
   private static instance: AndroidAiCoreService;

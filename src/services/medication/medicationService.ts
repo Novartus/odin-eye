@@ -11,8 +11,8 @@ import {
   Medication,
   ScheduledDoseItem,
   ReminderAlertEvent,
-} from './medicationTypes';
-export * from './medicationTypes';
+} from '../../types/medication';
+export * from '../../types/medication';
 
 const STORAGE_KEY = 'odineye_medications_data_v2';
 const FILE_BACKUP_NAME = 'odineye_medications_backup.json';

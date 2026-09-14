@@ -1,18 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { TriPillarHealthSummary, EnabledSources, MetricType } from '../../types';
+import type { MetricType, MetricCardsGridProps } from '../../types';
 import { Colors } from '../../theme/colors';
 import { SmartRingIcon } from '../common/SmartRingIcon';
 import { MetricDetailExpandModal } from './MetricDetailExpandModal';
-
-interface MetricCardsGridProps {
-  data: TriPillarHealthSummary;
-  enabledSources: EnabledSources;
-  onOpenSleepMetric?: () => void;
-  stepsGoal?: number;
-  caloriesGoal?: number;
-}
 
 export const MetricCardsGrid: React.FC<MetricCardsGridProps> = ({
   data,

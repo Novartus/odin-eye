@@ -1,10 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing, Image } from 'react-native';
 import Svg, { Path, Circle, Rect, G, Line, Ellipse } from 'react-native-svg';
-
-interface AppLoadingSplashProps {
-  onFadeComplete?: () => void;
-}
+import type { AppLoadingSplashProps } from '../../types';
 
 export const AppLoadingSplash: React.FC<AppLoadingSplashProps> = () => {
   const pulseScale = useRef(new Animated.Value(1)).current;

@@ -13,12 +13,9 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LegalModalProps } from '../../types';
 
-interface LegalModalProps {
-  visible: boolean;
-  onClose: () => void;
-  initialTab?: 'terms' | 'privacy' | 'disclaimer';
-}
+export { LegalModalProps };
 
 export const LegalModal: React.FC<LegalModalProps> = ({
   visible,

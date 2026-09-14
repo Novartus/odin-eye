@@ -3,28 +3,9 @@
 
 import { FitbitCardioData, HeartRateZoneSummary } from '../../types/health';
 
-export interface RawFitbitActivities {
-  summary?: {
-    activeScore?: number;
-    activityCalories?: number;
-    caloriesOut?: number;
-    fairlyActiveMinutes?: number;
-    lightlyActiveMinutes?: number;
-    veryActiveMinutes?: number;
-    sedentaryMinutes?: number;
-    steps?: number;
-    distances?: Array<{ activity: string; distance: number }>;
-  };
-  activities?: Array<{
-    activityId?: number;
-    activityName?: string;
-    duration?: number; // ms
-    calories?: number;
-    averageHeartRate?: number;
-    startTime?: string;
-    distance?: number;
-  }>;
-}
+import { RawFitbitActivities } from '../../types';
+
+export { RawFitbitActivities };
 
 export class FitbitApiClient {
   private static instance: FitbitApiClient;

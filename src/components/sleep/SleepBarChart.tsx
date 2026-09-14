@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { DailySleepRecord } from '../../services/sleep/sleepHistoryService';
-
-interface SleepBarChartProps {
-  records: DailySleepRecord[];
-  compact?: boolean;
-  onSelectDay?: (record: DailySleepRecord) => void;
-  accentVariant?: 'purple' | 'green';
-}
+import type { SleepBarChartProps } from '../../types';
 
 export const SleepBarChart: React.FC<SleepBarChartProps> = ({
   records,

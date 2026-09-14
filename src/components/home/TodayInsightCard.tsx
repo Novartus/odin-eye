@@ -1,11 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-
-interface TodayInsightCardProps {
-  headline: string;
-  body: string;
-  onPress?: () => void;
-}
+import type { TodayInsightCardProps } from '../../types';
 
 export const TodayInsightCard: React.FC<TodayInsightCardProps> = ({ headline, body, onPress }) => {
   return (

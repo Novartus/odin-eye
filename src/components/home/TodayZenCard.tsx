@@ -4,13 +4,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { mindfulnessService, MindfulnessWeeklyStats } from '../../services/mindfulness/mindfulnessService';
+import { mindfulnessService } from '../../services/mindfulness/mindfulnessService';
 import { credentialsStorage } from '../../services/storage/credentialsStorage';
-
-interface TodayZenCardProps {
-  onOpenZen: () => void;
-  onQuickStartBreath?: () => void;
-}
+import type { TodayZenCardProps, MindfulnessWeeklyStats } from '../../types';
 
 export const TodayZenCard: React.FC<TodayZenCardProps> = ({ onOpenZen, onQuickStartBreath }) => {
   const [stats, setStats] = useState<MindfulnessWeeklyStats>(mindfulnessService.getWeeklyStats());

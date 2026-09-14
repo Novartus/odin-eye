@@ -16,13 +16,9 @@ import Svg, { Path } from 'react-native-svg';
 import { medicationService, ScheduledDoseItem } from '../../services/medication/medicationService';
 import { medicationNotificationService } from '../../services/medication/medicationNotificationService';
 
-interface NotificationsModalProps {
-  visible: boolean;
-  onClose: () => void;
-  onOpenMedications: () => void;
-  onOpenSettings: () => void;
-  onTriggerTestAlert?: () => void;
-}
+import { NotificationsModalProps } from '../../types';
+
+export { NotificationsModalProps };
 
 export const NotificationsModal: React.FC<NotificationsModalProps> = ({
   visible,

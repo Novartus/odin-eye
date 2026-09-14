@@ -48,7 +48,7 @@ import { BodyAnalysisView } from '../components/body/BodyAnalysisView';
 import { DedicatedAiCoachView } from '../components/ai/DedicatedAiCoachView';
 import { SettingsView } from '../components/settings/SettingsView';
 import { FloatingTabBar } from '../components/navigation/FloatingTabBar';
-import { EnabledSources, TabKey, ReminderAlertEvent } from '../types';
+import { EnabledSources, TabKey, ReminderAlertEvent, DashboardScreenProps } from '../types';
 import { liveHealthService } from '../services/live/liveHealthService';
 import { HealthConnectPromptModal } from '../components/common/HealthConnectPromptModal';
 import { DevModeBanner } from '../components/common/DevModeBanner';
@@ -63,10 +63,6 @@ import { credentialsStorage } from '../services/storage/credentialsStorage';
 import { medicationService } from '../services/medication/medicationService';
 import { medicationNotificationService } from '../services/medication/medicationNotificationService';
 import { widgetSyncService } from '../services/widgets/widgetSyncService';
-
-interface DashboardScreenProps {
-  onResetOnboarding?: () => void;
-}
 
 export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboarding }) => {
   const insets = useSafeAreaInsets();

@@ -1,14 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-
-interface TodayWellnessCardProps {
-  score: number;
-  sleepQualityPct?: number;
-  activeZoneMinutes?: number;
-  tonnageKg?: number;
-  onPress?: () => void;
-}
+import type { TodayWellnessCardProps } from '../../types';
 
 export const TodayWellnessCard: React.FC<TodayWellnessCardProps> = React.memo(({
   score = 0,

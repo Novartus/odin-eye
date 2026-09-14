@@ -13,12 +13,9 @@ import Svg, { Path, Circle } from 'react-native-svg';
 import { Colors } from '../../theme/colors';
 import { healthConnect, isNativeHealthConnectLinked } from '../../services/healthConnect/healthConnectService';
 
-interface HealthConnectPromptModalProps {
-  visible: boolean;
-  onClose: () => void;
-  onConnected?: () => void;
-  onNavigateToSettings?: () => void;
-}
+import { HealthConnectPromptModalProps } from '../../types';
+
+export { HealthConnectPromptModalProps };
 
 export const HealthConnectPromptModal: React.FC<HealthConnectPromptModalProps> = ({
   visible,

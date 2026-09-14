@@ -17,17 +17,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { Colors } from '../../theme/colors';
-import {
-  MedicationForm,
-  medicationService,
-} from '../../services/medication/medicationService';
+import { medicationService } from '../../services/medication/medicationService';
+import type { MedicationForm, AddMedicationModalProps } from '../../types';
 import { TabletIcon, CapsuleIcon, DropletIcon, InjectionIcon } from './MedicationIcons';
-
-interface AddMedicationModalProps {
-  visible: boolean;
-  onClose: () => void;
-  onAdded: () => void;
-}
 
 const COLOR_THEMES = [
   { id: 'blue', color: '#EFF6FF', accent: '#DBEAFE', icon: '#2563EB', label: 'Sky' },

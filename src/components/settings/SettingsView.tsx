@@ -9,8 +9,6 @@ import {
   ActivityIndicator,
   Platform,
   Vibration,
-  Modal,
-  ScrollView,
 } from 'react-native';
 import Svg, { Path, Circle, Rect, Line } from 'react-native-svg';
 import { Colors } from '../../theme/colors';
@@ -28,8 +26,8 @@ import { medicationNotificationService } from '../../services/medication/medicat
 import { mindfulnessService } from '../../services/mindfulness/mindfulnessService';
 import { widgetSyncService } from '../../services/widgets/widgetSyncService';
 import { LegalModal } from '../legal/LegalModal';
-import { EnabledSources } from '../../types';
-export { EnabledSources } from '../../types';
+import { SettingsViewProps } from '../../types';
+export type { EnabledSources, SettingsViewProps } from '../../types';
 
 // Subtle vector icon components (replacing raw emojis to adhere to Scandinavian Pastel Bento design)
 const EyeToggle: React.FC<{ show: boolean; onToggle: () => void }> = ({ show, onToggle }) => (
@@ -211,22 +209,6 @@ const BentoGridIcon: React.FC<{ size?: number; color?: string }> = ({ size = 18,
     <Rect x="3" y="14" width="7" height="7" rx="2" stroke={color} strokeWidth="2" />
   </Svg>
 );
-
-interface SettingsViewProps {
-  enabledSources: EnabledSources;
-  onToggleSource: (sourceKey: keyof EnabledSources, value: boolean) => void;
-  onManualSync: () => void;
-  isSyncing: boolean;
-  lastSyncText: string;
-  onOpenHealthConnectPrompt?: () => void;
-  aiEnabled?: boolean;
-  onToggleAi?: (enabled: boolean) => void;
-  bodyAnalysisEnabled?: boolean;
-  onToggleBodyAnalysis?: (enabled: boolean) => void;
-  mindfulnessEnabled?: boolean;
-  onToggleMindfulness?: (enabled: boolean) => void;
-  onResetOnboarding?: () => void;
-}
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
   enabledSources,

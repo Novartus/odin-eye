@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, { Path, Defs, LinearGradient, Stop, Circle, Rect, G } from 'react-native-svg';
-import { MuscleRecoveryStatus, MuscleGroup } from '../../types/health';
+import { MuscleRecoveryStatus, MuscleGroup, BodyAnalysisViewProps } from '../../types';
 import { Colors } from '../../theme/colors';
-
-interface BodyAnalysisViewProps {
-  muscleStatuses: MuscleRecoveryStatus[];
-}
 
 const DEFAULT_PRIMED_MUSCLES: MuscleRecoveryStatus[] = [
   { muscle: 'chest', displayName: 'Chest', recoveryPct: 100, state: 'primed', lastTrainedDate: 'No recent logs', hoursElapsed: 0, recommendedHoursRemaining: 0 },

@@ -1,11 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { Colors } from '../../theme/colors';
-
-interface FormattedMessageProps {
-  text: string;
-  isUser: boolean;
-}
+import type { FormattedMessageProps } from '../../types';
 
 export const FormattedMessage: React.FC<FormattedMessageProps> = ({ text, isUser }) => {
   const lines = text.split('\n');

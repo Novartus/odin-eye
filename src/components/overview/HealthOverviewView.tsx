@@ -1,12 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { TriPillarHealthSummary } from '../../types/health';
+import type { HealthOverviewViewProps } from '../../types';
 import { Colors } from '../../theme/colors';
-
-interface HealthOverviewViewProps {
-  data: TriPillarHealthSummary;
-}
 
 export const HealthOverviewView: React.FC<HealthOverviewViewProps> = ({ data }) => {
   const { cardio, recovery, strength } = data;

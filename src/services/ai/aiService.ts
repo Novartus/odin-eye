@@ -3,17 +3,12 @@
 // Grounded in real-time Ultrahuman, Fitbit, and Hevy biometrics
 
 import { TriPillarHealthSummary } from '../../types/health';
-import { ChatMessage } from '../../types/aiCoach';
+import { ChatMessage, AiModelStatus } from '../../types/aiCoach';
 import { credentialsStorage } from '../storage/credentialsStorage';
 import { localAiCoach } from './localCoachEngine';
 import { androidAiCoreService } from './androidAiCoreService';
 
-export interface AiModelStatus {
-  provider: 'gemini_nano' | 'ondevice' | 'gemini' | 'openai';
-  modelName: string;
-  isCloudLlm: boolean;
-  hasApiKey: boolean;
-}
+export { AiModelStatus };
 
 export class AiHealthService {
   private static instance: AiHealthService;

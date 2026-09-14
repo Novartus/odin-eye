@@ -14,7 +14,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { Colors } from '../../theme/colors';
-import { Medication, medicationService } from '../../services/medication/medicationService';
+import { medicationService } from '../../services/medication/medicationService';
+import type { MedicationDetailModalProps } from '../../types';
 import {
   TabletIcon,
   CapsuleIcon,
@@ -23,13 +24,6 @@ import {
   DocumentIcon,
   CircularAdherenceGauge,
 } from './MedicationIcons';
-
-interface MedicationDetailModalProps {
-  visible: boolean;
-  medication: Medication | null;
-  onClose: () => void;
-  onUpdated: () => void;
-}
 
 export const MedicationDetailModal: React.FC<MedicationDetailModalProps> = ({
   visible,

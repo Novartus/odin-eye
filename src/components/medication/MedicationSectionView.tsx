@@ -15,12 +15,13 @@ import {
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { Colors } from '../../theme/colors';
-import {
+import { medicationService } from '../../services/medication/medicationService';
+import type {
   Medication,
   ScheduledDoseItem,
   ReminderAlertEvent,
-  medicationService,
-} from '../../services/medication/medicationService';
+  MedicationDayItem,
+} from '../../types';
 import {
   TabletIcon,
   CapsuleIcon,
@@ -32,13 +33,6 @@ import { MedicationDetailModal } from './MedicationDetailModal';
 import { AddMedicationModal } from './AddMedicationModal';
 import { FullMonthCalendarView } from './FullMonthCalendarView';
 import { MedicationReminderAlertModal } from './MedicationReminderAlertModal';
-
-interface DayItem {
-  dayName: string;   // 'Sun', 'Mon', 'Tue'
-  dayNum: number;    // 1, 2, 3
-  dateKey: string;   // 'YYYY-MM-DD'
-  isToday: boolean;
-}
 
 export const MedicationSectionView: React.FC = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
@@ -75,11 +69,11 @@ export const MedicationSectionView: React.FC = () => {
   }, []);
 
   // 7-day week strip (Sun - Sat) around selected date
-  const weekDays = useMemo<DayItem[]>(() => {
+  const weekDays = useMemo<MedicationDayItem[]>(() => {
     const todayStr = medicationService.getTodayDateKey();
     const curr = new Date();
     const firstDay = new Date(curr.setDate(curr.getDate() - curr.getDay()));
-    const days: DayItem[] = [];
+    const days: MedicationDayItem[] = [];
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     for (let i = 0; i < 7; i++) {

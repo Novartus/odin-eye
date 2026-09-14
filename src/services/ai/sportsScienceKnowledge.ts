@@ -2,13 +2,9 @@
 // Provides authoritative on-device physiological reasoning for fitness, supplements, and recovery inquiries
 
 import { TriPillarHealthSummary } from '../../types/health';
+import { SportsScienceTopicResponse } from '../../types/aiCoach';
 
-export interface SportsScienceTopicResponse {
-  matched: boolean;
-  headline: string;
-  response: string;
-  referencedDataPoints: string[];
-}
+export { SportsScienceTopicResponse };
 
 export class SportsScienceKnowledgeEngine {
   private static instance: SportsScienceKnowledgeEngine;
@@ -62,7 +58,7 @@ export class SportsScienceKnowledgeEngine {
     ) {
       const liveWorkoutContext = hasWorkoutToday
         ? `• 🏋️ **Active Post-Workout Repair**: You completed a session today with **${volumeTons} tons** volume. Muscle Protein Synthesis (MPS) is elevated for the next **24 to 48 hours**. Consuming **30–40g of protein containing ~3g leucine** within 1–2 hours post-workout will maximally stimulate myofibrillar reconstruction in your active muscle groups.`
-        : `• 🛌 **Rest Baseline (5+ Days No Workout)**: Since no strength training was logged in recent days, your muscles have **zero acute micro-trauma and are 100% primed**. You do not need a high-protein post-workout bolus right now; a steady baseline of **1.6 g/kg of body weight** is more than sufficient to maintain positive nitrogen balance and preserve lean tissue.`;
+        : `• 🛌 **Daily Protein Baseline**: When not recovering from an immediate high-volume workout, a steady intake of **1.6–2.0 g/kg of body weight** is optimal to maintain positive nitrogen balance, support immune function, and preserve lean tissue.`;
 
       const sleepSynergy = recovery.sleepDurationMinutes > 0
         ? `• 🌙 **Nocturnal Synthesis (Ring AIR)**: Ingesting a slow-digesting protein (such as micellar casein, cottage cheese, or Greek yogurt) 30–60 minutes before bed provides a prolonged amino acid bloodstream release throughout your **${(recovery.sleepDurationMinutes / 60).toFixed(1)}h sleep window**, optimizing human growth hormone (HGH) action during slow-wave deep sleep (**${recovery.deepSleepPct}%**).`

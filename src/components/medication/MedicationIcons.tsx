@@ -2,14 +2,10 @@
 // Precise match to high-end medical UI design mockup
 
 import Svg, { Path, Circle } from 'react-native-svg';
-
-interface IconProps {
-  size?: number;
-  color?: string;
-}
+import type { MedicationIconProps } from '../../types';
 
 // Tablet / Pill: Pharmaceutical round scored tablet with vertical score line
-export const TabletIcon: React.FC<IconProps> = ({ size = 20, color = '#2563EB' }) => (
+export const TabletIcon: React.FC<MedicationIconProps> = ({ size = 20, color = '#2563EB' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Circle cx="12" cy="12" r="9" stroke={color} strokeWidth="2.2" />
     <Path d="M12 5.5v13" stroke={color} strokeWidth="2.2" strokeLinecap="round" />
@@ -17,7 +13,7 @@ export const TabletIcon: React.FC<IconProps> = ({ size = 20, color = '#2563EB' }
 );
 
 // Capsule: Oblong capsule shape with division line
-export const CapsuleIcon: React.FC<IconProps> = ({ size = 20, color = '#16A34A' }) => (
+export const CapsuleIcon: React.FC<MedicationIconProps> = ({ size = 20, color = '#16A34A' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path
       d="M7.5 16.5L16.5 7.5C18.2678 5.73223 18.2678 2.86777 16.5 1.1C14.7322 -0.667767 11.8678 -0.667767 10.1 1.1L1.1 10.1C-0.667767 11.8678 -0.667767 14.7322 1.1 16.5C2.86777 18.2678 5.73223 18.2678 7.5 16.5Z"
@@ -37,7 +33,7 @@ export const CapsuleIcon: React.FC<IconProps> = ({ size = 20, color = '#16A34A' 
 );
 
 // Liquid Droplet: Tear droplet shape
-export const DropletIcon: React.FC<IconProps> = ({ size = 20, color = '#EA580C' }) => (
+export const DropletIcon: React.FC<MedicationIconProps> = ({ size = 20, color = '#EA580C' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path
       d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"
@@ -50,7 +46,7 @@ export const DropletIcon: React.FC<IconProps> = ({ size = 20, color = '#EA580C' 
 );
 
 // Injection / Syringe: Medical needle
-export const InjectionIcon: React.FC<IconProps> = ({ size = 20, color = '#8B5CF6' }) => (
+export const InjectionIcon: React.FC<MedicationIconProps> = ({ size = 20, color = '#8B5CF6' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path d="M18 2L22 6" stroke={color} strokeWidth="2.2" strokeLinecap="round" />
     <Path d="M17 7L19 9" stroke={color} strokeWidth="2.2" strokeLinecap="round" />
@@ -61,7 +57,7 @@ export const InjectionIcon: React.FC<IconProps> = ({ size = 20, color = '#8B5CF6
 );
 
 // Document / Prescription notes icon
-export const DocumentIcon: React.FC<IconProps> = ({ size = 20, color = '#FFFFFF' }) => (
+export const DocumentIcon: React.FC<MedicationIconProps> = ({ size = 20, color = '#FFFFFF' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path
       d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
@@ -95,7 +91,7 @@ export const CheckCircleIcon: React.FC<{ size?: number; checked: boolean; color?
 );
 
 // Clock / Alarm Icon
-export const ClockIcon: React.FC<IconProps> = ({ size = 18, color = '#64748B' }) => (
+export const ClockIcon: React.FC<MedicationIconProps> = ({ size = 18, color = '#64748B' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Circle cx="12" cy="12" r="10" stroke={color} strokeWidth="2.2" />
     <Path d="M12 6v6l4 2" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
