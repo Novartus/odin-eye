@@ -14,6 +14,7 @@ import Svg, { Path } from 'react-native-svg';
 import type {
   ChatMessage,
   DedicatedAiCoachViewProps,
+  MobilityRoutine,
 } from '../../types';
 import { localAiCoach } from '../../services/ai/localCoachEngine';
 import { aiHealthService } from '../../services/ai/aiService';
@@ -22,12 +23,20 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FormattedMessage } from './FormattedMessage';
 import { BouncingDotsLoader } from '../common/BouncingDotsLoader';
 import { Colors } from '../../theme/colors';
+import { VoiceCoachOverlay } from './VoiceCoachOverlay';
+import { MobilityTimerModal } from '../body/MobilityTimerModal';
+import { voiceCoachService } from '../../services/ai/voiceCoachService';
+import { buildDynamicDeFatigueRoutine } from '../../services/mobility/mobilityCatalog';
 
 export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data, recommendation }) => {
   const insets = useSafeAreaInsets();
   const tabBottomOffset = Math.max(insets.bottom + 10, 20);
 
   const [aiProvider, setAiProvider] = useState<'gemini_nano' | 'ondevice' | 'gemini' | 'openai'>('gemini_nano');
+  const [isVoiceOverlayVisible, setIsVoiceOverlayVisible] = useState(false);
+  const [isMobilityModalVisible, setIsMobilityModalVisible] = useState(false);
+  const [activeMobilityRoutine, setActiveMobilityRoutine] = useState<MobilityRoutine | null>(null);
+  const [speakingMsgId, setSpeakingMsgId] = useState<string | null>(null);
 
   useEffect(() => {
     credentialsStorage.loadCredentials().then((creds) => {
@@ -101,6 +110,21 @@ export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data
     };
   }, []);
 
+  const handleToggleSpeak = async (msgId: string, text: string) => {
+    if (speakingMsgId === msgId) {
+      await voiceCoachService.stopSpeaking();
+      setSpeakingMsgId(null);
+    } else {
+      setSpeakingMsgId(msgId);
+      await voiceCoachService.speak(
+        text,
+        () => {},
+        () => setSpeakingMsgId(null),
+        () => setSpeakingMsgId(null)
+      );
+    }
+  };
+
   const handleAsk = async (query: string) => {
     if (!query.trim() || isThinking) return;
 
@@ -119,9 +143,29 @@ export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data
     try {
       const reply = await aiHealthService.generateResponse(query, data, newHistory);
       setMessages((prev) => [...prev, reply]);
+
+      if (voiceCoachService.getAutoReadAloud()) {
+        setSpeakingMsgId(reply.id);
+        voiceCoachService.speak(
+          reply.text,
+          () => {},
+          () => setSpeakingMsgId(null),
+          () => setSpeakingMsgId(null)
+        );
+      }
     } catch {
       const fallback = localAiCoach.answerUserQuery(query, data, newHistory);
       setMessages((prev) => [...prev, fallback]);
+
+      if (voiceCoachService.getAutoReadAloud()) {
+        setSpeakingMsgId(fallback.id);
+        voiceCoachService.speak(
+          fallback.text,
+          () => {},
+          () => setSpeakingMsgId(null),
+          () => setSpeakingMsgId(null)
+        );
+      }
     } finally {
       setIsThinking(false);
       scrollToBottom(true);
@@ -201,32 +245,23 @@ export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.horizontalChipsContent}
           style={styles.horizontalChipsScroll}
+          contentContainerStyle={styles.horizontalChipsContent}
         >
-          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('Summarize my health, recovery, and readiness for today.')}>
-            <Text style={styles.chipText}>📊 Daily Assessment</Text>
+          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('Can I lift heavy and push progressive overload today?')}>
+            <Text style={styles.chipText}>🏋️ Lift Heavy?</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('Can I lift heavy today based on my recovery and muscle fatigue?')}>
-            <Text style={styles.chipText}>🏋️ Can I Lift Today?</Text>
+          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('What is my optimal caffeine cutoff time for deep sleep tonight?')}>
+            <Text style={styles.chipText}>☕ Caffeine Cutoff</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('Check my active medication schedule and today’s adherence.')}>
-            <Text style={styles.chipText}>💊 Meds & Adherence</Text>
+          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('Which muscles are currently in their 48-72h recovery window?')}>
+            <Text style={styles.chipText}>⏱️ Muscle Recovery</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('Analyze my sleep stages, deep sleep, and recovery trends.')}>
-            <Text style={styles.chipText}>🌙 Sleep & Recovery</Text>
+          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('How did my sleep stages look last night?')}>
+            <Text style={styles.chipText}>🌙 Sleep Hypnogram</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('What are my recommended protein and macro targets today?')}>
-            <Text style={styles.chipText}>🥩 Protein & Macros</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('What is my caffeine cutoff time and morning sunlight window?')}>
-            <Text style={styles.chipText}>☕ Caffeine & Circadian</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('I feel stressed, guide me through a quick vagus nerve reset.')}>
-            <Text style={styles.chipText}>🧘 Stress & Breathwork</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('How do I recover from muscle soreness and DOMS?')}>
-            <Text style={styles.chipText}>🩹 DOMS & Soreness</Text>
+          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('Have I taken all my scheduled medications today?')}>
+            <Text style={styles.chipText}>💊 Medication Status</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.chip} onPress={() => handleAsk('What AI model and hardware acceleration is running on this device?')}>
             <Text style={styles.chipText}>🧠 On-Device Specs</Text>
@@ -237,6 +272,12 @@ export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data
         <View style={styles.messagesList}>
           {messages.map((m) => {
             const isUser = m.sender === 'user';
+            const hasMobilityMention = !isUser && (
+              m.text.toLowerCase().includes('mobility') ||
+              m.text.toLowerCase().includes('stretching') ||
+              m.text.toLowerCase().includes('stretch')
+            );
+
             return (
               <View
                 key={m.id}
@@ -244,11 +285,52 @@ export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data
               >
                 {!isUser && (
                   <View style={styles.coachHeader}>
-                    <Text style={styles.coachAvatar}>🧠</Text>
-                    <Text style={styles.coachLabel}>OdinEye AI Coach</Text>
+                    <View style={styles.coachHeaderLeft}>
+                      <Text style={styles.coachAvatar}>🧠</Text>
+                      <Text style={styles.coachLabel}>OdinEye AI Coach</Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => handleToggleSpeak(m.id, m.text)}
+                      style={[styles.speakIconBtn, speakingMsgId === m.id && styles.speakIconBtnActive]}
+                      activeOpacity={0.7}
+                    >
+                      <Svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                        {speakingMsgId === m.id ? (
+                          <Path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="#1F382E" />
+                        ) : (
+                          <Path
+                            d="M11 5L6 9H2v6h4l5 4V5zm4.5 3c.8 1 1.3 2.4 1.3 4s-.5 3-1.3 4"
+                            stroke="#63706B"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        )}
+                      </Svg>
+                    </TouchableOpacity>
                   </View>
                 )}
                 <FormattedMessage text={m.text} isUser={isUser} />
+
+                {hasMobilityMention && (
+                  <TouchableOpacity
+                    style={styles.mobilityActionPill}
+                    onPress={() => {
+                      const fatigued = data.strength.muscleStatuses
+                        .filter((ms) => ms.state === 'fatigued')
+                        .map((ms) => ms.muscle);
+                      const routine = buildDynamicDeFatigueRoutine(fatigued);
+                      setActiveMobilityRoutine(routine);
+                      setIsMobilityModalVisible(true);
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <Path d="M5 3l14 9-14 9V3z" fill="#1F382E" />
+                    </Svg>
+                    <Text style={styles.mobilityActionPillText}>Start Guided Mobility Flow</Text>
+                  </TouchableOpacity>
+                )}
 
                 {m.dataPointsReferenced && m.dataPointsReferenced.length > 0 && (
                   <View style={styles.refContainer}>
@@ -282,12 +364,32 @@ export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data
         </View>
       </ScrollView>
 
-      {/* Floating Input Capsule (Floats seamlessly above bottom navigation dock) */}
+      {/* Floating Input Capsule */}
       <View style={[styles.inputCapsuleWrapper, { marginBottom: inputBottomMargin }]}>
         <View style={styles.inputCapsule}>
+          <TouchableOpacity
+            style={styles.micInputBtn}
+            onPress={() => setIsVoiceOverlayVisible(true)}
+            activeOpacity={0.7}
+          >
+            <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <Path
+                d="M12 2a3 3 0 00-3 3v7a3 3 0 006 0V5a3 3 0 00-3-3z"
+                fill="#1F382E"
+              />
+              <Path
+                d="M19 10v2a7 7 0 01-14 0v-2M12 19v3m-4 0h8"
+                stroke="#1F382E"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </Svg>
+          </TouchableOpacity>
+
           <TextInput
             style={styles.input}
-            placeholder="Ask Gemini Nano (On-Device AI)..."
+            placeholder="Ask or tap mic to speak..."
             placeholderTextColor={Colors.textMuted}
             value={inputText}
             onChangeText={setInputText}
@@ -299,6 +401,7 @@ export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data
             }}
             returnKeyType="send"
           />
+
           <TouchableOpacity
             style={[styles.sendBtn, !inputText.trim() && styles.sendBtnDisabled]}
             onPress={handleSend}
@@ -317,6 +420,25 @@ export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Voice Assistant Sheet */}
+      <VoiceCoachOverlay
+        visible={isVoiceOverlayVisible}
+        onClose={() => setIsVoiceOverlayVisible(false)}
+        onSpeechSubmit={(voiceQuery) => {
+          handleAsk(voiceQuery);
+        }}
+        isProcessing={isThinking}
+      />
+
+      {/* Guided Mobility Timer Modal */}
+      {activeMobilityRoutine && (
+        <MobilityTimerModal
+          visible={isMobilityModalVisible}
+          onClose={() => setIsMobilityModalVisible(false)}
+          routine={activeMobilityRoutine}
+        />
+      )}
     </Animated.View>
   );
 };
@@ -496,8 +618,50 @@ const styles = StyleSheet.create({
   coachHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    justifyContent: 'space-between',
     marginBottom: 6,
+  },
+  coachHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  speakIconBtn: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#EAF2EE',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  speakIconBtnActive: {
+    backgroundColor: '#CCE6DE',
+  },
+  mobilityActionPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#CCE6DE',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 10,
+    alignSelf: 'flex-start',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(31, 56, 46, 0.1)',
+  },
+  mobilityActionPillText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#1F382E',
+  },
+  micInputBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#EAF2EE',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   coachAvatar: {
     fontSize: 14,

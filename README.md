@@ -25,14 +25,27 @@ OdinEye is a **centralized personal health hub** for Android. It aggregates live
 | **Home** | Live metric cards (steps, calories, heart rate, recovery score), **Sleep Architecture & 7-Day Debt Balance card**, wellness snapshot, today's medication preview, today's zen preview, AI daily insight |
 | **Meds** | Medication routine tracker with week/month calendar view, dose logging, and OS-level push notifications |
 | **Vitals** | Health overview — Activity / Sleep / Recovery pillar breakdown, cardio stats, 7-day sleep duration chart, strength telemetry |
-| **Body** | Per-muscle-group recovery analysis, hypertrophy readiness, body composition _(can be toggled off in Config)_ |
+| **Body** | Per-muscle-group recovery analysis, hypertrophy readiness, **Interactive Guided Mobility & Stretching Timer for Fatigued Muscles**, body composition _(can be toggled off in Config)_ |
 | **Zen** | Mindfulness & breathwork sanctuary with **Tactile Haptic Pacing** (eyes-closed meditation), **Ambient Binaural Audio Engine** (432Hz, 40Hz Gamma, Brown noise), **Dynamic Reactive Mood Face**, and 7-day streak calendar |
-| **AI** | On-device AI health coach via Android AICore (Gemini Nano) with Gemini Cloud API fallback |
+| **AI** | On-device AI health coach via Android AICore (Gemini Nano) with **Voice-Activated Hands-Free Coach**, live streaming transcription, and Gemini Cloud API fallback |
 | **Config** | Module toggles, wearable credentials, daily targets, Android Home Screen AppWidgets hub, AES-256 encrypted security vault |
 
 ---
 
 ## Key highlights & new capabilities
+
+### 🎙️ Voice-Activated Local AI Coach & Interactive Transcribe
+- **On-Device Voice Pipeline (`OdinEyeVoiceModule`)**: Hands-free speech interaction utilizing Android's native `SpeechRecognizer` and `TextToSpeech` (TTS) — 100% offline, zero cloud transmission.
+- **Interactive Transcribe Card**: Real-time streaming voice transcription into an editable `TextInput`, allowing hands-free speaking, tap-to-correct editing, manual typing, or 1-tap suggested query selection.
+- **Audio Equalizer & Native Animations**: 5-bar live equalizer animating dynamically with 100% Native Driver (`useNativeDriver: true`) without JS bridge overhead.
+- **Audio Read-Aloud**: Optional toggle to speak AI responses out loud automatically using on-device neural TTS.
+- **Dual-Mode Compatibility**: Runs full offline native speech in compiled Android builds (`npm run android`), and seamlessly supports mobile keyboard dictation (Google / Samsung Voice Typing) in Expo Go.
+
+### 🧘 Interactive Guided Mobility & Stretching Timer
+- **De-Fatigue Composite Routine**: Analyzes real-time fatigue scores across 10 muscle groups (Quads, Hamstrings, Chest, Lats/Back, Shoulders, Calves, Glutes, Forearms, Abs, Lower Back) and dynamically sequences targeted restorative stretches.
+- **Full-Screen Circular Timer**: Visual phase countdown ring with intelligent intervals (`Prepare 5s` → `Stretch 30–45s` → `Switch Side 5s` → `Next Exercise`).
+- **Tactile Transitions & Ambient Delta Waves**: Gentle haptic pulses on phase changes and integrated 2Hz Delta restorative frequency soundscapes.
+- **Omnipresent Access**: Launch from the top banner in **Body Analysis**, individual muscle group dossier cards, or directly via one-tap action pills in **AI Coach** recommendations.
 
 ### 🌙 Sleep Debt & Sleep Architecture Balance
 - **7-Day Cumulative Sleep Debt**: Computes personal sleep debt against your biological baseline (default 8.0h/night) with a strict **zero-dummy data** guarantee (calculated solely against recorded nights).
@@ -70,7 +83,10 @@ OdinEye is a **centralized personal health hub** for Android. It aggregates live
 |:------|:-----------|
 | Framework | React Native 0.86.3 + Expo 57 |
 | Language | TypeScript 6 (strict mode — zero unused locals/parameters) |
+| Bundler & Tooling | Metro Bundler + `babel-preset-expo` (AST caching & root-anchored blockList) |
 | Navigation | Custom `FloatingTabBar` with tactile haptic feedback |
+| Voice & Speech | Native Kotlin `OdinEyeVoiceModule` (`SpeechRecognizer` + `TextToSpeech`) + Web Speech fallback |
+| Mobility & Recovery | Dynamic De-Fatigue Routine Engine (`mobilityCatalog.ts`) + `MobilityTimerModal` |
 | Audio | Native Kotlin `OdinAudioEngine` (44.1 kHz stereo PCM) + Web Audio API fallback |
 | AppWidgets | Native Android `RemoteViews` + Kotlin Widget Providers + `OdinEyeWidgetModule` |
 | Haptics | Somatic tactile breath pacing & UI micro-vibrations via React Native `Vibration` |
@@ -132,6 +148,7 @@ All wearable tokens and API keys are stored in an **on-device AES-256-CBC encryp
 
 | Document | What it covers |
 |:---------|:--------------|
+| [docs/ON_DEVICE_AI.md](docs/ON_DEVICE_AI.md) | **Deep architectural guide on 3-tier local AI stack, Android AICore / Gemini Nano, and zero-telemetry containment** |
 | [docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md) | **Google Play & Health Connect Privacy Policy, Limited Use disclosures & legal governance** |
 | [docs/privacy-policy.html](docs/privacy-policy.html) | Standalone responsive HTML privacy policy for web/store hosting |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, data flow, module map, security & AI architecture |
@@ -148,10 +165,13 @@ All wearable tokens and API keys are stored in an **on-device AES-256-CBC encryp
 centralized-health-app/
 ├── App.tsx                          # Entry point — onboarding gate
 ├── index.ts                         # Expo bootstrap
+├── babel.config.js                  # Babel AST transform cache config
+├── metro.config.js                  # Metro bundler config with crawler exclusions
 ├── app.json                         # Expo + Android manifest config
 ├── eas.json                         # EAS build profiles
 ├── LICENSE
 ├── docs/
+│   ├── ON_DEVICE_AI.md              # Dedicated on-device AI technical guide
 │   ├── PRIVACY_POLICY.md            # Google Play Privacy Policy (Markdown)
 │   ├── privacy-policy.html          # Web-hosted Privacy Policy (HTML)
 │   ├── ARCHITECTURE.md
@@ -163,14 +183,16 @@ centralized-health-app/
 │   └── app/src/main/java/com/odineye/health/
 │       ├── audio/                   # Native AudioTrack procedural sound engine
 │       │   └── OdinAudioEngine.kt
+│       ├── voice/                   # Native on-device speech recognizer & TTS
+│       │   └── OdinEyeVoiceModule.kt
 │       └── widget/                  # Native Android RemoteViews AppWidgets
 │           ├── PillReminderWidgetProvider.kt
 │           ├── ZenVitalsWidgetProvider.kt
 │           └── OdinEyeWidgetModule.kt
 └── src/
     ├── components/
-    │   ├── ai/              # AI coach view + message renderer
-    │   ├── body/            # Body & muscle recovery analysis
+    │   ├── ai/              # AI coach view + VoiceCoachOverlay
+    │   ├── body/            # Body & muscle recovery + MobilityTimerModal
     │   ├── common/          # Shared UI (splash, modals, loaders)
     │   ├── home/            # Home tab cards, SleepArchitectureBentoCard, top bar
     │   ├── medication/      # Medication tracker, modals, icons
@@ -183,13 +205,14 @@ centralized-health-app/
     │   ├── DashboardScreen.tsx   # Root shell — all tabs and global state
     │   └── OnboardingScreen.tsx  # 2-step onboarding + recalibration mode
     ├── services/
-    │   ├── ai/              # AI engine, local coach, sports science KB
+    │   ├── ai/              # AI engine, voiceCoachService, local coach, sports science KB
     │   ├── api/             # Ultrahuman, Fitbit, Hevy API clients
     │   ├── audio/           # Ambient sound service (native audio track bridge)
     │   ├── healthConnect/   # Android Health Connect integration
     │   ├── live/            # Live telemetry aggregator
     │   ├── medication/      # Medication service + OS notifications
     │   ├── mindfulness/     # Mindfulness streak & session logging service
+    │   ├── mobility/        # Guided mobility routines & de-fatigue engine
     │   ├── security/        # AES-256 crypto utilities
     │   ├── sleep/           # Sleep history, debt & architecture analytics
     │   ├── storage/         # Encrypted credentials vault
@@ -203,6 +226,8 @@ centralized-health-app/
         ├── storage.ts
         ├── navigation.ts
         ├── devices.ts
+        ├── mobility.ts
+        ├── components.ts
         └── aiCoach.ts
 ```
 

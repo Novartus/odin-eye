@@ -11,4 +11,5 @@ export * from './mindfulness';
 export * from './sleep';
 export * from './healthConnect';
 export * from './api';
+export * from './mobility';
 export * from './components';

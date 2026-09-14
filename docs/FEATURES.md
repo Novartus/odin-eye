@@ -10,10 +10,12 @@ A complete reference for every feature in OdinEye.
 |:--------|:----|:------:|
 | Live biometric metric cards | Home | ✅ |
 | Today's wellness snapshot | Home | ✅ |
+| Sleep Architecture & 7-Day Cumulative Debt Card | Home | ✅ |
 | Today's medication preview card | Home | ✅ |
 | AI daily insight card | Home | ✅ |
 | Manual sync with animated indicator | Home | ✅ |
 | Notifications centre (bell icon) | Home | ✅ |
+| Android Home Screen AppWidgets (Pill & Zen) | Config / System | ✅ |
 | Medication routine tracker | Meds | ✅ |
 | Week strip calendar | Meds | ✅ |
 | Full month interactive calendar | Meds | ✅ |
@@ -29,14 +31,17 @@ A complete reference for every feature in OdinEye.
 | Per-muscle-group recovery analysis | Body | ✅ |
 | Hypertrophy readiness scoring | Body | ✅ |
 | Body composition analysis | Body | ✅ |
+| Interactive Guided Mobility & Stretching Timer | Body / AI | ✅ |
 | Body Analysis tab toggle (hide/show) | Config | ✅ |
 | Mindfulness & Breathing exercises | Zen | ✅ |
+| Tactile Haptic Pacing (Eyes-Closed Meditation) | Zen | ✅ |
+| Procedural Ambient Audio & Binaural Beats Engine | Zen / Body | ✅ |
 | Interactive 7-day streak calendar | Zen | ✅ |
 | Animated breathing orb with phase timer | Zen | ✅ |
-| Ambient soundscapes (Birds, Rain, Ocean, Breeze) | Zen | ✅ |
-| Daily mood check-in with concentric tracker | Zen | ✅ |
+| Dynamic Reactive Mood Face | Zen | ✅ |
 | Daily mindful minutes goal stepper | Config | ✅ |
 | On-device AI coach (Android AICore / Gemini Nano) | AI | ✅ |
+| Voice-Activated Local AI Coach (STT / TTS) | AI | ✅ |
 | Cloud Gemini AI fallback | AI | ✅ |
 | Offline rule-based coaching | AI | ✅ |
 | AI toggle (disable AI modules entirely) | Config | ✅ |
@@ -68,6 +73,14 @@ Tap any card to expand a detailed modal with trend charts and source attribution
 ### Today's Wellness Snapshot
 
 A summary card showing your overall wellness status — muscle readiness, sleep quality, and activity level synthesised into a brief human-readable verdict.
+
+### Sleep Architecture & 7-Day Cumulative Debt Card
+
+A spacious Scandinavian Bento card providing clinical-grade restorative sleep analysis:
+- **7-Day Cumulative Sleep Debt**: Calculates cumulative sleep surplus or deficit against your personal baseline (default 8.0h/night) with a strict zero-dummy data policy (solely computed against logged nights).
+- **Physical Restoration (Deep Sleep)**: Tracks slow-wave sleep against the clinical 15%–25% target window for cellular turnover, human growth hormone (HGH) release, and physical tissue repair.
+- **Cognitive Resilience (REM Sleep)**: Tracks paradoxical sleep against the clinical 20%–25% target window for synaptic pruning, memory consolidation, and emotional regulation.
+- **Dynamic Guidance**: Displays visual bracket target zones, status badges (`Optimal`, `Sub-optimal`, `Abundant`), and somatic bedtime coaching tips.
 
 ### Today's Medication Preview Card
 
@@ -173,6 +186,22 @@ A score indicating whether conditions are optimal for muscle growth stimulus —
 
 Estimates of muscle-to-fat ratio trends from wearable telemetry over time.
 
+### Interactive Guided Mobility & Stretching Timer
+
+A dedicated restorative protocol for active recovery and de-fatiguing sore muscles:
+- **Dynamic De-Fatigue Routine Engine**: Analyzes your current muscle readiness and fatigue telemetry across 10 muscle groups (Quads, Hamstrings, Chest, Lats/Back, Shoulders, Calves, Glutes, Forearms, Abs, Lower Back). If fatigue is detected, it automatically sequences a prioritized multi-exercise mobility routine.
+- **Full-Screen Circular Countdown Timer (`MobilityTimerModal`)**:
+  - Visual circular progress ring with remaining time and phase indicators.
+  - Phase structure: `Prepare (5s)` → `Active Stretch (30–45s)` → `Switch Side (5s transition if bilateral)` → `Next Exercise` → `Session Complete`.
+  - Haptic feedback pulse on phase transitions for eyes-free pacing.
+  - Procedural 2Hz Delta restorative frequency sound playback with mute/unmute control.
+  - Comprehensive player controls: Rewind, Skip, Pause/Play, Mute.
+  - Post-session completion summary with total minutes and muscles relieved.
+- **Multiple Entry Points**:
+  - **Top Banner**: "Recommended Today: De-Fatigue Routine" at the top of the **Body** tab.
+  - **Dossier Cards**: "Start Restorative Stretch" button on each muscle group's individual card.
+  - **AI Coach Recommendations**: Inline action pill in coach chat (`▶ Start Guided Mobility Flow`).
+
 ---
 
 ## Zen (Mindfulness & Breathing)
@@ -203,20 +232,29 @@ A dedicated sanctuary for nervous system regulation, breathing exercises, and da
   - **Morning Energy Flow (5·2·5)** — elevates oxygenation and mental clarity
 - Live countdown timer, cycle counters, and play / pause / stop controls
 
-### Ambient Soundscapes
+### Procedural Ambient Audio & Binaural Beats Engine
 
-- Background audio pill selector embedded directly in the session header:
-  - 🐦 Chirping Birds
-  - 🌧️ Gentle Rain
-  - 🌊 Ocean Waves
-  - 🍃 Forest Breeze
-  - 🤫 Silent Clarity
+A real-time procedural sound synthesizer running on a dedicated background thread via native Android `AudioTrack` (44.1 kHz 16-bit stereo PCM) that plays continuously when the screen is dimmed or phone is locked:
+- **14 Bespoke Soundscapes**:
+  - **Binaural Beats (Stereo Differential)**: 40Hz Gamma (cognitive focus), 10Hz Alpha (creative flow), 6Hz Theta (deep meditation), 2Hz Delta (deep cellular repair).
+  - **Solfeggio Pure Tones**: 432Hz Harmonic Peace, 528Hz Cellular Transformation, 639Hz Compassion & Connection.
+  - **Colored Noise Generators**: Velvet Brown Noise (1/f² Brownian walk with low-pass filter), Organic Pink Noise (Paul Kellet 3-pole 1/f filter), Tranquil White Noise (uniform sound masking).
+  - **Procedural Nature**: Resonant ocean waves with 0.12Hz LFO swell modulation, gentle rain, forest breeze, chirping birds, and silent clarity.
+- **Category Filter Chips & Audition Controls**: Quick filtering (`All Sounds`, `Binaural Beats`, `Solfeggio`, `Colored Noise`, `Nature`), master volume stepper, and live audition toggle directly in the Zen chamber.
 
-### Daily Mood Check-In
+### Tactile Haptic Pacing (Eyes-Closed Meditation)
 
-- Serene concentric pastel ripple interface with calm Zen icon
-- 5-point mood slider: Unhappy, Sad, Normal, Good, Happy
-- "Note Mood" action that records daily emotional balance
+Allows meditating with closed eyes through distinct somatic vibration patterns:
+- **Inhale**: Rising double micro-pulse.
+- **Hold**: Subtle grounding anchor tap.
+- **Exhale**: Smooth soothing release vibration.
+- **Toggle**: Quick `📳 Haptics: ON / OFF` pill in the breathing chamber header with persistent storage.
+
+### Dynamic Reactive Mood Face
+
+- **Morphing Vector SVG Face (`MoodFaceIcon`)**: Changes facial expression across 5 emotional states (Unhappy, Sad, Normal, Good, Happy) with responsive eyebrows, eyes, and mouth.
+- **Concentric Pastel Aura Rings**: Ripple rings adopt the signature pastel hue of the selected mood with spring bounce physics.
+- **Tailored Guidance**: Displays mood-specific reflections and updates the Home tab's Today's Plan progress card.
 
 ---
 
@@ -246,6 +284,17 @@ Ask anything about your health data:
 
 The AI has full context of your current biometrics from `liveHealthService`.
 
+### Voice-Activated Local AI Coach (`VoiceCoachOverlay`)
+
+A hands-free, private voice interface for interacting with the AI coach:
+- **On-Device Speech Pipeline**: Connects to native Android `SpeechRecognizer` and `TextToSpeech` (`OdinEyeVoiceModule.kt`) to capture voice and speak answers without cloud transmission.
+- **Dedicated Live Transcribe Card**: Streams spoken words into an interactive, editable `TextInput` with dynamic status pills (`READY TO LISTEN`, `LIVE TRANSCRIBING...`, `TRANSCRIPTION READY`).
+- **Hands-Free or Tap-To-Edit**: Users can speak hands-free, tap to edit/correct words, or type directly into the box.
+- **Done Speaking Action**: A dedicated "Done Speaking ✓" header button allows instantly closing speech capture and finalizing words.
+- **Suggested Hands-Free Prompts**: Tapping any suggested query (*"Can I train heavy today?"*, *"Check my recovery and sleep"*, etc.) populates the transcribe box for review before submission.
+- **Neural TTS Read-Aloud**: Toggleable automatic speech synthesis that reads coach responses out loud.
+- **Dual-Mode Compatibility**: Uses native on-device speech in compiled Android builds (`npm run android`), and seamlessly supports mobile keyboard dictation (Google / Samsung Voice Typing) in Expo Go.
+
 > 💡 **Dedicated Documentation:** For technical architecture, privacy containment, NPU benchmarks, and zero-cloud guarantees, see [ON_DEVICE_AI.md](./ON_DEVICE_AI.md).
 
 ---
@@ -262,6 +311,13 @@ Four logically grouped settings categories.
 | Cloud Gemini Fallback | Enter Gemini API key; test connection with live ping |
 | Body & Muscle Recovery Analysis | Toggle Body tab on/off; persists across app reloads |
 | Medication & Health Reminders | Toggle OS notification reminders; view active alert count; send test reminder |
+
+### Android Home Screen AppWidgets Hub
+
+Interactive management for Android 4×2 home screen widgets:
+- **Pill Reminder Widget**: Live preview and sync for the home screen pill dose tracker with direct "Take" button.
+- **Zen Streak & Vitals Widget**: Live preview and sync for daily steps, heart rate, streak, and "Breathe" launcher.
+- **Instant Sync**: "Sync Widgets Now" button for manual home screen synchronization.
 
 ### Category 02 — Connected Wearables & Hardware Streams
 

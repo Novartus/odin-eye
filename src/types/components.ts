@@ -8,6 +8,7 @@ import { Medication, ReminderAlertEvent } from './medication';
 import { TabKey, TabType, MetricType } from './navigation';
 import { DailySleepRecord } from './sleep';
 import { EnabledSources } from './devices';
+import type { MobilityRoutine, MobilitySessionSummary } from './mobility';
 
 // Screen Props
 export interface DashboardScreenProps {
@@ -133,6 +134,20 @@ export interface NotificationsModalProps {
   onOpenSettings: () => void;
   onTriggerTestAlert?: () => void;
   onNavigateToTab?: (tab: TabType) => void;
+}
+
+export interface MobilityTimerModalProps {
+  visible: boolean;
+  onClose: () => void;
+  routine: MobilityRoutine;
+  onComplete?: (summary: MobilitySessionSummary) => void;
+}
+
+export interface VoiceCoachOverlayProps {
+  visible: boolean;
+  onClose: () => void;
+  onSpeechSubmit: (query: string) => void;
+  isProcessing?: boolean;
 }
 
 export interface HealthConnectPromptModalProps {

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, { Path, Defs, LinearGradient, Stop, Circle, Rect, G } from 'react-native-svg';
-import { MuscleRecoveryStatus, MuscleGroup, BodyAnalysisViewProps } from '../../types';
+import { MuscleRecoveryStatus, MuscleGroup, BodyAnalysisViewProps, MobilityRoutine } from '../../types';
 import { Colors } from '../../theme/colors';
+import { MobilityTimerModal } from './MobilityTimerModal';
+import { buildRoutineForMuscle, buildDynamicDeFatigueRoutine } from '../../services/mobility/mobilityCatalog';
 
 const DEFAULT_PRIMED_MUSCLES: MuscleRecoveryStatus[] = [
   { muscle: 'chest', displayName: 'Chest', recoveryPct: 100, state: 'primed', lastTrainedDate: 'No recent logs', hoursElapsed: 0, recommendedHoursRemaining: 0 },
@@ -117,6 +119,13 @@ export const BodyAnalysisView: React.FC<BodyAnalysisViewProps> = ({ muscleStatus
   const recoveringCount = activeMuscles.filter((m) => m.state === 'recovering').length;
   const fatiguedCount = activeMuscles.filter((m) => m.state === 'fatigued').length;
 
+  const [isMobilityModalVisible, setIsMobilityModalVisible] = useState(false);
+  const [activeMobilityRoutine, setActiveMobilityRoutine] = useState<MobilityRoutine | null>(null);
+
+  const fatiguedMusclesList = activeMuscles
+    .filter((m) => m.state === 'fatigued' || m.state === 'recovering')
+    .map((m) => m.muscle);
+
   const getMuscleStatus = (key: MuscleGroup) => {
     return activeMuscles.find((m) => m.muscle === key);
   };
@@ -217,6 +226,35 @@ export const BodyAnalysisView: React.FC<BodyAnalysisViewProps> = ({ muscleStatus
           </View>
         </View>
       </View>
+
+      {/* Dynamic De-Fatigue Restorative Flow Banner */}
+      {fatiguedMusclesList.length > 0 && (
+        <View style={styles.defatigueBanner}>
+          <View style={styles.defatigueBannerLeft}>
+            <View style={styles.defatigueBadgePill}>
+              <View style={styles.defatigueDot} />
+              <Text style={styles.defatigueBadgeText}>RESTORATIVE TARGET</Text>
+            </View>
+            <Text style={styles.defatigueTitle}>
+              {fatiguedMusclesList.length} Muscle{fatiguedMusclesList.length > 1 ? 's' : ''} in Recovery Window
+            </Text>
+            <Text style={styles.defatigueSub}>
+              Accelerate tissue regeneration and clear metabolic soreness with a guided stretch.
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.defatigueStartBtn}
+            onPress={() => {
+              const routine = buildDynamicDeFatigueRoutine(fatiguedMusclesList);
+              setActiveMobilityRoutine(routine);
+              setIsMobilityModalVisible(true);
+            }}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.defatigueStartBtnText}>Start Flow</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* 2. Interactive View Angle Switcher */}
       <View style={styles.segmentedControlContainer}>
@@ -773,6 +811,26 @@ export const BodyAnalysisView: React.FC<BodyAnalysisViewProps> = ({ muscleStatus
             ))}
           </View>
         </View>
+
+        {/* Guided Mobility Routine Launch Button */}
+        <TouchableOpacity
+          style={styles.mobilityLaunchBtn}
+          onPress={() => {
+            const routine = buildRoutineForMuscle(selectedMuscleKey);
+            setActiveMobilityRoutine(routine);
+            setIsMobilityModalVisible(true);
+          }}
+          activeOpacity={0.85}
+        >
+          <Svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <Path d="M5 3l14 9-14 9V3z" fill="#1F382E" />
+          </Svg>
+          <Text style={styles.mobilityLaunchBtnText}>
+            {selectedMuscle.state === 'primed'
+              ? `Activate ${meta.name} Mobility Flow`
+              : `Start Restorative ${meta.name} Stretch`}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* 5. All Muscle Groups Interactive Bento Grid */}
@@ -841,6 +899,15 @@ export const BodyAnalysisView: React.FC<BodyAnalysisViewProps> = ({ muscleStatus
           );
         })}
       </View>
+
+      {/* Guided Mobility Routine Modal */}
+      {activeMobilityRoutine && (
+        <MobilityTimerModal
+          visible={isMobilityModalVisible}
+          onClose={() => setIsMobilityModalVisible(false)}
+          routine={activeMobilityRoutine}
+        />
+      )}
     </View>
   );
 };
@@ -850,6 +917,70 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     gap: 16,
     marginBottom: 40,
+  },
+  defatigueBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FAF5EE',
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(224, 122, 95, 0.2)',
+    shadowColor: '#1F382E',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  defatigueBannerLeft: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  defatigueBadgePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FCE7DC',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    marginBottom: 4,
+    gap: 5,
+  },
+  defatigueDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#E07A5F',
+  },
+  defatigueBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#8C481A',
+    letterSpacing: 0.6,
+  },
+  defatigueTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#141816',
+    marginBottom: 2,
+  },
+  defatigueSub: {
+    fontSize: 11,
+    color: '#63706B',
+    lineHeight: 15,
+  },
+  defatigueStartBtn: {
+    backgroundColor: '#1F382E',
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 14,
+  },
+  defatigueStartBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
   readinessHeroCard: {
     flexDirection: 'row',
@@ -1191,6 +1322,24 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: '#237A5D',
+  },
+  mobilityLaunchBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EAF2EE',
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    gap: 8,
+    marginTop: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(35, 122, 93, 0.18)',
+  },
+  mobilityLaunchBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1F382E',
   },
   bentoSectionHeader: {
     marginTop: 8,
