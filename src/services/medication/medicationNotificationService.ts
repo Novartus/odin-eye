@@ -1,20 +1,13 @@
 // OS-Level Background & Lock-Screen Medication Notification Service
-// Handles scheduling local system notifications with interactive action buttons
-// (Take Dose, Snooze, Dismiss) so alerts fire even when the app is completely CLOSED.
+// Direct native Android AlarmManager integration guaranteed to fire
+// high-priority Heads-Up notifications even when the app is completely CLOSED.
 
-import { Platform } from 'react-native';
+import { Platform, PermissionsAndroid, NativeModules } from 'react-native';
 import { Medication } from './medicationTypes';
 
-// Dynamic import of expo-notifications to avoid build crashes if package isn't installed yet
-let Notifications: any = null;
-try {
-  Notifications = require('expo-notifications');
-} catch {
-  Notifications = null;
-}
+const OdinEyeNotification = NativeModules.OdinEyeNotificationModule;
 
 export const NOTIFICATION_CATEGORY_MEDICATION = 'MEDICATION_REMINDER_V1';
-
 export const NOTIFICATION_ACTION_TAKE = 'ACTION_TAKE_MED';
 export const NOTIFICATION_ACTION_SNOOZE = 'ACTION_SNOOZE_MED';
 export const NOTIFICATION_ACTION_DISMISS = 'ACTION_DISMISS_MED';
@@ -35,199 +28,170 @@ class MedicationNotificationService {
     this.setupNotificationHandler();
   }
 
-  /**
-   * Configure how notifications are handled when the app is foregrounded
-   */
   private setupNotificationHandler() {
-    if (!Notifications) return;
-
+    // Handler setup if Expo notifications are ever linked in hybrid builds
     try {
-      Notifications.setNotificationHandler({
-        handleNotification: async () => ({
-          shouldShowAlert: true,
-          shouldPlaySound: true,
-          shouldSetBadge: true,
-        }),
-      });
+      const Notifications = require('expo-notifications');
+      if (Notifications && Notifications.setNotificationHandler) {
+        Notifications.setNotificationHandler({
+          handleNotification: async () => ({
+            shouldShowAlert: true,
+            shouldPlaySound: true,
+            shouldSetBadge: true,
+          }),
+        });
+      }
     } catch {}
   }
 
   /**
-   * Request OS permission and register interactive action categories (Take, Snooze, Dismiss)
+   * Check if notifications are enabled for OdinEye at the OS level
+   */
+  public async checkNotificationPermission(): Promise<boolean> {
+    if (Platform.OS === 'android') {
+      try {
+        if (OdinEyeNotification && OdinEyeNotification.areNotificationsEnabled) {
+          return await OdinEyeNotification.areNotificationsEnabled();
+        }
+        if (Platform.Version >= 33) {
+          return await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+        }
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Request OS permission to post notifications (Android 13+ runtime POST_NOTIFICATIONS)
+   */
+  public async requestNotificationPermission(): Promise<boolean> {
+    if (Platform.OS === 'android') {
+      try {
+        if (Platform.Version >= 33) {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+            {
+              title: 'Medication & Health Reminders',
+              message: 'OdinEye needs notification permissions to alert you when it is time to take your scheduled medications.',
+              buttonPositive: 'Allow',
+              buttonNegative: 'Not Now',
+            }
+          );
+          return granted === PermissionsAndroid.RESULTS.GRANTED;
+        } else if (OdinEyeNotification && OdinEyeNotification.areNotificationsEnabled) {
+          return await OdinEyeNotification.areNotificationsEnabled();
+        }
+        return true;
+      } catch (e) {
+        console.warn('[MedNotificationService] Permission request error:', e);
+        return false;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Open system App Notification Settings so the user can easily toggle permissions
+   */
+  public async openNotificationSettings(): Promise<void> {
+    if (Platform.OS === 'android' && OdinEyeNotification?.openNotificationSettings) {
+      try {
+        await OdinEyeNotification.openNotificationSettings();
+      } catch {}
+    }
+  }
+
+  /**
+   * Request OS permission and register interactive notification handling
    */
   public async initialize(onOpenAlert?: (medId: string, time: string) => void): Promise<boolean> {
     if (onOpenAlert) {
       this.onOpenAlertCallback = onOpenAlert;
     }
 
-    if (!Notifications) {
-      console.log('[MedNotificationService] In-app medication reminders & alerts active. (Background lock-screen alerts will activate when expo-notifications is installed in native build).');
-      return false;
-    }
-
-    try {
-      // 1. Request notification permissions (Android 13+ runtime POST_NOTIFICATIONS & iOS)
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
+    if (Platform.OS === 'android') {
+      // Check permission state; if not granted, request it
+      const hasPermission = await this.checkNotificationPermission();
+      if (!hasPermission) {
+        await this.requestNotificationPermission();
       }
-
-      if (finalStatus !== 'granted') {
-        console.warn('[MedNotificationService] Notification permissions not granted.');
-        return false;
-      }
-
-      // 2. Android Notification Channel configuration (high importance heads-up pop alert)
-      if (Platform.OS === 'android') {
-        await Notifications.setNotificationChannelAsync('medication-reminders', {
-          name: 'Medication Reminders',
-          importance: Notifications.AndroidImportance.MAX,
-          vibrationPattern: [0, 400, 200, 400],
-          lightColor: '#007AFF',
-          sound: 'default',
-          enableVibrate: true,
-          showBadge: true,
-        });
-      }
-
-      // 3. Register interactive action buttons on the notification
-      await Notifications.setNotificationCategoryAsync(NOTIFICATION_CATEGORY_MEDICATION, [
-        {
-          identifier: NOTIFICATION_ACTION_TAKE,
-          buttonTitle: '✓ Take Dose',
-          options: {
-            isDestructive: false,
-            isAuthenticationRequired: false,
-          },
-        },
-        {
-          identifier: NOTIFICATION_ACTION_SNOOZE,
-          buttonTitle: '⏰ Snooze 10m',
-          options: {
-            isDestructive: false,
-            isAuthenticationRequired: false,
-          },
-        },
-        {
-          identifier: NOTIFICATION_ACTION_DISMISS,
-          buttonTitle: 'Dismiss',
-          options: {
-            isDestructive: true,
-            isAuthenticationRequired: false,
-          },
-        },
-      ]);
-
-      // 4. Handle when user touches notification or an action button (even when app was closed)
-      Notifications.addNotificationResponseReceivedListener(async (response: any) => {
-        const actionId = response.actionIdentifier;
-        const data = response.notification.request.content.data;
-        const medId = data?.medId;
-        const scheduledTime = data?.time;
-
-        if (!medId) return;
-
-        // Lazy load medicationService on user notification response to avoid circular require cycle
-        const { medicationService } = require('./medicationService');
-
-        if (actionId === NOTIFICATION_ACTION_TAKE) {
-          // One-tap taken directly from notification
-          const today = medicationService.getTodayDateKey();
-          await medicationService.toggleDoseTaken(medId, scheduledTime || '08:00 AM', today);
-        } else if (actionId === NOTIFICATION_ACTION_SNOOZE) {
-          // Snooze dose
-          medicationService.snoozeReminder(medId, scheduledTime || '08:00 AM', 10);
-        } else {
-          // User touched the notification banner -> open app and show interactive alert modal
-          if (this.onOpenAlertCallback && scheduledTime) {
-            this.onOpenAlertCallback(medId, scheduledTime);
-          }
-        }
-      });
-
       this.isInitialized = true;
       return true;
-    } catch (err) {
-      console.warn('[MedNotificationService] Failed to initialize notifications:', err);
-      return false;
     }
+
+    return false;
   }
 
   /**
-   * Schedules OS-level alarms for all medications so they trigger when app is closed
+   * Schedules native Android exact alarms for all medications so they fire even when app is closed
    */
   public async scheduleAllMedicationAlarms(medications: Medication[]): Promise<void> {
-    if (!Notifications || !this.isInitialized) return;
+    if (Platform.OS === 'android' && OdinEyeNotification) {
+      try {
+        await OdinEyeNotification.cancelAllAlarms();
 
-    try {
-      // Clear previously scheduled alarms to avoid duplicates
-      await Notifications.cancelAllScheduledNotificationsAsync();
+        for (const med of medications) {
+          if (!med.times || med.times.length === 0) continue;
+          for (const timeStr of med.times) {
+            const parsed = this.parseTime(timeStr);
+            if (!parsed) continue;
 
-      for (const med of medications) {
-        for (const timeStr of med.times) {
-          const parsed = this.parseTime(timeStr);
-          if (!parsed) continue;
+            const title = `⏰ Time for ${med.name} ${med.dosage || ''}`.trim();
+            const body = `Take ${med.unit || 'scheduled dose'} (${med.frequency || 'Daily'}). Tap to log or snooze.`;
+            const alarmId = `alarm_${med.id}_${parsed.hours}_${parsed.minutes}`;
 
-          await Notifications.scheduleNotificationAsync({
-            content: {
-              title: `⏰ Time for ${med.name} ${med.dosage}`,
-              body: `Take ${med.unit} (${med.frequency}). Tap to log or snooze.`,
-              data: {
-                medId: med.id,
-                time: timeStr,
-              },
-              sound: 'default',
-              categoryIdentifier: NOTIFICATION_CATEGORY_MEDICATION,
-              color: '#007AFF',
-            },
-            trigger: {
-              type: Notifications.SchedulableTriggerInputTypes.DAILY,
-              hour: parsed.hours,
-              minute: parsed.minutes,
-              channelId: 'medication-reminders',
-            },
-          });
+            await OdinEyeNotification.scheduleMedicationAlarm(
+              alarmId,
+              title,
+              body,
+              timeStr,
+              parsed.hours,
+              parsed.minutes
+            );
+          }
         }
+        return;
+      } catch (e: any) {
+        console.warn('[MedNotificationService] Native alarm schedule error:', e?.message);
       }
-    } catch (e: any) {
-      console.warn('[MedNotificationService] Failed to schedule alarms:', e?.message);
     }
   }
 
   /**
-   * Schedule a one-off test notification 5 seconds from now so user can lock their phone and see it!
+   * Schedule a quick test notification to demonstrate the Heads-Up lock-screen alert
    */
-  public async sendTestPopNotification(medName: string = 'Roaccutane 30mg', unit: string = '1 capsule'): Promise<boolean> {
-    if (!Notifications) return false;
-
-    try {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: `⏰ Time for ${medName}`,
-          body: `Take ${unit}. Tap to mark as taken or snooze.`,
-          data: {
-            medId: 'test-med',
-            time: '08:00 AM',
-          },
-          sound: 'default',
-          categoryIdentifier: NOTIFICATION_CATEGORY_MEDICATION,
-        },
-        trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-          seconds: 3,
-          channelId: 'medication-reminders',
-        },
-      });
-      return true;
-    } catch (e: any) {
-      console.warn('[MedNotificationService] Test notification failed:', e?.message);
-      return false;
+  public async sendTestPopNotification(
+    medName: string = 'Vitamin D3 (1000 IU)',
+    unit: string = '1 tablet'
+  ): Promise<boolean> {
+    // 1. First ensure permission is active
+    const hasPermission = await this.checkNotificationPermission();
+    if (!hasPermission) {
+      const granted = await this.requestNotificationPermission();
+      if (!granted) return false;
     }
+
+    // 2. Native Android module dispatch
+    if (Platform.OS === 'android' && OdinEyeNotification) {
+      try {
+        await OdinEyeNotification.sendTestNotification(
+          `⏰ Time for ${medName}`,
+          `Take ${unit}. Tap to mark as taken or snooze.`,
+          2 // Fires after 2 seconds so user can see heads-up banner
+        );
+        return true;
+      } catch (e: any) {
+        console.warn('[MedNotificationService] Native test notification failed:', e?.message);
+      }
+    }
+
+    return false;
   }
 
-  private parseTime(timeStr: string): { hours: number; minutes: number } | null {
+  public parseTime(timeStr: string): { hours: number; minutes: number } | null {
     const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
     if (!match) return null;
     let hours = parseInt(match[1], 10);

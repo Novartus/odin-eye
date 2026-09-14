@@ -27,6 +27,7 @@ import { medicationService } from '../../services/medication/medicationService';
 import { medicationNotificationService } from '../../services/medication/medicationNotificationService';
 import { mindfulnessService } from '../../services/mindfulness/mindfulnessService';
 import { widgetSyncService } from '../../services/widgets/widgetSyncService';
+import { LegalModal } from '../legal/LegalModal';
 import { EnabledSources } from '../../types';
 export { EnabledSources } from '../../types';
 
@@ -266,8 +267,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   // Security Vault & Audit State
   const [vaultNotice, setVaultNotice] = useState<string | null>(null);
-  const [showPrivacyModal, setShowPrivacyModal] = useState<boolean>(false);
+  const [showLegalModal, setShowLegalModal] = useState<boolean>(false);
+  const [legalModalTab, setLegalModalTab] = useState<'terms' | 'privacy' | 'disclaimer'>('privacy');
   const [widgetSyncNotice, setWidgetSyncNotice] = useState<string | null>(null);
+
+  const openLegal = (tab: 'terms' | 'privacy' | 'disclaimer') => {
+    setLegalModalTab(tab);
+    setShowLegalModal(true);
+  };
 
   const handleSyncWidgets = async () => {
     try {
@@ -1574,103 +1581,63 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </TouchableOpacity>
       </View>
 
-      {/* 4.3 Privacy Policy & Legal Governance Card */}
+      {/* 4.3 Legal, Terms & Privacy Governance Card */}
       <View style={styles.privacyGovCard}>
         <View style={styles.privacyGovHeader}>
           <View style={styles.privacyIconBubble}>
             <VaultShieldIcon size={18} color="#1F382E" />
           </View>
           <View style={styles.privacyTextCol}>
-            <Text style={styles.privacyGovTitle}>Privacy Policy & Legal Governance</Text>
+            <Text style={styles.privacyGovTitle}>Legal & Platform Compliance</Text>
             <Text style={styles.privacyGovSub}>
-              Zero-knowledge, local-first computing. 100% compliant with Google Play Health Connect Limited Use Policy.
+              Zero-knowledge local architecture. In full compliance with Google Play Health Connect Limited Use & Data Safety policies.
             </Text>
           </View>
         </View>
 
-        <TouchableOpacity
-          style={styles.viewPrivacyBtn}
-          onPress={() => setShowPrivacyModal(true)}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.viewPrivacyBtnText}>View Full Privacy Policy</Text>
-          <ChevronRightIcon size={14} color="#1F382E" />
-        </TouchableOpacity>
+        {/* 3 Quick-Access Buttons for Legal Governance Documents */}
+        <View style={styles.legalBtnRow}>
+          <TouchableOpacity
+            style={styles.legalChipBtn}
+            onPress={() => openLegal('privacy')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.legalChipBtnText}>📄 Privacy</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.legalChipBtn}
+            onPress={() => openLegal('terms')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.legalChipBtnText}>⚖️ Terms</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.legalChipBtn}
+            onPress={() => openLegal('disclaimer')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.legalChipBtnText}>🩺 Disclaimer</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* App Release Version & Copyright */}
+        <View style={styles.appMetaBox}>
+          <Text style={styles.appMetaVersion}>OdinEye Health · v1.0.0 (Build 2026.09.14)</Text>
+          <Text style={styles.appMetaNotice}>
+            Android SDK 36 · Local-First Zero-Knowledge Architecture{'\n'}
+            © 2026 OdinEye Health. All rights reserved.
+          </Text>
+        </View>
       </View>
 
-      {/* Privacy Policy In-App Modal */}
-      <Modal
-        visible={showPrivacyModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowPrivacyModal(false)}
-      >
-        <View style={styles.privacyModalBackdrop}>
-          <View style={styles.privacyModalCard}>
-            <View style={styles.privacyModalHeader}>
-              <View>
-                <Text style={styles.privacyModalBadge}>LEGAL & GOVERNANCE</Text>
-                <Text style={styles.privacyModalTitle}>Privacy Policy</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.privacyModalCloseBtn}
-                onPress={() => setShowPrivacyModal(false)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.privacyModalCloseText}>✕</Text>
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView style={styles.privacyModalScroll} showsVerticalScrollIndicator={false}>
-              <Text style={styles.privacyP}>
-                <Text style={{ fontWeight: '800', color: '#1F382E' }}>OdinEye (com.odineye.health)</Text> operates on a decentralized, <Text style={{ fontWeight: '700' }}>Local-First Architecture</Text>. We do not operate remote tracking servers or cloud databases.
-              </Text>
-
-              <Text style={styles.privacyH3}>1. Google Play Health Connect Limited Use</Text>
-              <Text style={styles.privacyP}>
-                In strict adherence to Google Play Developer Policies:
-              </Text>
-              <Text style={styles.privacyBullet}>• Health Connect data is accessed <Text style={{ fontWeight: '700' }}>strictly read-only</Text> to calculate your personal recovery index, activity pillars, and sleep scores.</Text>
-              <Text style={styles.privacyBullet}>• Health Connect data is <Text style={{ fontWeight: '700' }}>NEVER sold, rented, or leased</Text> to data brokers or advertisers.</Text>
-              <Text style={styles.privacyBullet}>• Data is <Text style={{ fontWeight: '700' }}>NEVER used for advertising, retargeting, or marketing</Text>.</Text>
-              <Text style={styles.privacyBullet}>• Data is <Text style={{ fontWeight: '700' }}>NEVER used to determine creditworthiness</Text> or for lending purposes.</Text>
-              <Text style={styles.privacyBullet}>• No human is permitted to read your health records.</Text>
-
-              <Text style={styles.privacyH3}>2. AES-256 On-Device Vault</Text>
-              <Text style={styles.privacyP}>
-                All third-party credentials (Ultrahuman, Fitbit, Hevy, Gemini) and personal medication/mindfulness logs are encrypted with AES-256-CBC, PBKDF2 (10,000 iterations), and HMAC-SHA256 authenticated integrity inside Android Hardware-Backed Keystore.
-              </Text>
-
-              <Text style={styles.privacyH3}>3. Complete Data Deletion</Text>
-              <Text style={styles.privacyP}>
-                You retain complete unilateral control. Tapping "Wipe Vault & Delete Keys" in Settings immediately, permanently, and irreversibly destroys all keys, caches, and logs from device storage.
-              </Text>
-
-              <Text style={styles.privacyH3}>4. Medical Disclaimer</Text>
-              <Text style={styles.privacyP}>
-                OdinEye is intended solely for general fitness and wellness purposes. It is not an FDA/EMA-cleared medical device and does not diagnose, treat, cure, or prevent any illness or disease.
-              </Text>
-
-              <Text style={styles.privacyH3}>5. Contact & Official Documentation</Text>
-              <Text style={styles.privacyP}>
-                Publisher: OdinEye Health{'\n'}
-                Email: N/A{'\n'}
-                Full Policy: docs/PRIVACY_POLICY.md
-              </Text>
-
-              <View style={{ height: 20 }} />
-            </ScrollView>
-
-            <TouchableOpacity
-              style={styles.privacyModalDoneBtn}
-              onPress={() => setShowPrivacyModal(false)}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.privacyModalDoneText}>I Understand & Agree</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      {/* Full In-App Legal Governance Modal */}
+      <LegalModal
+        visible={showLegalModal}
+        initialTab={legalModalTab}
+        onClose={() => setShowLegalModal(false)}
+      />
     </View>
   );
 };
@@ -2943,105 +2910,47 @@ const styles = StyleSheet.create({
     marginTop: 2,
     lineHeight: 15,
   },
-  viewPrivacyBtn: {
+  legalBtnRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#F8FAFA',
+    gap: 8,
+    marginTop: 4,
+    marginBottom: 14,
+  },
+  legalChipBtn: {
+    flex: 1,
+    backgroundColor: '#F2F7F4',
     paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 14,
+    paddingHorizontal: 6,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(31, 56, 46, 0.08)',
   },
-  viewPrivacyBtnText: {
+  legalChipBtnText: {
     fontSize: 12,
     fontWeight: '700',
     color: '#1F382E',
   },
-
-  // Modal styles
-  privacyModalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
+  appMetaBox: {
+    backgroundColor: '#F9FBFA',
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#EAF0EC',
+    alignItems: 'center',
   },
-  privacyModalCard: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 40,
-    maxHeight: '85%',
-  },
-  privacyModalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.06)',
-    paddingBottom: 12,
-  },
-  privacyModalBadge: {
-    fontSize: 10,
+  appMetaVersion: {
+    fontSize: 11,
     fontWeight: '800',
-    letterSpacing: 0.8,
     color: '#1F382E',
+    letterSpacing: 0.4,
     marginBottom: 2,
   },
-  privacyModalTitle: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: '#141816',
-  },
-  privacyModalCloseBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F1F5F3',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  privacyModalCloseText: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#1F382E',
-  },
-  privacyModalScroll: {
-    paddingVertical: 8,
-  },
-  privacyH3: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#1F382E',
-    marginTop: 14,
-    marginBottom: 6,
-  },
-  privacyP: {
-    fontSize: 12,
-    color: '#4B5563',
-    lineHeight: 18,
-    marginBottom: 8,
-  },
-  privacyBullet: {
-    fontSize: 12,
-    color: '#374151',
-    lineHeight: 18,
-    marginLeft: 6,
-    marginBottom: 4,
-  },
-  privacyModalDoneBtn: {
-    backgroundColor: '#1F382E',
-    borderRadius: 18,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  privacyModalDoneText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '800',
+  appMetaNotice: {
+    fontSize: 10,
+    color: '#71857C',
+    textAlign: 'center',
+    lineHeight: 14,
   },
 });

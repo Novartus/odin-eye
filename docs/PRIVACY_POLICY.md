@@ -1,11 +1,11 @@
 # OdinEye — Privacy Policy
 
-**Effective Date:** September 13, 2026  
-**Last Updated:** September 13, 2026  
+**Effective Date:** September 14, 2026  
+**Last Updated:** September 14, 2026  
 **Application Name:** OdinEye  
 **Package Identifier:** `com.odineye.health`  
 **Publisher:** OdinEye Health  
-**Contact:** `N/A`  
+**Contact:** `support@odineye.health`  
 
 ---
 
@@ -214,6 +214,6 @@ We may update this Privacy Policy from time to time to reflect modifications in 
 If you have questions, concerns, or requests regarding this Privacy Policy or our data handling practices, please contact us:
 
 - **Entity:** OdinEye Health
-- **Email:** `N/A`
+- **Email:** `support@odineye.health`
 - **Application Package:** `com.odineye.health`
 - **Official Documentation:** [https://github.com/Novartus/odin-eye](https://github.com/Novartus/odin-eye)

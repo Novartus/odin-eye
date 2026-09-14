@@ -1,9 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:replace="android:maxSdkVersion"/>
-  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:replace="android:maxSdkVersion"/>
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
   <uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED"/>
   <uses-permission android:name="android.permission.health.READ_DISTANCE"/>
   <uses-permission android:name="android.permission.health.READ_EXERCISE"/>
@@ -72,6 +72,16 @@
       <meta-data
           android:name="android.appwidget.provider"
           android:resource="@xml/widget_zen_vitals_info" />
+    </receiver>
+
+    <!-- Native Scheduled Alarms & Notification Receiver (Fires when App is Closed) -->
+    <receiver
+        android:name=".notification.OdinEyeAlarmReceiver"
+        android:exported="false">
+      <intent-filter>
+        <action android:name="com.odineye.health.ACTION_MEDICATION_ALARM" />
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+      </intent-filter>
     </receiver>
   </application>
 </manifest>

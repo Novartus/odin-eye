@@ -129,7 +129,7 @@ You are an expert sports scientist and integrative health coach. When the user a
     }
   }
 
-  // Call Google Gemini API (gemini-1.5-flash or gemini-2.0-flash)
+  // Call Google Gemini API (gemini-2.5-flash, gemini-2.0-flash, or gemini-1.5-flash)
   private async callGemini(
     query: string,
     data: TriPillarHealthSummary,
@@ -137,9 +137,9 @@ You are an expert sports scientist and integrative health coach. When the user a
     history: ChatMessage[]
   ): Promise<ChatMessage | null> {
     const context = this.formatBiometricContext(data);
-    const systemPrompt = `You are OdinEye, an elite on-device AI Sports Scientist and Human Performance Coach built into an Android centralized health app.
-You analyze live biometrics from Ultrahuman Ring AIR (sleep/HRV/circadian), Android Health Connect / Fitbit (cardio/AZM/HR zones), and Hevy (resistance tonnage/muscle clocks).
-Always reference specific numbers from the user's live telemetry when answering. Be encouraging, concise, actionable, and scientific.
+    const systemPrompt = `You are OdinEye, an elite AI Sports Scientist, Human Performance Expert, and Clinical Health Coach embedded directly inside a cutting-edge mobile health application.
+You analyze live biometrics from Ultrahuman Ring AIR (sleep/HRV/circadian), Android Health Connect / Fitbit (cardio/AZM/HR zones), Hevy (resistance tonnage/muscle clocks), and active medication schedules.
+Always reference specific numbers from the user's live telemetry when answering. Be encouraging, deeply knowledgeable, scientifically grounded, empathetic, and concise.
 Ground your guidance directly in the following live telemetry:
 ${context}`;
 
@@ -156,47 +156,65 @@ ${context}`;
       },
     ];
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    let lastError: any = null;
 
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: {
-          parts: [{ text: systemPrompt }],
-        },
-        contents,
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 600,
-        },
-      }),
-    });
+    for (const model of candidateModels) {
+      try {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system_instruction: {
+              parts: [{ text: systemPrompt }],
+            },
+            contents,
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 800,
+            },
+          }),
+        });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Gemini API Error (${response.status}): ${errText}`);
+        if (!response.ok) {
+          const errText = await response.text();
+          console.warn(`Gemini model ${model} failed (${response.status}), trying next fallback...`);
+          lastError = new Error(`Gemini API Error (${response.status}): ${errText}`);
+          continue;
+        }
+
+        const resJson = await response.json();
+        const candidateText = resJson?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!candidateText) {
+          continue;
+        }
+
+        const modelLabel = model === 'gemini-2.5-flash'
+          ? 'Gemini 2.5 Flash (Live)'
+          : model === 'gemini-2.0-flash'
+            ? 'Gemini 2.0 Flash (Live)'
+            : 'Gemini 1.5 Flash (Live)';
+
+        return {
+          id: 'gemini-' + Date.now(),
+          sender: 'coach',
+          text: candidateText.trim(),
+          timestamp: new Date().toISOString(),
+          dataPointsReferenced: [
+            modelLabel,
+            `Ultrahuman (${data.recovery.recoveryScore}% Rec)`,
+            `Fitbit (${data.cardio.todayActiveZoneMinutes} AZM)`,
+            `Hevy (${((data.strength.todayWorkout?.totalVolumeKg || data.strength.weeklyVolumeKg || 0) / 1000).toFixed(1)}t)`,
+          ],
+        };
+      } catch (e: any) {
+        lastError = e;
+      }
     }
 
-    const resJson = await response.json();
-    const candidateText = resJson?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!candidateText) {
-      throw new Error('Empty response from Gemini API');
-    }
-
-    return {
-      id: 'gemini-' + Date.now(),
-      sender: 'coach',
-      text: candidateText.trim(),
-      timestamp: new Date().toISOString(),
-      dataPointsReferenced: [
-        `Gemini 1.5 Flash (Live)`,
-        `Ultrahuman (${data.recovery.recoveryScore}% Rec)`,
-        `Fitbit (${data.cardio.todayActiveZoneMinutes} AZM)`,
-        `Hevy (${((data.strength.todayWorkout?.totalVolumeKg || data.strength.weeklyVolumeKg || 0) / 1000).toFixed(1)}t)`,
-      ],
-    };
+    throw lastError || new Error('All Gemini model candidates failed');
   }
 
   // Call OpenAI API (gpt-4o-mini)
@@ -261,33 +279,42 @@ ${context}`;
     };
   }
 
-  // Test Gemini API key validity
+  // Test Gemini API key validity across model candidate tiers
   public async testGeminiConnection(apiKey: string): Promise<{ success: boolean; message: string }> {
     if (!apiKey || !apiKey.trim()) {
       return { success: false, message: 'Please enter a Gemini API Key' };
     }
-    try {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey.trim()}`;
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: 'Respond with "Ready" in one word.' }] }],
-        }),
-      });
+    const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    let lastError = '';
 
-      if (!response.ok) {
-        const errJson = await response.json().catch(() => ({}));
-        return {
-          success: false,
-          message: errJson?.error?.message || `API returned status ${response.status}`,
-        };
+    for (const model of candidateModels) {
+      try {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`;
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: 'Respond with "Ready" in one word.' }] }],
+          }),
+        });
+
+        if (response.ok) {
+          const title = model === 'gemini-2.5-flash'
+            ? 'Google Gemini 2.5 Flash'
+            : model === 'gemini-2.0-flash'
+              ? 'Google Gemini 2.0 Flash'
+              : 'Google Gemini 1.5 Flash';
+          return { success: true, message: `${title} Connected ✓` };
+        } else {
+          const errJson = await response.json().catch(() => ({}));
+          lastError = errJson?.error?.message || `API returned status ${response.status}`;
+        }
+      } catch (err: any) {
+        lastError = err?.message || 'Connection failed';
       }
-
-      return { success: true, message: 'Google Gemini 1.5 Flash Connected ✓' };
-    } catch (err: any) {
-      return { success: false, message: err?.message || 'Connection failed' };
     }
+
+    return { success: false, message: lastError || 'Connection failed' };
   }
 
   // Test OpenAI API key validity

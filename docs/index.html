@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OdinEye — Legal, Privacy Policy & Terms of Service</title>
+  <meta name="description" content="Official Legal Governance, Privacy Policy, and Terms of Service for OdinEye (com.odineye.health). Local-first health and biometric tracking." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #F7FAF8;
+      --surface: #FFFFFF;
+      --surface-subtle: #EDF4F0;
+      --surface-pill: #E2ECE6;
+      --text-main: #1F382E;
+      --text-muted: #587366;
+      --accent-mint: #6BAA8E;
+      --accent-dark: #142720;
+      --accent-alert: #C76B58;
+      --border-subtle: #E1ECE6;
+      --shadow-card: 0 4px 24px rgba(31, 56, 46, 0.05);
+      --radius-card: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      padding: 0 16px 60px;
+    }
+
+    header {
+      max-width: 880px;
+      margin: 40px auto 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(107, 170, 142, 0.25);
+    }
+
+    .brand-title {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text-main);
+    }
+
+    .brand-sub {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .nav-tabs {
+      display: flex;
+      background: var(--surface-subtle);
+      padding: 4px;
+      border-radius: 12px;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      border: none;
+      background: transparent;
+      padding: 8px 16px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--surface);
+      color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    main {
+      max-width: 880px;
+      margin: 0 auto;
+      background: var(--surface);
+      border-radius: var(--radius-card);
+      padding: 40px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-subtle);
+    }
+
+    @media (max-width: 640px) {
+      main {
+        padding: 24px 20px;
+      }
+      header {
+        margin-top: 24px;
+      }
+    }
+
+    .doc-section {
+      display: none;
+    }
+
+    .doc-section.active {
+      display: block;
+      animation: fadeIn 0.25s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .meta-badge {
+      display: inline-block;
+      background: var(--surface-subtle);
+      color: var(--accent-mint);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      line-height: 1.25;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+
+    .doc-date {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      font-weight: 600;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      margin: 36px 0 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-main);
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 20px 0 8px;
+      color: var(--text-main);
+    }
+
+    p {
+      margin-bottom: 16px;
+      font-size: 15px;
+      color: var(--text-main);
+    }
+
+    .alert-box {
+      background: #FAF2EE;
+      border-left: 4px solid var(--accent-alert);
+      padding: 16px 18px;
+      border-radius: 10px;
+      margin: 20px 0;
+    }
+
+    .alert-box h4 {
+      color: var(--accent-alert);
+      font-size: 14px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
+    }
+
+    .alert-box p {
+      font-size: 14px;
+      margin-bottom: 0;
+      color: #38241F;
+    }
+
+    .info-box {
+      background: var(--surface-subtle);
+      border-left: 4px solid var(--accent-mint);
+      padding: 16px 18px;
+      border-radius: 10px;
+      margin: 20px 0;
+    }
+
+    .info-box h4 {
+      color: var(--text-main);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .info-box p {
+      font-size: 14px;
+      margin-bottom: 0;
+      color: var(--text-muted);
+    }
+
+    ul, ol {
+      margin: 12px 0 20px 24px;
+    }
+
+    li {
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 10px 14px;
+      text-align: left;
+      border: 1px solid var(--border-subtle);
+    }
+
+    th {
+      background: var(--surface-subtle);
+      font-weight: 700;
+    }
+
+    code {
+      font-family: monospace;
+      background: var(--surface-pill);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    footer {
+      max-width: 880px;
+      margin: 32px auto 0;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand-group">
+      <img src="../assets/icon.png" alt="OdinEye Logo" class="brand-logo" onerror="this.style.display='none'" />
+      <div>
+        <div class="brand-title">OdinEye</div>
+        <div class="brand-sub">Privacy & Legal Governance</div>
+      </div>
+    </div>
+
+    <nav class="nav-tabs" role="tablist">
+      <button class="tab-btn active" id="tab-privacy" onclick="switchTab('privacy')">Privacy Policy</button>
+      <button class="tab-btn" id="tab-terms" onclick="switchTab('terms')">Terms of Service</button>
+      <button class="tab-btn" id="tab-disclaimer" onclick="switchTab('disclaimer')">Medical Disclaimer</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- PRIVACY POLICY SECTION -->
+    <section id="content-privacy" class="doc-section active">
+      <span class="meta-badge">Google Play & GDPR Compliance</span>
+      <h1>Privacy Policy</h1>
+      <div class="doc-date">Effective Date: September 14, 2026 · Package: <code>com.odineye.health</code></div>
+
+      <div class="info-box">
+        <h4>Local-First, Zero-Knowledge Privacy Architecture</h4>
+        <p>OdinEye does not operate developer servers or cloud databases. All health telemetry, credentials, and medication schedules are encrypted with AES-256 and stored solely on your device inside hardware-backed storage.</p>
+      </div>
+
+      <h2>1. Google Play Health Connect Limited Use Policy</h2>
+      <p>OdinEye strictly complies with Google Play's Health Connect Developer Policies:</p>
+      <ul>
+        <li><strong>Read-Only Access:</strong> Health Connect data is accessed strictly in read-only mode to visualize recovery scores, sleep depth, and cardiovascular telemetry.</li>
+        <li><strong>Zero Data Sale:</strong> Health Connect data is <strong>never sold, rented, or leased</strong> to third parties, data brokers, or advertising exchanges.</li>
+        <li><strong>Zero Advertising:</strong> Health Connect data is <strong>never used or disclosed for advertising, retargeting, profiling, or marketing</strong>.</li>
+        <li><strong>Zero Credit Lending:</strong> Health Connect data is <strong>never used to evaluate creditworthiness</strong>.</li>
+        <li><strong>Prohibition of Human Access:</strong> No human is permitted to inspect or read your health data.</li>
+      </ul>
+
+      <h2>2. Data We Access (Read-Only)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Biometric Record</th>
+            <th>Android Permission</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Sleep Telemetry</strong></td>
+            <td><code>READ_SLEEP</code></td>
+            <td>Computing sleep stages, deep/REM balance, and sleep debt.</td>
+          </tr>
+          <tr>
+            <td><strong>Heart Rate & RHR</strong></td>
+            <td><code>READ_HEART_RATE</code> / <code>READ_RESTING_HEART_RATE</code></td>
+            <td>Cardiovascular recovery baselines and pacing guidance.</td>
+          </tr>
+          <tr>
+            <td><strong>Heart Rate Variability</strong></td>
+            <td><code>READ_HEART_RATE_VARIABILITY</code></td>
+            <td>Autonomic nervous system recovery and hypertrophy readiness.</td>
+          </tr>
+          <tr>
+            <td><strong>Steps & Distance</strong></td>
+            <td><code>READ_STEPS</code> / <code>READ_DISTANCE</code></td>
+            <td>Movement volume and daily activity targets.</td>
+          </tr>
+          <tr>
+            <td><strong>Active & Total Calories</strong></td>
+            <td><code>READ_ACTIVE_CALORIES_BURNED</code></td>
+            <td>Energy expenditure monitoring.</td>
+          </tr>
+          <tr>
+            <td><strong>Vitals (SpO2, Temp, Respiration)</strong></td>
+            <td><code>READ_SKIN_TEMPERATURE</code> / <code>READ_RESPIRATORY_RATE</code></td>
+            <td>Nocturnal respiratory stability and illness/strain cues.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>3. Device Permissions & System Notifications</h2>
+      <p>OdinEye utilizes standard Android OS permissions to deliver its wellness capabilities:</p>
+      <ul>
+        <li><code>POST_NOTIFICATIONS</code>: Delivers user-scheduled medication dose reminders and wellness alerts.</li>
+        <li><code>SCHEDULE_EXACT_ALARM</code>: Guarantees medication reminders fire at precise scheduled times even when the device enters low-power Doze mode.</li>
+        <li><code>VIBRATE</code>: Provides gentle haptic feedback during guided breathing cycles.</li>
+      </ul>
+
+      <h2>4. Unilateral In-App Data Deletion (Right to be Forgotten)</h2>
+      <p>In adherence to Google Play's Account & Data Deletion rules, you retain total unilateral control over your records:</p>
+      <ol>
+        <li>Open OdinEye.</li>
+        <li>Navigate to <strong>Settings (Config) → Category 04: Hardware Security & Vault Audit</strong>.</li>
+        <li>Tap <strong>Wipe Vault & Delete Keys</strong>.</li>
+      </ol>
+      <p>This action permanently and irreversibly deletes all stored credentials, medication schedules, mindfulness histories, and local caches from your device hardware.</p>
+
+      <h2>5. Publisher & Contact Information</h2>
+      <p>
+        <strong>Entity:</strong> OdinEye Health<br />
+        <strong>Contact Email:</strong> <a href="mailto:support@odineye.health">support@odineye.health</a><br />
+        <strong>Open Source & Docs:</strong> <a href="https://github.com/Novartus/odin-eye">https://github.com/Novartus/odin-eye</a>
+      </p>
+    </section>
+
+    <!-- TERMS OF SERVICE SECTION -->
+    <section id="content-terms" class="doc-section">
+      <span class="meta-badge">Legal Contract</span>
+      <h1>Terms of Service</h1>
+      <div class="doc-date">Effective Date: September 14, 2026 · Package: <code>com.odineye.health</code></div>
+
+      <h2>1. Acceptance of Terms</h2>
+      <p>By downloading, installing, or using OdinEye, you agree to be bound by these Terms of Service. If you do not agree to these terms, do not install or use the application.</p>
+
+      <div class="alert-box">
+        <h4>Non-Diagnostic & Medical Disclaimer</h4>
+        <p>OdinEye is for general fitness, athletic recovery, and mindfulness tracking only. It is NOT a medical device and is not cleared by the FDA or EMA. It does not provide medical diagnosis, treatment, or clinical advice.</p>
+      </div>
+
+      <h2>2. User Responsibility & Local Security</h2>
+      <p>OdinEye stores your encryption keys and data locally on your device. You are solely responsible for maintaining device security (screen lock, PIN, biometrics). Because we do not operate centralized cloud backups, uninstalling the app or wiping the vault permanently destroys your local health records.</p>
+
+      <h2>3. Third-Party Integrations</h2>
+      <p>OdinEye enables optional client-side connections to third-party services including Ultrahuman Ring AIR, Fitbit, Hevy, and Google Gemini. Your use of these services is governed by their respective terms and privacy policies. OdinEye makes no warranties regarding the accuracy or availability of third-party APIs.</p>
+
+      <h2>4. Disclaimer of Warranties & Limitation of Liability</h2>
+      <p>OdinEye is provided on an "AS IS" and "AS AVAILABLE" basis without warranties of any kind. Under no circumstances shall OdinEye Health be liable for any indirect, incidental, or consequential damages, including missed medication doses or reliance on fitness telemetry.</p>
+
+      <h2>5. Contact</h2>
+      <p>Questions regarding these terms may be directed to <a href="mailto:support@odineye.health">support@odineye.health</a>.</p>
+    </section>
+
+    <!-- MEDICAL DISCLAIMER SECTION -->
+    <section id="content-disclaimer" class="doc-section">
+      <span class="meta-badge">Health & Safety Advisory</span>
+      <h1>Medical & Non-Diagnostic Disclaimer</h1>
+      <div class="doc-date">Effective Date: September 14, 2026</div>
+
+      <div class="alert-box">
+        <h4>CRITICAL HEALTH NOTICE: NOT FOR CLINICAL USE</h4>
+        <p>ODINEYE DOES NOT PROVIDE MEDICAL ADVICE, DIAGNOSIS, OR TREATMENT. ALWAYS SEEK THE ADVICE OF YOUR PHYSICIAN OR QUALIFIED HEALTHCARE PROVIDER.</p>
+      </div>
+
+      <h2>1. General Fitness & Wellness Purpose Only</h2>
+      <p>All scores, biometric graphs, sleep stage breakdowns, heart rate analyses, recovery estimations, and AI insights provided by OdinEye are calculated for general athletic conditioning, mindfulness, and lifestyle optimization. They are not intended for clinical assessment or medical decision-making.</p>
+
+      <h2>2. Not a Regulated Medical Device</h2>
+      <p>OdinEye is not certified or approved as a medical device by the U.S. Food and Drug Administration (FDA), European Medicines Agency (EMA), or any international medical supervisory body.</p>
+
+      <h2>3. Medical Emergencies</h2>
+      <p>If you experience chest pain, shortness of breath, abnormal heart palpitations, severe dizziness, or any sudden medical event, immediately contact emergency services (e.g. 911, 112, 999) or proceed to an emergency department. Never delay seeking medical attention because of metrics displayed in OdinEye.</p>
+
+      <h2>4. Medication Schedules</h2>
+      <p>The medication reminder tool is an organizational convenience feature. Operating system battery optimizations or hardware failures can prevent alarms from firing. You remain solely responsible for adhering to your prescribed medication schedule.</p>
+    </section>
+  </main>
+
+  <footer>
+    &copy; 2026 OdinEye Health · All Rights Reserved · Package: com.odineye.health
+  </footer>
+
+  <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.doc-section').forEach(sec => sec.classList.remove('active'));
+
+      document.getElementById('tab-' + tabId).classList.add('active');
+      document.getElementById('content-' + tabId).classList.add('active');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Auto-select tab based on URL hash (e.g. #terms or #disclaimer)
+    window.addEventListener('DOMContentLoaded', () => {
+      const hash = window.location.hash.replace('#', '');
+      if (['privacy', 'terms', 'disclaimer'].includes(hash)) {
+        switchTab(hash);
+      }
+    });
+  </script>
+</body>
+</html>

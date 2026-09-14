@@ -13,6 +13,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { credentialsStorage } from '../services/storage/credentialsStorage';
+import { LegalModal } from '../components/legal/LegalModal';
+import { medicationNotificationService } from '../services/medication/medicationNotificationService';
 
 interface OnboardingScreenProps {
   onFinish: (config: {
@@ -132,7 +134,20 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, in
     { val: 20, label: 'Immersion', sub: 'Zen Master' },
   ];
 
+  const [showLegalModal, setShowLegalModal] = useState(false);
+  const [legalModalTab, setLegalModalTab] = useState<'terms' | 'privacy' | 'disclaimer'>('privacy');
+
+  const openLegal = (tab: 'terms' | 'privacy' | 'disclaimer') => {
+    setLegalModalTab(tab);
+    setShowLegalModal(true);
+  };
+
   const handleComplete = async () => {
+    // Proactively request notification permissions for medication reminders & alerts
+    try {
+      await medicationNotificationService.requestNotificationPermission();
+    } catch {}
+
     await credentialsStorage.saveCredentials({
       hasCompletedOnboarding: true,
       dailyStepsGoal: stepsGoal,
@@ -334,6 +349,25 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, in
               </Svg>
             </View>
           </TouchableOpacity>
+
+          {/* Legal Consent & Disclaimers */}
+          <View style={styles.legalConsentRow}>
+            <Text style={styles.legalConsentText}>
+              By continuing, you agree to OdinEye's{' '}
+              <Text style={styles.legalLink} onPress={() => openLegal('terms')}>
+                Terms of Service
+              </Text>{' '}
+              and{' '}
+              <Text style={styles.legalLink} onPress={() => openLegal('privacy')}>
+                Privacy Policy
+              </Text>
+              , and acknowledge our{' '}
+              <Text style={styles.legalLink} onPress={() => openLegal('disclaimer')}>
+                Medical Disclaimer
+              </Text>
+              .
+            </Text>
+          </View>
         </ScrollView>
       ) : step === 2 ? (
         /* STEP 2: DAILY STEPS & CALORIES GOAL SELECTION */
@@ -829,9 +863,35 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish, in
               </Svg>
             </View>
           </TouchableOpacity>
+
+          {/* Legal Consent & Disclaimers */}
+          <View style={styles.legalConsentRow}>
+            <Text style={styles.legalConsentText}>
+              By completing setup, you agree to OdinEye's{' '}
+              <Text style={styles.legalLink} onPress={() => openLegal('terms')}>
+                Terms of Service
+              </Text>{' '}
+              and{' '}
+              <Text style={styles.legalLink} onPress={() => openLegal('privacy')}>
+                Privacy Policy
+              </Text>
+              , and acknowledge our{' '}
+              <Text style={styles.legalLink} onPress={() => openLegal('disclaimer')}>
+                Medical Disclaimer
+              </Text>
+              .
+            </Text>
+          </View>
         </ScrollView>
       )}
       </Animated.View>
+
+      {/* In-App Legal Governance Modal */}
+      <LegalModal
+        visible={showLegalModal}
+        initialTab={legalModalTab}
+        onClose={() => setShowLegalModal(false)}
+      />
     </SafeAreaView>
   );
 };
@@ -1529,5 +1589,22 @@ const styles = StyleSheet.create({
   },
   stepPillRow: {
     marginBottom: 12,
+  },
+  legalConsentRow: {
+    marginTop: 18,
+    marginBottom: 8,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+  },
+  legalConsentText: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: '#6E857B',
+    textAlign: 'center',
+  },
+  legalLink: {
+    fontWeight: '700',
+    color: '#1F382E',
+    textDecorationLine: 'underline',
   },
 });

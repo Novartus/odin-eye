@@ -200,24 +200,41 @@ export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data
         </View>
 
         {/* Quick Prompts Chips */}
-        <Text style={styles.sectionHeader}>QUICK TELEMETRY, SCIENCE & MEDS</Text>
-        <View style={styles.chipsRow}>
-          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('Can I lift heavy today?')}>
-            <Text style={styles.chipText}>Can I lift heavy?</Text>
+        <Text style={styles.sectionHeader}>EXPLORE BIOMETRICS, SCIENCE & MEDICATIONS</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.horizontalChipsContent}
+          style={styles.horizontalChipsScroll}
+        >
+          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('Summarize my health, recovery, and readiness for today.')}>
+            <Text style={styles.chipText}>📊 Daily Assessment</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('Benefits of coffee')}>
-            <Text style={styles.chipText}>Benefits of coffee ☕</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('What is my caffeine cutoff?')}>
-            <Text style={styles.chipText}>Caffeine cutoff?</Text>
+          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('Can I lift heavy today based on my recovery and muscle fatigue?')}>
+            <Text style={styles.chipText}>🏋️ Can I Lift Today?</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.chip} onPress={() => handleAsk('Check my active medication schedule and today’s adherence.')}>
-            <Text style={styles.chipText}>💊 Med Routine</Text>
+            <Text style={styles.chipText}>💊 Meds & Adherence</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('Are there any timing or workout interactions with my current medications?')}>
-            <Text style={styles.chipText}>💊 Meds & Workouts</Text>
+          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('Analyze my sleep stages, deep sleep, and recovery trends.')}>
+            <Text style={styles.chipText}>🌙 Sleep & Recovery</Text>
           </TouchableOpacity>
-        </View>
+          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('What are my recommended protein and macro targets today?')}>
+            <Text style={styles.chipText}>🥩 Protein & Macros</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('What is my caffeine cutoff time and morning sunlight window?')}>
+            <Text style={styles.chipText}>☕ Caffeine & Circadian</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('I feel stressed, guide me through a quick vagus nerve reset.')}>
+            <Text style={styles.chipText}>🧘 Stress & Breathwork</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('How do I recover from muscle soreness and DOMS?')}>
+            <Text style={styles.chipText}>🩹 DOMS & Soreness</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.chip} onPress={() => handleAsk('What AI model and hardware acceleration is running on this device?')}>
+            <Text style={styles.chipText}>🧠 On-Device Specs</Text>
+          </TouchableOpacity>
+        </ScrollView>
 
         {/* Chat Messages */}
         <View style={styles.messagesList}>
@@ -416,6 +433,15 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     letterSpacing: 0.8,
     marginBottom: 8,
+  },
+  horizontalChipsScroll: {
+    marginBottom: 16,
+    marginHorizontal: -4,
+  },
+  horizontalChipsContent: {
+    paddingHorizontal: 4,
+    gap: 8,
+    flexDirection: 'row',
   },
   chipsRow: {
     flexDirection: 'row',

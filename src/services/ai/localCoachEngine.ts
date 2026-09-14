@@ -4,6 +4,7 @@
 import { TriPillarHealthSummary, MuscleGroup } from '../../types/health';
 import { AiCoachRecommendation, ChatMessage, AiEngineConfig } from '../../types/aiCoach';
 import { sportsScienceKnowledge } from './sportsScienceKnowledge';
+import { aiReasoningEngine } from './aiReasoningEngine';
 
 export class LocalAiCoachEngine {
   private config: AiEngineConfig = {
@@ -408,27 +409,11 @@ export class LocalAiCoachEngine {
         `• **Pre-Sleep Meal**: Consider 25-30g slow-digesting casein or cottage cheese 1 hour before bed to support the ${recovery.deepSleepPct}% deep sleep stage.`;
       referenced = ['Ultrahuman Recovery Index', 'Caloric Expenditure', 'Sports Nutrition Science'];
     }
-    // 9. Comprehensive Overview / Summary
+    // 9. Comprehensive Clinical & Sports Science Reasoning Engine
     else {
-      const hasWorkoutToday = Boolean(strength.todayWorkout && rawVolumeKg > 0);
-      const workoutContext = hasWorkoutToday
-        ? `You completed a session today with **${volumeTons}t volume**, so your musculoskeletal system is in an active recovery window.`
-        : `You haven't logged a strength workout in 5+ days, meaning all your muscle groups are **100% primed** with zero residual fatigue debt.`;
-
-      const recoveryContext = recovery.recoveryScore > 0
-        ? `Your Ultrahuman Ring AIR recovery score is at **${recovery.recoveryScore}%** (HRV: **${recovery.hrvRmssd}ms**, Sleep: **${(recovery.sleepDurationMinutes / 60).toFixed(1)}h**).`
-        : `Your biological recovery is currently awaiting synchronization with your wearable.`;
-
-      response = `### 🧠 On-Device AI Physiological Synthesis\n\n` +
-        `Thinking through your question: **"${prompt.trim()}"**\n\n` +
-        `• 🔬 **Physiological Assessment**: In human sports science, nutrition, recovery, and training stress constantly interact with autonomic tone and muscular repair.\n` +
-        `• 📊 **Your Live Biometric State**:\n` +
-        `  - ${workoutContext}\n` +
-        `  - ${recoveryContext}\n` +
-        `  - Daily cardio expenditure is tracking at **${cardio.todayActiveZoneMinutes} AZM** with **${cardio.cardioCaloriesBurned || data.dailyActivity?.activeCalories || 0} kcal** burned.\n\n` +
-        `• 🎯 **Actionable Synthesis**: Align any dietary intake or physical stimulus with your primed muscular state and observe your circadian caffeine cutoff (**${recovery.circadianPhase.caffeineCutoffTime}**) to protect tonight's sleep architecture.\n\n` +
-        `*Ask me specifically about protein timing, macro splits, workout routines, or recovery protocols!*`;
-      referenced = ['On-Device Cognitive Synthesis', 'Ultrahuman Ring AIR', 'Hevy Biometrics'];
+      const reasoning = aiReasoningEngine.reason(prompt, data, _history);
+      response = reasoning.response;
+      referenced = reasoning.referencedDataPoints;
     }
 
     return {
