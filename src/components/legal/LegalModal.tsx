@@ -10,10 +10,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
   Platform,
 } from 'react-native';
-import { Colors } from '../../theme/colors';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface LegalModalProps {
   visible: boolean;
@@ -54,8 +53,8 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                   {activeTab === 'terms'
                     ? 'Terms of Service'
                     : activeTab === 'privacy'
-                    ? 'Privacy Policy'
-                    : 'Medical Disclaimer'}
+                      ? 'Privacy Policy'
+                      : 'Medical Disclaimer'}
                 </Text>
               </View>
               <TouchableOpacity
