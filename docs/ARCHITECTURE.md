@@ -176,6 +176,8 @@ DedicatedAiCoachView renders FormattedMessage
 
 **`localCoachEngine`** provides instant, offline recommendations by applying rules from `sportsScienceKnowledge.ts` against the current `liveHealthService` data snapshot — no API call, no latency.
 
+> 📖 **Deep Dive Documentation:** For a comprehensive technical analysis of OdinEye's privacy-first on-device intelligence, NPU hardware acceleration, and zero-cloud architecture, see [ON_DEVICE_AI.md](./ON_DEVICE_AI.md).
+
 ---
 
 ## Navigation architecture

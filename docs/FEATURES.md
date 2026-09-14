@@ -246,6 +246,8 @@ Ask anything about your health data:
 
 The AI has full context of your current biometrics from `liveHealthService`.
 
+> 💡 **Dedicated Documentation:** For technical architecture, privacy containment, NPU benchmarks, and zero-cloud guarantees, see [ON_DEVICE_AI.md](./ON_DEVICE_AI.md).
+
 ---
 
 ## Config
