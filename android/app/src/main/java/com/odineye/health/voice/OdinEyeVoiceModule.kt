@@ -149,7 +149,7 @@ class OdinEyeVoiceModule(private val reactContext: ReactApplicationContext) :
                 // Clean up any existing instance to prevent ERROR_RECOGNIZER_BUSY
                 cleanupSpeechRecognizer()
 
-                val context = currentActivity ?: reactContext
+                val context = reactContext.currentActivity ?: reactContext
                 speechRecognizer = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S &&
                     SpeechRecognizer.isOnDeviceRecognitionAvailable(context)) {
                     try {
@@ -322,7 +322,7 @@ class OdinEyeVoiceModule(private val reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun removeListeners(count: Int) {
+    fun removeListeners(count: Double) {
         // Required for RN NativeEventEmitter
     }
 }

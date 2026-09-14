@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Platform,
   Vibration,
+  Image,
 } from 'react-native';
 import Svg, { Path, Circle, Rect, Line } from 'react-native-svg';
 import { Colors } from '../../theme/colors';
@@ -1606,6 +1607,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
         {/* App Release Version & Copyright */}
         <View style={styles.appMetaBox}>
+          <View style={styles.settingsLogoWrap}>
+            <Image
+              source={require('../../../assets/icon.png')}
+              style={styles.settingsLogo}
+              resizeMode="contain"
+            />
+          </View>
           <Text style={styles.appMetaVersion}>OdinEye Health · v1.0.0 (Build 2026.09.14)</Text>
           <Text style={styles.appMetaNotice}>
             Android SDK 36 · Local-First Zero-Knowledge Architecture{'\n'}
@@ -2913,6 +2921,28 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#1F382E',
+  },
+  settingsLogoWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(31, 56, 46, 0.08)',
+    shadowColor: '#1F382E',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
+    overflow: 'hidden',
+  },
+  settingsLogo: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
   },
   appMetaBox: {
     backgroundColor: '#F9FBFA',

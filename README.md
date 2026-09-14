@@ -1,5 +1,9 @@
 <div align="center">
 
+<a href="./assets/OdinEye-Logo.png">
+  <img src="./assets/icon.png" alt="OdinEye Logo" width="120" height="120" style="border-radius: 28px;" />
+</a>
+
 # OdinEye
 
 **Personal Health Intelligence — On-Device. Private. Precise.**
@@ -170,6 +174,11 @@ centralized-health-app/
 ├── app.json                         # Expo + Android manifest config
 ├── eas.json                         # EAS build profiles
 ├── LICENSE
+├── assets/                          # Brand assets & launcher icons
+│   ├── OdinEye-Logo.svg             # Master vector logo (Fabric.js SVG)
+│   ├── OdinEye-Logo.png             # Master raster logo (1280x1340 RGBA)
+│   ├── icon.png                     # Primary application icon (1024x1024)
+│   └── adaptive-icon.png            # Android adaptive foreground (1024x1024)
 ├── docs/
 │   ├── ON_DEVICE_AI.md              # Dedicated on-device AI technical guide
 │   ├── PRIVACY_POLICY.md            # Google Play Privacy Policy (Markdown)
