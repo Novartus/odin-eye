@@ -39,10 +39,21 @@ export interface SleepArchitectureBalance {
   deepEvaluationLabel: string;
   remEvaluation: 'optimal' | 'low' | 'high';
   remEvaluationLabel: string;
+  lightEvaluation?: 'optimal' | 'balanced' | 'elevated';
+  lightEvaluationLabel?: string;
+  awakeEvaluation?: 'optimal' | 'elevated' | 'fragmented';
+  awakeEvaluationLabel?: string;
   balanceRating: 'harmonious' | 'physical_bias' | 'cognitive_bias' | 'insufficient_rest';
   balanceLabel: string;
   physicalRestorationAdvice: string;
   cognitiveResilienceAdvice: string;
+  sleepHeartRateAvg?: number;
+  sleepHeartRateMin?: number;
+  sleepHeartRateMax?: number;
+  sleepHeartRateDipPct?: number;
+  cardiovascularDipEvaluation?: 'optimal' | 'shallow' | 'inverted' | 'awaiting';
+  cardiovascularDipLabel?: string;
+  cardiovascularAdvice?: string;
 }
 
 export interface DailyStepRecord {

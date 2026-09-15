@@ -25,7 +25,6 @@ import { Colors } from '../theme/colors';
 import { HomeTopBar } from '../components/home/HomeTopBar';
 import { MetricCardsGrid } from '../components/home/MetricCardsGrid';
 import { TodayWellnessCard } from '../components/home/TodayWellnessCard';
-import { SleepArchitectureBentoCard } from '../components/home/SleepArchitectureBentoCard';
 import { TodayInsightCard } from '../components/home/TodayInsightCard';
 import { HealthOverviewView } from '../components/overview/HealthOverviewView';
 import { BodyAnalysisView } from '../components/body/BodyAnalysisView';
@@ -545,12 +544,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
                   tonnageKg={data.strength.todayWorkout?.totalVolumeKg || data.strength.weeklyVolumeKg}
                   onPress={() => switchTab('overview')}
                 />
-                {/* 7-Day Sleep Debt & Physical vs. Cognitive Sleep Architecture */}
-                <SleepArchitectureBentoCard
-                  recovery={data.recovery}
-                  targetSleepHours={targetSleepGoal}
-                  onPress={() => switchTab('overview')}
-                />
                 {/* Today's Medication Overview Quick Widget */}
                 <TodayMedicationCard onOpenMedications={() => switchTab('meds')} />
 
@@ -574,10 +567,13 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
               <MedicationSectionView />
             )}
 
-            {/* 3. HEALTH OVERVIEW SCREEN */}
+            {/* 3. HEALTH OVERVIEW SCREEN (VITALS) */}
             {activeTab === 'overview' && (
               <>
-                <HealthOverviewView data={data} />
+                <HealthOverviewView
+                  data={data}
+                  targetSleepGoal={targetSleepGoal}
+                />
                 {isAiEnabled && (
                   <TodayInsightCard
                     headline={data.recovery.recoveryScore > 0 ? "Cardio & Recovery Harmony" : "Telemetry Awaiting Sync"}

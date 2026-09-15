@@ -56,6 +56,10 @@ export const initialEmptyHealthSummary: TriPillarHealthSummary = {
     awakePct: 0,
     restingHeartRate: 0,
     currentHeartRate: undefined,
+    sleepHeartRateAvg: undefined,
+    sleepHeartRateMin: undefined,
+    sleepHeartRateMax: undefined,
+    sleepHeartRateDipPct: undefined,
     hrvRmssd: 0,
     skinTempDelta: 0,
     circadianPhase: {

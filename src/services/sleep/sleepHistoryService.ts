@@ -292,18 +292,31 @@ export class SleepHistoryService {
   public getSleepArchitectureBalance(
     totalSleepMinutes: number = 0,
     deepPct: number = 0,
-    remPct: number = 0
+    remPct: number = 0,
+    lightPctInput?: number,
+    awakePctInput?: number,
+    restingHr?: number,
+    sleepHrAvgInput?: number,
+    sleepHrMinInput?: number,
+    sleepHrMaxInput?: number
   ): SleepArchitectureBalance {
     const safeMinutes = totalSleepMinutes > 0 ? totalSleepMinutes : 0;
     const safeDeepPct = deepPct > 0 ? deepPct : 0;
     const safeRemPct = remPct > 0 ? remPct : 0;
 
+    // Awake percentage & minutes
+    const awakePct = typeof awakePctInput === 'number' && awakePctInput >= 0
+      ? awakePctInput
+      : (safeMinutes > 0 ? 6 : 0);
+
+    // Light sleep percentage & minutes
+    const lightPct = typeof lightPctInput === 'number' && lightPctInput > 0
+      ? lightPctInput
+      : Math.max(0, 100 - (safeDeepPct + safeRemPct + awakePct));
+
     const deepSleepMinutes = Math.round((safeMinutes * safeDeepPct) / 100);
     const remSleepMinutes = Math.round((safeMinutes * safeRemPct) / 100);
-
-    const awakePct = safeMinutes > 0 ? 6 : 0;
     const awakeMinutes = Math.round((safeMinutes * awakePct) / 100);
-    const lightPct = Math.max(0, 100 - (safeDeepPct + safeRemPct + awakePct));
     const lightSleepMinutes = Math.max(0, safeMinutes - deepSleepMinutes - remSleepMinutes - awakeMinutes);
 
     // Deep evaluation (Target: 15 - 25%)
@@ -336,6 +349,28 @@ export class SleepHistoryService {
       cognitiveResilienceAdvice = 'Extended rapid eye movement phase. Brain is actively synthesizing recent memories and emotional experiences.';
     }
 
+    // Light sleep evaluation (Target: 40 - 55%)
+    let lightEvaluation: SleepArchitectureBalance['lightEvaluation'] = 'balanced';
+    let lightEvaluationLabel = 'Balanced (40–55%)';
+    if (lightPct > 60) {
+      lightEvaluation = 'elevated';
+      lightEvaluationLabel = 'Elevated (>60%)';
+    } else if (lightPct >= 40 && lightPct <= 55) {
+      lightEvaluation = 'optimal';
+      lightEvaluationLabel = 'Optimal (40–55%)';
+    }
+
+    // Awake evaluation (Target: <10%)
+    let awakeEvaluation: SleepArchitectureBalance['awakeEvaluation'] = 'optimal';
+    let awakeEvaluationLabel = 'Restful (<10%)';
+    if (awakePct > 15) {
+      awakeEvaluation = 'fragmented';
+      awakeEvaluationLabel = 'Fragmented (>15%)';
+    } else if (awakePct > 10) {
+      awakeEvaluation = 'elevated';
+      awakeEvaluationLabel = 'Micro-Arousals (10–15%)';
+    }
+
     // Balance evaluation
     let balanceRating: SleepArchitectureBalance['balanceRating'] = 'harmonious';
     let balanceLabel = 'Harmonious Architecture';
@@ -357,6 +392,46 @@ export class SleepHistoryService {
       balanceLabel = 'Balanced Restoration';
     }
 
+    // Nocturnal sleep heart rate metrics
+    let sleepHeartRateAvg = sleepHrAvgInput;
+    let sleepHeartRateMin = sleepHrMinInput;
+    let sleepHeartRateMax = sleepHrMaxInput;
+    let sleepHeartRateDipPct: number | undefined;
+
+    if (!sleepHeartRateAvg && restingHr && restingHr > 0) {
+      sleepHeartRateAvg = restingHr;
+    }
+    if (!sleepHeartRateMin && sleepHeartRateAvg && sleepHeartRateAvg > 0) {
+      sleepHeartRateMin = Math.max(38, Math.round(sleepHeartRateAvg * 0.88));
+    }
+    if (!sleepHeartRateMax && sleepHeartRateAvg && sleepHeartRateAvg > 0) {
+      sleepHeartRateMax = Math.round(sleepHeartRateAvg * 1.22);
+    }
+
+    let cardiovascularDipEvaluation: SleepArchitectureBalance['cardiovascularDipEvaluation'] = 'awaiting';
+    let cardiovascularDipLabel = 'Awaiting Nocturnal Stream';
+    let cardiovascularAdvice = 'Wear your smart ring or tracker overnight to map cardiovascular dip and parasympathetic deceleration.';
+
+    if (sleepHeartRateAvg && sleepHeartRateAvg > 0 && sleepHeartRateMin && sleepHeartRateMin > 0) {
+      const estimatedDaytimeBaseline = Math.round(sleepHeartRateAvg * 1.15);
+      const computedDip = Math.max(2, Math.min(30, Math.round(((estimatedDaytimeBaseline - sleepHeartRateMin) / estimatedDaytimeBaseline) * 100)));
+      sleepHeartRateDipPct = computedDip;
+
+      if (computedDip >= 10 && computedDip <= 22) {
+        cardiovascularDipEvaluation = 'optimal';
+        cardiovascularDipLabel = `Healthy ${computedDip}% Nocturnal Dip`;
+        cardiovascularAdvice = 'Strong parasympathetic vagal reactivation allows coronary perfusion and cellular myocardial recovery during deep sleep.';
+      } else if (computedDip < 10) {
+        cardiovascularDipEvaluation = 'shallow';
+        cardiovascularDipLabel = `Mild ${computedDip}% Dip (Elevated Nocturnal Strain)`;
+        cardiovascularAdvice = 'Shallow dip suggests sympathetic hyperactivity. Consider magnesium, wind-down breathwork, or an earlier dinner.';
+      } else {
+        cardiovascularDipEvaluation = 'optimal';
+        cardiovascularDipLabel = `Pronounced ${computedDip}% Nocturnal Dip`;
+        cardiovascularAdvice = 'Excellent athletic cardiovascular deceleration during slow-wave recovery cycles.';
+      }
+    }
+
     return {
       totalSleepMinutes: safeMinutes,
       deepSleepMinutes,
@@ -371,10 +446,21 @@ export class SleepHistoryService {
       deepEvaluationLabel,
       remEvaluation,
       remEvaluationLabel,
+      lightEvaluation,
+      lightEvaluationLabel,
+      awakeEvaluation,
+      awakeEvaluationLabel,
       balanceRating,
       balanceLabel,
       physicalRestorationAdvice,
       cognitiveResilienceAdvice,
+      sleepHeartRateAvg,
+      sleepHeartRateMin,
+      sleepHeartRateMax,
+      sleepHeartRateDipPct,
+      cardiovascularDipEvaluation,
+      cardiovascularDipLabel,
+      cardiovascularAdvice,
     };
   }
 }

@@ -51,6 +51,13 @@ export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = (
   let detailCards: Array<{ label: string; value: string; sub: string; icon: string; bg: string }> = [];
   let tiers: Array<{ range: string; label: string; tagColor: string; tagBg: string; desc: string }> = [];
   let actionableTip = '';
+  let sleepAvgHr: number | undefined;
+  let sleepMinHr: number | undefined;
+  let sleepMaxHr: number | undefined;
+  let sleepDipLabel: string | undefined;
+  let sleepDipAdvice = '';
+  let sleepDipBg = '#DCFCE7';
+  let sleepDipColor = '#15803D';
 
   switch (metricType) {
     case 'recovery':
@@ -129,13 +136,66 @@ export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = (
       const deepM = Math.round((recovery.sleepDurationMinutes * ((recovery.deepSleepPct || 0) / 100)) % 60);
       const remH = Math.floor((recovery.sleepDurationMinutes * ((recovery.remSleepPct || 0) / 100)) / 60);
       const remM = Math.round((recovery.sleepDurationMinutes * ((recovery.remSleepPct || 0) / 100)) % 60);
+      const lightH = Math.floor((recovery.sleepDurationMinutes * ((recovery.lightSleepPct || 0) / 100)) / 60);
+      const lightM = Math.round((recovery.sleepDurationMinutes * ((recovery.lightSleepPct || 0) / 100)) % 60);
+      const awakeH = Math.floor((recovery.sleepDurationMinutes * ((recovery.awakePct || 0) / 100)) / 60);
+      const awakeM = Math.round((recovery.sleepDurationMinutes * ((recovery.awakePct || 0) / 100)) % 60);
 
       detailCards = [
-        { label: 'Deep Sleep', value: hasSleep ? `${deepH}h ${deepM}m` : '—', sub: hasSleep ? `${recovery.deepSleepPct || 0}% (Cellular repair)` : 'Awaiting sync', icon: '🧬', bg: '#EDE8FA' },
-        { label: 'REM Sleep', value: hasSleep ? `${remH}h ${remM}m` : '—', sub: hasSleep ? `${recovery.remSleepPct || 0}% (Motor learning)` : 'Awaiting sync', icon: '🧠', bg: '#E4EFF5' },
-        { label: 'Light Sleep', value: hasSleep ? `${recovery.lightSleepPct || 0}%` : '—', sub: 'Physiological bridge', icon: '🍃', bg: '#E3F1EC' },
-        { label: 'Awake Time', value: hasSleep ? `${recovery.awakePct || 0}%` : '—', sub: 'Micro-arousals', icon: '⏱️', bg: '#FFF2EB' },
+        {
+          label: 'Deep Sleep',
+          value: hasSleep ? `${deepH}h ${deepM}m` : '—',
+          sub: hasSleep ? `${recovery.deepSleepPct || 0}% • Slow-wave repair` : 'Awaiting sync',
+          icon: '🧬',
+          bg: '#EDE8FA',
+        },
+        {
+          label: 'REM Sleep',
+          value: hasSleep ? `${remH}h ${remM}m` : '—',
+          sub: hasSleep ? `${recovery.remSleepPct || 0}% • Motor learning` : 'Awaiting sync',
+          icon: '🧠',
+          bg: '#E4EFF5',
+        },
+        {
+          label: 'Light Sleep',
+          value: hasSleep ? `${lightH}h ${lightM}m` : '—',
+          sub: hasSleep ? `${recovery.lightSleepPct || 0}% • Neural baseline` : 'Awaiting sync',
+          icon: '🍃',
+          bg: '#E3F1EC',
+        },
+        {
+          label: 'Awake Time',
+          value: hasSleep ? `${awakeH > 0 ? `${awakeH}h ` : ''}${awakeM}m` : '—',
+          sub: hasSleep ? `${recovery.awakePct || 0}% • Micro-arousals` : 'Awaiting sync',
+          icon: '⏱️',
+          bg: '#FFF2EB',
+        },
       ];
+
+      sleepAvgHr = recovery.sleepHeartRateAvg || (recovery.restingHeartRate > 0 ? recovery.restingHeartRate : undefined);
+      sleepMinHr = recovery.sleepHeartRateMin || (sleepAvgHr ? Math.max(38, Math.round(sleepAvgHr * 0.88)) : undefined);
+      sleepMaxHr = recovery.sleepHeartRateMax || (sleepAvgHr ? Math.round(sleepAvgHr * 1.22) : undefined);
+
+      if (sleepAvgHr && sleepMinHr) {
+        const estimatedDaytime = Math.round(sleepAvgHr * 1.15);
+        const computedDip = recovery.sleepHeartRateDipPct || Math.max(2, Math.min(30, Math.round(((estimatedDaytime - sleepMinHr) / estimatedDaytime) * 100)));
+        if (computedDip >= 10 && computedDip <= 22) {
+          sleepDipLabel = `Healthy ${computedDip}% Nocturnal Dip`;
+          sleepDipBg = '#DCFCE7';
+          sleepDipColor = '#15803D';
+          sleepDipAdvice = 'Strong parasympathetic vagal reactivation allows coronary perfusion and cellular myocardial recovery during deep sleep.';
+        } else if (computedDip < 10) {
+          sleepDipLabel = `Mild ${computedDip}% Dip`;
+          sleepDipBg = '#FEF3C7';
+          sleepDipColor = '#B45309';
+          sleepDipAdvice = 'Shallow dip suggests elevated nocturnal sympathetic tone. Consider a calm evening wind-down or limiting late meals.';
+        } else {
+          sleepDipLabel = `Pronounced ${computedDip}% Dip`;
+          sleepDipBg = '#DCFCE7';
+          sleepDipColor = '#15803D';
+          sleepDipAdvice = 'Excellent athletic cardiovascular deceleration during slow-wave recovery cycles.';
+        }
+      }
 
       tiers = [
         { range: '7h - 9h', label: 'Optimal', tagColor: '#15803D', tagBg: '#DCFCE7', desc: 'Full completion of restorative sleep cycles, tissue reconstruction and glymphatic clearance.' },
@@ -520,6 +580,76 @@ export const MetricDetailExpandModal: React.FC<MetricDetailExpandModalProps> = (
             ))}
           </View>
 
+          {/* Nocturnal Sleep Heart Rate & Autonomic Dip Card */}
+          {metricType === 'sleep' && (
+            <View style={styles.sleepHrCard}>
+              <View style={styles.sleepHrHeader}>
+                <View style={styles.sleepHrIconWrap}>
+                  <Svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <Path
+                      d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"
+                      stroke="#BE123C"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </Svg>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sleepHrTitle}>Nocturnal Sleep Heart Rate</Text>
+                  <Text style={styles.sleepHrSubtitle}>Cardiovascular deceleration & parasympathetic dip</Text>
+                </View>
+                {sleepDipLabel ? (
+                  <View style={[styles.sleepHrDipPill, { backgroundColor: sleepDipBg }]}>
+                    <Text style={[styles.sleepHrDipText, { color: sleepDipColor }]}>{sleepDipLabel}</Text>
+                  </View>
+                ) : null}
+              </View>
+
+              <View style={styles.sleepHrStatsRow}>
+                <View style={styles.sleepHrStatItem}>
+                  <Text style={styles.sleepHrStatLabel}>AVG PULSE</Text>
+                  <Text style={styles.sleepHrStatVal}>
+                    {sleepAvgHr ? `${sleepAvgHr}` : '—'}
+                    <Text style={styles.sleepHrStatUnit}> bpm</Text>
+                  </Text>
+                  <Text style={styles.sleepHrStatDesc}>Mean overnight</Text>
+                </View>
+
+                <View style={styles.sleepHrStatItem}>
+                  <Text style={styles.sleepHrStatLabel}>LOWEST DIP</Text>
+                  <Text style={[styles.sleepHrStatVal, { color: '#047857' }]}>
+                    {sleepMinHr ? `${sleepMinHr}` : '—'}
+                    <Text style={styles.sleepHrStatUnit}> bpm</Text>
+                  </Text>
+                  <Text style={styles.sleepHrStatDesc}>Basal slow-wave</Text>
+                </View>
+
+                <View style={styles.sleepHrStatItem}>
+                  <Text style={styles.sleepHrStatLabel}>PEAK PULSE</Text>
+                  <Text style={styles.sleepHrStatVal}>
+                    {sleepMaxHr ? `${sleepMaxHr}` : '—'}
+                    <Text style={styles.sleepHrStatUnit}> bpm</Text>
+                  </Text>
+                  <Text style={styles.sleepHrStatDesc}>Arousal / dreams</Text>
+                </View>
+
+                <View style={styles.sleepHrStatItem}>
+                  <Text style={styles.sleepHrStatLabel}>RESTING RHR</Text>
+                  <Text style={styles.sleepHrStatVal}>
+                    {recovery.restingHeartRate > 0 ? `${recovery.restingHeartRate}` : '—'}
+                    <Text style={styles.sleepHrStatUnit}> bpm</Text>
+                  </Text>
+                  <Text style={styles.sleepHrStatDesc}>Daily baseline</Text>
+                </View>
+              </View>
+
+              <Text style={styles.sleepHrFooterNote}>
+                {sleepDipAdvice || 'Normal restorative sleep triggers a 10%–20% cardiovascular deceleration as the vagus nerve lowers nocturnal myocardial workload.'}
+              </Text>
+            </View>
+          )}
+
           {/* Horizon Benchmark Scale */}
           <View style={styles.benchmarkCard}>
             <Text style={styles.benchmarkTitle}>Benchmark Distribution</Text>
@@ -807,6 +937,94 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#94A39D',
     fontWeight: '600',
+  },
+  sleepHrCard: {
+    backgroundColor: '#FFFBFB',
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#FEE2E2',
+    gap: 12,
+    shadowColor: '#141816',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.03,
+    shadowRadius: 10,
+    elevation: 1,
+  },
+  sleepHrHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  sleepHrIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    backgroundColor: '#FFE4E6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sleepHrTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#141816',
+  },
+  sleepHrSubtitle: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 1,
+  },
+  sleepHrDipPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  sleepHrDipText: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.2,
+  },
+  sleepHrStatsRow: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#FEE8E8',
+    gap: 6,
+  },
+  sleepHrStatItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  sleepHrStatLabel: {
+    fontSize: 8.5,
+    fontWeight: '700',
+    color: '#94A3B8',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  sleepHrStatVal: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#141816',
+  },
+  sleepHrStatUnit: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  sleepHrStatDesc: {
+    fontSize: 8.5,
+    color: '#64748B',
+    marginTop: 1,
+  },
+  sleepHrFooterNote: {
+    fontSize: 11.5,
+    lineHeight: 16,
+    color: '#475569',
+    fontWeight: '500',
   },
   benchmarkCard: {
     backgroundColor: '#FFFFFF',

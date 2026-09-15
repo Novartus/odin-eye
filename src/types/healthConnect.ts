@@ -40,6 +40,10 @@ export interface HealthConnectDailyTelemetry {
   remSleepPct?: number;
   lightSleepPct?: number;
   awakePct?: number;
+  sleepHeartRateAvg?: number;
+  sleepHeartRateMin?: number;
+  sleepHeartRateMax?: number;
+  sleepHeartRateDipPct?: number;
   recoveryScore?: number;
   heartRateTimeline?: HeartRateSample[];
   lastSyncTime: string;

@@ -1,7 +1,7 @@
 // Presentation Component & Modal Types & Interfaces
 // Canonical source: src/types/components.ts
 
-import type { DimensionValue, ViewStyle } from 'react-native';
+import type { DimensionValue, ViewStyle, StyleProp } from 'react-native';
 import { TriPillarHealthSummary, UltrahumanRecoveryData, MuscleRecoveryStatus } from './health';
 import { AiCoachRecommendation } from './aiCoach';
 import { Medication, ReminderAlertEvent } from './medication';
@@ -47,10 +47,20 @@ export interface TabItemConfig {
   icon?: string;
 }
 
-// AI Coach Component Props
+// Sub-View Props
 export interface DedicatedAiCoachViewProps {
   data: TriPillarHealthSummary;
   recommendation: AiCoachRecommendation;
+}
+
+export interface MedicationSectionViewProps {
+  initialMedications?: Medication[];
+  onTakeDose?: (id: string) => void;
+  onSkipDose?: (id: string) => void;
+}
+
+export interface MindfulnessViewProps {
+  onSessionComplete?: (durationSeconds: number, techniqueName: string) => void;
 }
 
 export interface FormattedMessageProps {
@@ -61,6 +71,7 @@ export interface FormattedMessageProps {
 // Overview & Metric Cards Props
 export interface HealthOverviewViewProps {
   data: TriPillarHealthSummary;
+  targetSleepGoal?: number;
 }
 
 export interface BodyAnalysisViewProps {
@@ -111,6 +122,7 @@ export interface SleepArchitectureBentoCardProps {
   recovery: UltrahumanRecoveryData;
   targetSleepHours?: number;
   onPress?: () => void;
+  style?: StyleProp<ViewStyle>;
 }
 
 export interface SleepBarChartProps {

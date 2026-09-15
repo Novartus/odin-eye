@@ -121,6 +121,10 @@ export class LiveHealthService {
                 awakePct: awakePct,
                 restingHeartRate: hcData.restingHeartRate || 0,
                 currentHeartRate: hcData.latestHeartRate || undefined,
+                sleepHeartRateAvg: hcData.sleepHeartRateAvg,
+                sleepHeartRateMin: hcData.sleepHeartRateMin,
+                sleepHeartRateMax: hcData.sleepHeartRateMax,
+                sleepHeartRateDipPct: hcData.sleepHeartRateDipPct,
                 hrvRmssd: hcData.hrvRmssd || 0,
                 skinTempDelta: hcData.skinTempDelta || 0,
                 circadianPhase: {
@@ -148,6 +152,18 @@ export class LiveHealthService {
               }
               if (hcData.restingHeartRate && !this.currentData.recovery.restingHeartRate) {
                 this.currentData.recovery.restingHeartRate = hcData.restingHeartRate;
+              }
+              if (hcData.sleepHeartRateAvg && !this.currentData.recovery.sleepHeartRateAvg) {
+                this.currentData.recovery.sleepHeartRateAvg = hcData.sleepHeartRateAvg;
+              }
+              if (hcData.sleepHeartRateMin && !this.currentData.recovery.sleepHeartRateMin) {
+                this.currentData.recovery.sleepHeartRateMin = hcData.sleepHeartRateMin;
+              }
+              if (hcData.sleepHeartRateMax && !this.currentData.recovery.sleepHeartRateMax) {
+                this.currentData.recovery.sleepHeartRateMax = hcData.sleepHeartRateMax;
+              }
+              if (hcData.sleepHeartRateDipPct && !this.currentData.recovery.sleepHeartRateDipPct) {
+                this.currentData.recovery.sleepHeartRateDipPct = hcData.sleepHeartRateDipPct;
               }
             }
           }

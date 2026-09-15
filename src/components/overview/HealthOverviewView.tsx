@@ -3,8 +3,12 @@ import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import type { HealthOverviewViewProps } from '../../types';
 import { Colors } from '../../theme/colors';
+import { SleepArchitectureBentoCard } from '../sleep/SleepArchitectureBentoCard';
 
-export const HealthOverviewView: React.FC<HealthOverviewViewProps> = ({ data }) => {
+export const HealthOverviewView: React.FC<HealthOverviewViewProps> = ({
+  data,
+  targetSleepGoal = 8.0,
+}) => {
   const { cardio, recovery, strength } = data;
 
   const hasActivityData = Boolean(
@@ -226,8 +230,17 @@ export const HealthOverviewView: React.FC<HealthOverviewViewProps> = ({ data }) 
           </View>
           <Text style={styles.obsidianBigNum}>{recovery.sleepDurationMinutes > 0 ? `${Math.floor(recovery.sleepDurationMinutes / 60)}h ${recovery.sleepDurationMinutes % 60}m` : '0h 0m'}</Text>
           <Text style={styles.obsidianSub}>{recovery.sleepDurationMinutes > 0 ? (recovery.sleepIndex >= 80 ? 'Deep Sleep Optimal' : 'Restorative Sleep') : 'Awaiting Sleep Log'}</Text>
-          <View style={styles.obsidianPill}>
-            <Text style={styles.obsidianPillText}>Score: {recovery.sleepIndex || 0}%</Text>
+          <View style={styles.obsidianPillRow}>
+            <View style={styles.obsidianPill}>
+              <Text style={styles.obsidianPillText}>Score: {recovery.sleepIndex || 0}%</Text>
+            </View>
+            {Boolean(recovery.sleepHeartRateAvg || recovery.restingHeartRate > 0) && (
+              <View style={[styles.obsidianPill, { backgroundColor: 'rgba(255, 255, 255, 0.12)' }]}>
+                <Text style={[styles.obsidianPillText, { color: '#FFFFFF' }]}>
+                  ❤️ {recovery.sleepHeartRateAvg || recovery.restingHeartRate} bpm
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -250,6 +263,13 @@ export const HealthOverviewView: React.FC<HealthOverviewViewProps> = ({ data }) 
           </View>
         </View>
       </View>
+
+      {/* 4. Comprehensive Sleep Architecture & 7-Day Debt Clinical Telemetry */}
+      <SleepArchitectureBentoCard
+        recovery={recovery}
+        targetSleepHours={targetSleepGoal}
+        style={styles.sleepArchitectureCard}
+      />
     </View>
   );
 };
@@ -259,6 +279,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     gap: 16,
     marginBottom: 30,
+  },
+  sleepArchitectureCard: {
+    marginHorizontal: 0,
+    marginVertical: 0,
   },
   heroLilacCard: {
     backgroundColor: '#DDD9F5',
@@ -492,6 +516,13 @@ const styles = StyleSheet.create({
   obsidianSub: {
     fontSize: 11,
     color: '#94A3B8',
+  },
+  obsidianPillRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 4,
   },
   obsidianPill: {
     alignSelf: 'flex-start',

@@ -23,6 +23,10 @@ export interface UltrahumanRecoveryData {
   awakePct: number;
   restingHeartRate: number; // bpm (overnight baseline)
   currentHeartRate?: number; // bpm (live / current daytime HR)
+  sleepHeartRateAvg?: number; // bpm (average nocturnal pulse during sleep window)
+  sleepHeartRateMin?: number; // bpm (lowest nocturnal dip during deep/slow-wave rest)
+  sleepHeartRateMax?: number; // bpm (highest nocturnal peak during micro-arousals)
+  sleepHeartRateDipPct?: number; // % nocturnal cardiovascular deceleration relative to daytime/resting baseline
   hrvRmssd: number;         // ms
   skinTempDelta: number;    // °C difference from baseline
   circadianPhase: {

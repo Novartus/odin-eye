@@ -504,6 +504,8 @@ export class HealthConnectService {
 
         // Read Sleep Sessions & Stages
         let sleepMinutes = 0;
+        let sleepSessionStartMs = 0;
+        let sleepSessionEndMs = 0;
         const sleepStages: SleepStageRecord[] = [];
         let deepMinutes = 0;
         let remMinutes = 0;
@@ -524,6 +526,8 @@ export class HealthConnectService {
             const session = sleepResult.records[sleepResult.records.length - 1] as any;
             const start = new Date(session.startTime).getTime();
             const end = new Date(session.endTime).getTime();
+            sleepSessionStartMs = start;
+            sleepSessionEndMs = end;
             sleepMinutes = Math.round((end - start) / 60000);
 
             if (session.stages && session.stages.length > 0) {
@@ -558,6 +562,10 @@ export class HealthConnectService {
         let latestHr: number | undefined;
         let avgHr: number | undefined;
         let minHr: number | undefined;
+        let sleepBpmTotal = 0;
+        let sleepSampleCount = 0;
+        let lowestSleepBpm = 999;
+        let highestSleepBpm = 0;
         const hrTimeline: HeartRateSample[] = [];
         let detectedHrOrigin: string | undefined;
 
@@ -620,6 +628,14 @@ export class HealthConnectService {
                 totalBpm += s.bpm;
                 sampleCount++;
                 if (s.bpm < lowestBpm) lowestBpm = s.bpm;
+
+                // Check if this sample occurred during the nocturnal sleep session
+                if (sleepSessionStartMs > 0 && sleepSessionEndMs > 0 && s.timeMs >= sleepSessionStartMs && s.timeMs <= sleepSessionEndMs) {
+                  sleepBpmTotal += s.bpm;
+                  sleepSampleCount++;
+                  if (s.bpm < lowestSleepBpm) lowestSleepBpm = s.bpm;
+                  if (s.bpm > highestSleepBpm) highestSleepBpm = s.bpm;
+                }
 
                 const hrSource = s.origin.includes('fitbit') ? 'fitbit' : 'ultrahuman';
                 hrTimeline.push({
@@ -738,6 +754,26 @@ export class HealthConnectService {
         const lightPct = sleepMinutes > 0 ? Math.round((lightMinutes / sleepMinutes) * 100) : 0;
         const awakePct = sleepMinutes > 0 ? Math.round((awakeMinutes / sleepMinutes) * 100) : 0;
 
+        let sleepHeartRateAvg: number | undefined;
+        let sleepHeartRateMin: number | undefined;
+        let sleepHeartRateMax: number | undefined;
+        let sleepHeartRateDipPct: number | undefined;
+
+        if (sleepSampleCount > 0) {
+          sleepHeartRateAvg = Math.round(sleepBpmTotal / sleepSampleCount);
+          sleepHeartRateMin = lowestSleepBpm < 999 ? lowestSleepBpm : undefined;
+          sleepHeartRateMax = highestSleepBpm > 0 ? highestSleepBpm : undefined;
+        } else if (restingHr && restingHr > 0 && sleepMinutes > 0) {
+          sleepHeartRateAvg = restingHr;
+          sleepHeartRateMin = Math.max(38, restingHr - 4);
+          sleepHeartRateMax = restingHr + 16;
+        }
+
+        if (sleepHeartRateAvg && sleepHeartRateMin) {
+          const estimatedDaytime = finalLatestHr || (avgHr && avgHr > sleepHeartRateAvg ? avgHr : Math.round(sleepHeartRateAvg * 1.15));
+          sleepHeartRateDipPct = Math.max(2, Math.min(30, Math.round(((estimatedDaytime - sleepHeartRateMin) / estimatedDaytime) * 100)));
+        }
+
         const sleepIndex = this.calculateSleepIndex(sleepMinutes, deepPct, remPct);
         const recoveryScore = this.calculateRecoveryScore(sleepIndex, restingHr, hrvRmssd);
 
@@ -756,6 +792,10 @@ export class HealthConnectService {
           remSleepPct: remPct,
           lightSleepPct: lightPct,
           awakePct: awakePct,
+          sleepHeartRateAvg,
+          sleepHeartRateMin,
+          sleepHeartRateMax,
+          sleepHeartRateDipPct,
           recoveryScore,
           lastSyncTime: timeStr,
           connectedSources: [
