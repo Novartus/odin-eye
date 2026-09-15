@@ -7,6 +7,8 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
+import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.os.Build
 import android.util.Log
@@ -41,13 +43,39 @@ class OdinEyeAlarmReceiver : BroadcastReceiver() {
                 val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                     description = descriptionText
                     enableVibration(true)
-                    vibrationPattern = longArrayOf(0, 400, 200, 400)
+                    vibrationPattern = longArrayOf(0, 500, 250, 500)
                     enableLights(true)
-                    lightColor = 0xFF6BAA8E.toInt() // Scandinavian mint accent
+                    lightColor = 0xFF2A7F85.toInt() // OdinEye Teal brand accent
                     lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
+                    val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                        ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                    val audioAttrs = AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                        .build()
+                    setSound(soundUri, audioAttrs)
                 }
                 val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 notificationManager.createNotificationChannel(channel)
+            }
+        }
+
+        fun scheduleAlarmSafe(alarmManager: AlarmManager, triggerAtMillis: Long, pendingIntent: PendingIntent) {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+                } else {
+                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+                }
+            } catch (se: SecurityException) {
+                Log.w(TAG, "Exact alarm permission restricted, falling back to setAndAllowWhileIdle: ${se.message}")
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+                } else {
+                    alarmManager.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error scheduling alarm: ${e.message}")
             }
         }
     }
@@ -167,7 +195,7 @@ class OdinEyeAlarmReceiver : BroadcastReceiver() {
         val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_medication)
             .setContentTitle(title)
             .setContentText(body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
@@ -176,11 +204,20 @@ class OdinEyeAlarmReceiver : BroadcastReceiver() {
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setAutoCancel(true)
             .setSound(soundUri)
-            .setVibrate(longArrayOf(0, 400, 200, 400))
-            .setColor(0xFF1F382E.toInt())
+            .setVibrate(longArrayOf(0, 500, 250, 500))
+            .setColor(0xFF2A7F85.toInt())
             .setContentIntent(contentPendingIntent)
             .addAction(0, "✓ Take Dose", takePendingIntent)
             .addAction(0, "Snooze 10m", snoozePendingIntent)
+
+        try {
+            val largeIcon = BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
+            if (largeIcon != null) {
+                builder.setLargeIcon(largeIcon)
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not load large icon: ${e.message}")
+        }
 
         notificationManager.notify(notificationId, builder.build())
     }
@@ -203,11 +240,7 @@ class OdinEyeAlarmReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
-        } else {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
-        }
+        scheduleAlarmSafe(alarmManager, triggerAt, pendingIntent)
         Log.d(TAG, "Snooze alarm set for +$minutes minutes ($triggerAt)")
     }
 
@@ -248,11 +281,7 @@ class OdinEyeAlarmReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, nextCalendar.timeInMillis, pendingIntent)
-        } else {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, nextCalendar.timeInMillis, pendingIntent)
-        }
+        scheduleAlarmSafe(alarmManager, nextCalendar.timeInMillis, pendingIntent)
         Log.d(TAG, "Next day alarm scheduled for: ${nextCalendar.time}")
     }
 
@@ -303,11 +332,7 @@ class OdinEyeAlarmReceiver : BroadcastReceiver() {
                         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                     )
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pendingIntent)
-                    } else {
-                        alarmManager.setExact(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pendingIntent)
-                    }
+                    scheduleAlarmSafe(alarmManager, cal.timeInMillis, pendingIntent)
                     Log.d(TAG, "Restored alarm for $medId at ${cal.time}")
                 }
             } catch (e: Exception) {

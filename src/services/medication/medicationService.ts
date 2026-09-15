@@ -109,6 +109,10 @@ class MedicationService {
     }
 
     this.isLoaded = true;
+    const activeMeds = this.medications.filter((m) => !m.isArchived);
+    if (activeMeds.length > 0) {
+      medicationNotificationService.scheduleAllMedicationAlarms(activeMeds).catch(() => {});
+    }
     return this.medications;
   }
 

@@ -9,7 +9,7 @@ This document provides exact responses and declarations required for publishing 
 - **App Name:** OdinEye
 - **Short Description:** Scandinavian bento health hub for recovery, rings, sleep & mindfulness.
 - **Full Description:** OdinEye brings your health ecosystem into harmony with a local-first, zero-knowledge architecture. Track recovery, sleep stages, heart rate variability, workouts, and medication routines with hardware-level privacy.
-- **Privacy Policy URL:** `https://<your-github-username>.github.io/<repository-name>/docs/` (or your custom domain pointing to `docs/index.html`)
+- **Privacy Policy URL:** `https://github.com/Novartus/odin-eye/tree/main/docs`
 - **App Category:** Health & Fitness
 - **Tags:** Health, Fitness, Sleep Tracker, Heart Rate, Meditation
 

@@ -266,6 +266,13 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
             triggeredAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           });
         }
+      }).then(() => {
+        medicationService.getMedications().then((meds) => {
+          const active = meds.filter((m) => !m.isArchived);
+          if (active.length > 0) {
+            medicationNotificationService.scheduleAllMedicationAlarms(active).catch(() => {});
+          }
+        });
       });
     });
 

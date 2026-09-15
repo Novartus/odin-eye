@@ -35,6 +35,7 @@ class MainApplication : Application(), ReactApplication {
     }
     loadReactNative(this)
     ApplicationLifecycleDispatcher.onApplicationCreate(this)
+    com.odineye.health.notification.OdinEyeAlarmReceiver.createNotificationChannel(this)
   }
 
   override fun onConfigurationChanged(newConfig: Configuration) {

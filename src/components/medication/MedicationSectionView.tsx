@@ -16,6 +16,7 @@ import {
 import Svg, { Path } from 'react-native-svg';
 import { Colors } from '../../theme/colors';
 import { medicationService } from '../../services/medication/medicationService';
+import { medicationNotificationService } from '../../services/medication/medicationNotificationService';
 import type {
   Medication,
   ScheduledDoseItem,
@@ -49,10 +50,17 @@ export const MedicationSectionView: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedForArchive, setSelectedForArchive] = useState<Set<string>>(new Set());
   const [showArchivedSection, setShowArchivedSection] = useState(false);
+  const [hasNotificationPermission, setHasNotificationPermission] = useState<boolean | null>(null);
 
   const loadData = async () => {
     const list = await medicationService.getMedications();
     setMedications([...list]);
+    try {
+      const permitted = await medicationNotificationService.checkNotificationPermission();
+      setHasNotificationPermission(permitted);
+    } catch {
+      setHasNotificationPermission(false);
+    }
   };
 
   useEffect(() => {
@@ -298,6 +306,43 @@ export const MedicationSectionView: React.FC = () => {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Lockscreen Reminder Permission Warning Banner */}
+      {hasNotificationPermission === false && (
+        <TouchableOpacity
+          style={styles.notifPermBanner}
+          activeOpacity={0.8}
+          onPress={async () => {
+            const granted = await medicationNotificationService.requestNotificationPermission();
+            if (!granted) {
+              await medicationNotificationService.openNotificationSettings();
+            }
+            const updated = await medicationNotificationService.checkNotificationPermission();
+            setHasNotificationPermission(updated);
+          }}
+        >
+          <View style={styles.notifPermIconWrap}>
+            <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <Path
+                d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"
+                stroke="#C2410C"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </Svg>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.notifPermTitle}>Lockscreen Alarms Disabled</Text>
+            <Text style={styles.notifPermSub}>
+              Tap to allow notifications so OdinEye alarms alert you when the app is closed.
+            </Text>
+          </View>
+          <View style={styles.notifPermActionBtn}>
+            <Text style={styles.notifPermActionBtnText}>Enable</Text>
+          </View>
+        </TouchableOpacity>
+      )}
 
       {/* Date Subtitle & Main Title with Calendar Toggle */}
       <View style={styles.titleSection}>
@@ -1280,5 +1325,52 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: '#16A34A',
+  },
+  notifPermBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#FFF7ED',
+    borderWidth: 1.2,
+    borderColor: '#FFEDD5',
+    borderRadius: 16,
+    padding: 12,
+    marginTop: 4,
+    marginBottom: 12,
+    shadowColor: '#EA580C',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  notifPermIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: '#FFEDD5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notifPermTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#9A3412',
+  },
+  notifPermSub: {
+    fontSize: 11,
+    color: '#C2410C',
+    marginTop: 2,
+    lineHeight: 15,
+  },
+  notifPermActionBtn: {
+    backgroundColor: '#EA580C',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 10,
+  },
+  notifPermActionBtnText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '800',
   },
 });

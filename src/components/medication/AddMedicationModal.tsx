@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { Colors } from '../../theme/colors';
 import { medicationService } from '../../services/medication/medicationService';
+import { medicationNotificationService } from '../../services/medication/medicationNotificationService';
 import type { MedicationForm, AddMedicationModalProps } from '../../types';
 import { TabletIcon, CapsuleIcon, DropletIcon, InjectionIcon } from './MedicationIcons';
 
@@ -80,6 +81,14 @@ export const AddMedicationModal: React.FC<AddMedicationModalProps> = ({
 
   const handleSave = async () => {
     if (!name.trim()) return;
+
+    // Prompt for notification permissions if not yet granted so OS alarms can alert on lockscreen
+    try {
+      const hasPerm = await medicationNotificationService.checkNotificationPermission();
+      if (!hasPerm) {
+        await medicationNotificationService.requestNotificationPermission();
+      }
+    } catch {}
 
     await medicationService.addMedication({
       name: name.trim(),

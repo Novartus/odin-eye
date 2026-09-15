@@ -18,6 +18,8 @@
   <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED"/>
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
   <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+  <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
+  <uses-permission android:name="android.permission.WAKE_LOCK"/>
   <uses-permission android:name="android.permission.RECORD_AUDIO"/>
   <queries>
     <intent>
@@ -81,10 +83,14 @@
     <!-- Native Scheduled Alarms & Notification Receiver (Fires when App is Closed) -->
     <receiver
         android:name=".notification.OdinEyeAlarmReceiver"
-        android:exported="false">
+        android:exported="true">
       <intent-filter>
         <action android:name="com.odineye.health.ACTION_MEDICATION_ALARM" />
+        <action android:name="com.odineye.health.ACTION_TAKE_MED" />
+        <action android:name="com.odineye.health.ACTION_SNOOZE_MED" />
         <action android:name="android.intent.action.BOOT_COMPLETED" />
+        <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+        <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
       </intent-filter>
     </receiver>
   </application>

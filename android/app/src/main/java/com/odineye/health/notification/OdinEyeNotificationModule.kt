@@ -139,18 +139,14 @@ class OdinEyeNotificationModule(private val reactContext: ReactApplicationContex
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pendingIntent)
-            } else {
-                alarmManager.setExact(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pendingIntent)
-            }
+            OdinEyeAlarmReceiver.scheduleAlarmSafe(alarmManager, cal.timeInMillis, pendingIntent)
 
             // Save to persistent SharedPreferences for device reboot recovery
             val prefs = reactContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             val serialized = "$medId|$title|$body|$timeStr|$hour|$minute"
             prefs.edit().putString(medId, serialized).apply()
 
-            Log.d(TAG, "Successfully scheduled exact alarm for $medId at ${cal.time} (epoch: ${cal.timeInMillis})")
+            Log.d(TAG, "Successfully scheduled alarm for $medId at ${cal.time} (epoch: ${cal.timeInMillis})")
             promise.resolve(true)
         } catch (e: Exception) {
             Log.e(TAG, "Error scheduling alarm: ${e.message}")
@@ -244,12 +240,8 @@ class OdinEyeNotificationModule(private val reactContext: ReactApplicationContex
 
             if (delaySeconds <= 0) {
                 reactContext.sendBroadcast(intent)
-            } else {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    alarmManager?.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
-                } else {
-                    alarmManager?.setExact(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
-                }
+            } else if (alarmManager != null) {
+                OdinEyeAlarmReceiver.scheduleAlarmSafe(alarmManager, triggerAt, pendingIntent)
             }
 
             promise.resolve(true)
