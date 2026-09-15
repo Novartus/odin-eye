@@ -555,7 +555,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             {/* On-Device AI via Android AICore (Gemini Nano) */}
             <View style={styles.aiEngineCard}>
               <View style={styles.aiTopRow}>
-                <View>
+                <View style={styles.aiTitleGroup}>
                   <Text style={styles.aiTitle}>Android AICore (Gemini Nano)</Text>
                   <Text style={styles.aiSubText}>On-Device NPU / Tensor / Snapdragon</Text>
                 </View>
@@ -853,7 +853,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <View style={styles.sourcesQuestionnaireIcon}>
             <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <Path
-                d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"
+                d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"
                 stroke="#1F382E"
                 strokeWidth="2"
                 strokeLinecap="round"
@@ -1578,30 +1578,67 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </View>
         </View>
 
-        {/* 3 Quick-Access Buttons for Legal Governance Documents */}
-        <View style={styles.legalBtnRow}>
+        {/* Quick-Access Links for Legal Governance Documents */}
+        <View style={styles.legalLinksCard}>
           <TouchableOpacity
-            style={styles.legalChipBtn}
+            style={styles.legalRowItem}
             onPress={() => openLegal('privacy')}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Privacy Policy"
           >
-            <Text style={styles.legalChipBtnText}>📄 Privacy</Text>
+            <View style={styles.legalRowLeft}>
+              <View style={styles.legalIconBadge}>
+                <Text style={styles.legalEmojiIcon}>📄</Text>
+              </View>
+              <View style={styles.legalTextCol}>
+                <Text style={styles.legalRowTitle}>Privacy Policy</Text>
+                <Text style={styles.legalRowSub}>Zero-knowledge local storage & data safety</Text>
+              </View>
+            </View>
+            <ChevronRightIcon size={16} color="#8A9992" />
           </TouchableOpacity>
 
+          <View style={styles.legalRowDivider} />
+
           <TouchableOpacity
-            style={styles.legalChipBtn}
+            style={styles.legalRowItem}
             onPress={() => openLegal('terms')}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Terms of Service"
           >
-            <Text style={styles.legalChipBtnText}>⚖️ Terms</Text>
+            <View style={styles.legalRowLeft}>
+              <View style={styles.legalIconBadge}>
+                <Text style={styles.legalEmojiIcon}>⚖️</Text>
+              </View>
+              <View style={styles.legalTextCol}>
+                <Text style={styles.legalRowTitle}>Terms of Service</Text>
+                <Text style={styles.legalRowSub}>App usage, local encryption responsibility & terms</Text>
+              </View>
+            </View>
+            <ChevronRightIcon size={16} color="#8A9992" />
           </TouchableOpacity>
 
+          <View style={styles.legalRowDivider} />
+
           <TouchableOpacity
-            style={styles.legalChipBtn}
+            style={styles.legalRowItem}
             onPress={() => openLegal('disclaimer')}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Medical Disclaimer"
           >
-            <Text style={styles.legalChipBtnText}>🩺 Disclaimer</Text>
+            <View style={styles.legalRowLeft}>
+              <View style={styles.legalIconBadge}>
+                <Text style={styles.legalEmojiIcon}>🩺</Text>
+              </View>
+              <View style={styles.legalTextCol}>
+                <Text style={styles.legalRowTitle}>Medical Disclaimer</Text>
+                <Text style={styles.legalRowSub}>Not for clinical diagnosis · Consult a doctor</Text>
+              </View>
+            </View>
+            <ChevronRightIcon size={16} color="#8A9992" />
           </TouchableOpacity>
         </View>
 
@@ -2010,11 +2047,17 @@ const styles = StyleSheet.create({
   aiTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
+    alignItems: 'flex-start',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 8,
+  },
+  aiTitleGroup: {
+    flex: 1,
+    minWidth: 160,
   },
   aiTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '800',
     color: '#2C4A3E',
   },
@@ -2023,6 +2066,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
+    flexShrink: 0,
+    alignSelf: 'flex-start',
   },
   localBadgeText: {
     fontSize: 9,
@@ -2044,6 +2089,7 @@ const styles = StyleSheet.create({
   },
   aiSpecsGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     backgroundColor: '#F4F7F5',
     borderRadius: 12,
@@ -2051,20 +2097,26 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     borderWidth: 1,
     borderColor: 'rgba(44, 74, 62, 0.08)',
+    gap: 6,
   },
   specItem: {
+    flex: 1,
+    minWidth: 62,
     alignItems: 'center',
+    paddingHorizontal: 2,
   },
   specLabel: {
     fontSize: 10,
     color: '#64748B',
     fontWeight: '600',
     marginBottom: 2,
+    textAlign: 'center',
   },
   specVal: {
     fontSize: 11,
     color: '#141816',
     fontWeight: '800',
+    textAlign: 'center',
   },
   codeText: {
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
@@ -2207,7 +2259,7 @@ const styles = StyleSheet.create({
   },
   vaultHeaderRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 14,
   },
   vaultIconBubble: {
@@ -2218,28 +2270,37 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    flexShrink: 0,
+    marginTop: 2,
   },
   vaultShieldEmoji: {
     fontSize: 18,
   },
   vaultTitleBlock: {
     flex: 1,
+    minWidth: 0,
   },
   vaultTagRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 6,
+    rowGap: 4,
+    marginBottom: 2,
   },
   vaultTitle: {
     fontSize: 14,
     fontWeight: '700',
     color: '#141816',
+    flexShrink: 1,
   },
   shieldVerifiedBadge: {
     backgroundColor: '#E3F1EC',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
+    flexShrink: 0,
+    alignSelf: 'flex-start',
   },
   shieldVerifiedText: {
     fontSize: 9,
@@ -2255,17 +2316,20 @@ const styles = StyleSheet.create({
   },
   vaultSpecsGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     backgroundColor: '#F5F8F6',
     borderRadius: 14,
     paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     marginBottom: 14,
     borderWidth: 1,
     borderColor: '#E2ECE7',
+    rowGap: 10,
   },
   vaultSpecItem: {
-    alignItems: 'center',
+    width: '48%',
+    minWidth: 110,
   },
   vaultSpecLabel: {
     fontSize: 9,
@@ -2275,10 +2339,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
   vaultSpecVal: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
     color: '#141816',
-    marginTop: 3,
+    marginTop: 2,
   },
   vaultBanner: {
     backgroundColor: '#FAF5EE',
@@ -2900,27 +2964,60 @@ const styles = StyleSheet.create({
     marginTop: 2,
     lineHeight: 15,
   },
-  legalBtnRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 4,
-    marginBottom: 14,
+  legalLinksCard: {
+    backgroundColor: '#F5F8F6',
+    borderRadius: 16,
+    paddingVertical: 2,
+    paddingHorizontal: 12,
+    marginTop: 6,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E2ECE7',
   },
-  legalChipBtn: {
+  legalRowItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 11,
+  },
+  legalRowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
-    backgroundColor: '#F2F7F4',
-    paddingVertical: 10,
-    paddingHorizontal: 6,
-    borderRadius: 12,
+    paddingRight: 8,
+  },
+  legalIconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 10,
     borderWidth: 1,
     borderColor: 'rgba(31, 56, 46, 0.08)',
+    flexShrink: 0,
   },
-  legalChipBtnText: {
-    fontSize: 12,
+  legalEmojiIcon: {
+    fontSize: 16,
+  },
+  legalTextCol: {
+    flex: 1,
+  },
+  legalRowTitle: {
+    fontSize: 13,
     fontWeight: '700',
-    color: '#1F382E',
+    color: '#141816',
+  },
+  legalRowSub: {
+    fontSize: 11,
+    color: '#63706B',
+    marginTop: 1,
+    lineHeight: 14,
+  },
+  legalRowDivider: {
+    height: 1,
+    backgroundColor: '#E5EDE9',
   },
   settingsLogoWrap: {
     width: 44,

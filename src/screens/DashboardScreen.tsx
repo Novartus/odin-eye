@@ -485,6 +485,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
                     style={styles.hcBanner}
                     onPress={() => setShowHealthConnectModal(true)}
                     activeOpacity={0.85}
+                    accessibilityRole="button"
+                    accessibilityLabel="Connect Health Connect"
                   >
                     <View style={styles.hcBannerLeft}>
                       <View style={styles.hcBannerIcon}>
@@ -517,9 +519,16 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
                         </Text>
                       </View>
                     </View>
-                    <View style={styles.hcBannerBtn}>
+                    <TouchableOpacity
+                      style={styles.hcBannerBtn}
+                      onPress={() => setShowHealthConnectModal(true)}
+                      activeOpacity={0.7}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      accessibilityRole="button"
+                      accessibilityLabel="Connect"
+                    >
                       <Text style={styles.hcBannerBtnText}>Connect</Text>
-                    </View>
+                    </TouchableOpacity>
                   </TouchableOpacity>
                 )}
 
@@ -723,7 +732,8 @@ const styles = StyleSheet.create({
   hcBanner: {
     backgroundColor: '#E3F1EC',
     borderRadius: 20,
-    padding: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
     marginHorizontal: 20,
     marginTop: 10,
     marginBottom: 16,
@@ -737,12 +747,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 2,
+    gap: 10,
   },
   hcBannerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    paddingRight: 10,
+    minWidth: 0,
   },
   hcBannerIcon: {
     width: 38,
@@ -751,7 +762,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 10,
+    flexShrink: 0,
     borderWidth: 1,
     borderColor: '#CCE6DE',
     shadowColor: '#1F382E',
@@ -762,22 +774,27 @@ const styles = StyleSheet.create({
   },
   hcBannerTextGroup: {
     flex: 1,
+    minWidth: 0,
   },
   hcBannerTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: 6,
+    rowGap: 4,
   },
   hcBannerTitle: {
     fontSize: 14,
     fontWeight: '700',
     color: Colors.textPrimary,
+    flexShrink: 1,
   },
   hcReadOnlyPill: {
     backgroundColor: '#E8F9F1',
     paddingHorizontal: 6,
-    paddingVertical: 1,
+    paddingVertical: 1.5,
     borderRadius: 4,
+    flexShrink: 0,
   },
   hcReadOnlyText: {
     fontSize: 9,
@@ -787,14 +804,17 @@ const styles = StyleSheet.create({
   hcBannerSubtitle: {
     fontSize: 11,
     color: Colors.textSecondary,
-    marginTop: 2,
+    marginTop: 3,
     lineHeight: 15,
   },
   hcBannerBtn: {
     backgroundColor: '#1A1D1C',
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 12,
+    flexShrink: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   hcBannerBtnText: {
     color: '#FFFFFF',
