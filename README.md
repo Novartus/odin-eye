@@ -244,7 +244,7 @@ centralized-health-app/
 
 ## Build
 
-See **[docs/BUILD.md](docs/BUILD.md)** for full instructions.
+See **[docs/BUILD.md](docs/BUILD.md)** for full instructions. If Expo is freezing or stuck on bundling on your device, consult the **[Troubleshooting Guide](docs/TROUBLESHOOTING_EXPO_BUNDLING.md)**.
 
 ```bash
 # Fastest — local USB build (requires Android Studio)
@@ -258,7 +258,8 @@ eas build --platform android --profile production
 ```
 
 **Android package:** `com.odineye.health`  
-**EAS Project ID:** `df3fdf1c-a9bf-40e5-9c2e-ba21b8183b55`
+**EAS Project ID:** `df3fdf1c-a9bf-40e5-9c2e-ba21b8183b55`  
+**Troubleshooting:** [docs/TROUBLESHOOTING_EXPO_BUNDLING.md](docs/TROUBLESHOOTING_EXPO_BUNDLING.md)
 
 ---
 

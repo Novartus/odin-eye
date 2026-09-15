@@ -6,7 +6,8 @@
     "start": "expo start -c",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "validate": "npx tsc --noEmit --noUnusedLocals --noUnusedParameters"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^3.1.1",

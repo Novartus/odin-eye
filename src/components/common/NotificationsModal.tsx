@@ -15,6 +15,7 @@ import {
 import Svg, { Path } from 'react-native-svg';
 import { medicationService, ScheduledDoseItem } from '../../services/medication/medicationService';
 import { medicationNotificationService } from '../../services/medication/medicationNotificationService';
+import { getTodayDateKey } from '../../utils';
 
 import { NotificationsModalProps } from '../../types';
 
@@ -31,7 +32,7 @@ export const NotificationsModal: React.FC<NotificationsModalProps> = ({
   const [clearedNotice, setClearedNotice] = useState<string | null>(null);
 
   const refreshNotifications = () => {
-    const today = medicationService.getTodayDateKey();
+    const today = getTodayDateKey();
     const list = medicationService.getScheduledDosesForDate(today);
     setDoses(list);
   };

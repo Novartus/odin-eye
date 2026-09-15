@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { Colors } from '../../theme/colors';
 import { medicationService } from '../../services/medication/medicationService';
+import { getTodayDateKey } from '../../utils';
 import type { MedicationDetailModalProps } from '../../types';
 import {
   TabletIcon,
@@ -35,7 +36,7 @@ export const MedicationDetailModal: React.FC<MedicationDetailModalProps> = ({
 
   if (!medication) return null;
 
-  const todayKey = medicationService.getTodayDateKey();
+  const todayKey = getTodayDateKey();
   const takenTimes = medication.takenDates?.[todayKey] || [];
   const allTakenToday = medication.times.every((t) => takenTimes.includes(t));
 

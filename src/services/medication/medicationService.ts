@@ -13,9 +13,8 @@ import {
   ReminderAlertEvent,
 } from '../../types/medication';
 export * from '../../types/medication';
-
-const STORAGE_KEY = 'odineye_medications_data_v2';
-const FILE_BACKUP_NAME = 'odineye_medications_backup.json';
+import { STORAGE_KEYS } from '../../constants';
+import { getTodayDateKey as getCentralTodayDateKey } from '../../utils';
 
 type ReminderListener = (alert: ReminderAlertEvent) => void;
 
@@ -47,7 +46,7 @@ class MedicationService {
       const fs = require('expo-file-system');
       if (fs && fs.documentDirectory) {
         this.fileSystem = fs;
-        this.backupPath = `${fs.documentDirectory}${FILE_BACKUP_NAME}`;
+        this.backupPath = `${fs.documentDirectory}${STORAGE_KEYS.MEDICATIONS_FILE_BACKUP}`;
       }
     } catch {
       this.fileSystem = null;
@@ -55,11 +54,7 @@ class MedicationService {
   }
 
   public getTodayDateKey(): string {
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return getCentralTodayDateKey();
   }
 
   /**
@@ -73,7 +68,7 @@ class MedicationService {
 
     // 1. expo-secure-store
     try {
-      const raw = await SecureStore.getItemAsync(STORAGE_KEY);
+      const raw = await SecureStore.getItemAsync(STORAGE_KEYS.MEDICATIONS);
       if (raw) {
         loadedData = JSON.parse(raw);
       }
@@ -124,7 +119,7 @@ class MedicationService {
 
     // 1. SecureStore
     try {
-      await SecureStore.setItemAsync(STORAGE_KEY, payload);
+      await SecureStore.setItemAsync(STORAGE_KEYS.MEDICATIONS, payload);
     } catch (e: any) {
       console.warn('[MedicationService] SecureStore save notice:', e?.message);
     }

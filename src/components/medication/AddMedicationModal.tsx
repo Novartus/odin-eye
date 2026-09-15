@@ -21,15 +21,10 @@ import { medicationService } from '../../services/medication/medicationService';
 import { medicationNotificationService } from '../../services/medication/medicationNotificationService';
 import type { MedicationForm, AddMedicationModalProps } from '../../types';
 import { TabletIcon, CapsuleIcon, DropletIcon, InjectionIcon } from './MedicationIcons';
-
-const COLOR_THEMES = [
-  { id: 'blue', color: '#EFF6FF', accent: '#DBEAFE', icon: '#2563EB', label: 'Sky' },
-  { id: 'green', color: '#F0FDF4', accent: '#DCFCE7', icon: '#16A34A', label: 'Mint' },
-  { id: 'peach', color: '#FFF7ED', accent: '#FFEDD5', icon: '#EA580C', label: 'Peach' },
-  { id: 'purple', color: '#FAF5FF', accent: '#F3E8FF', icon: '#9333EA', label: 'Iris' },
-];
-
-const PRESET_TIMES = ['07:00 AM', '08:00 AM', '12:00 PM', '02:00 PM', '06:00 PM', '09:00 PM'];
+import {
+  MEDICATION_COLOR_THEMES,
+  MEDICATION_PRESET_TIMES,
+} from '../../constants';
 
 export const AddMedicationModal: React.FC<AddMedicationModalProps> = ({
   visible,
@@ -44,7 +39,7 @@ export const AddMedicationModal: React.FC<AddMedicationModalProps> = ({
   const [frequency, setFrequency] = useState('Daily');
   const [duration, setDuration] = useState('3 months');
   const [description, setDescription] = useState('');
-  const [colorTheme, setColorTheme] = useState(COLOR_THEMES[0]);
+  const [colorTheme, setColorTheme] = useState(MEDICATION_COLOR_THEMES[0]);
 
   // Custom time builder state
   const [customHour, setCustomHour] = useState('09');
@@ -219,7 +214,7 @@ export const AddMedicationModal: React.FC<AddMedicationModalProps> = ({
             {/* Preset Quick-Picks */}
             <Text style={styles.subInputLabel}>Quick presets:</Text>
             <View style={styles.timesWrap}>
-              {PRESET_TIMES.map((time) => {
+              {MEDICATION_PRESET_TIMES.map((time) => {
                 const isSelected = selectedTimes.includes(time);
                 return (
                   <TouchableOpacity
@@ -344,7 +339,7 @@ export const AddMedicationModal: React.FC<AddMedicationModalProps> = ({
             {/* Color Accent Picker */}
             <Text style={styles.inputLabel}>CARD COLOR ACCENT</Text>
             <View style={styles.colorRow}>
-              {COLOR_THEMES.map((theme) => {
+              {MEDICATION_COLOR_THEMES.map((theme) => {
                 const isSelected = colorTheme.id === theme.id;
                 return (
                   <TouchableOpacity

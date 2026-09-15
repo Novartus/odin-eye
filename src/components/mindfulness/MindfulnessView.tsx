@@ -26,91 +26,12 @@ import { credentialsStorage } from '../../services/storage/credentialsStorage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ambientAudioService } from '../../services/audio/ambientAudioService';
 import { BreathPhase, BreathTechnique, DayInfo } from '../../types';
-
-// ─── Data ─────────────────────────────────────────────────────────────────────
-
-const TECHNIQUES: BreathTechnique[] = [
-  {
-    id: 'box',
-    name: 'Breathing Exercise',
-    tagline: '4 · 4 · 4 · 4 Box',
-    benefit: 'Reset nervous system & lower cortisol',
-    durationMinutes: 2,
-    accentColor: '#1F382E',
-    bgColor: '#D9EAE4',
-    outerRingColor: 'rgba(31, 56, 46, 0.10)',
-    totalCycles: 4,
-    phases: [
-      { label: 'Breathe In...', duration: 4 },
-      { label: 'Hold...', duration: 4 },
-      { label: 'Breathe Out...', duration: 4 },
-      { label: 'Hold...', duration: 4 },
-    ],
-  },
-  {
-    id: '478',
-    name: 'Deep Calm & Sleep',
-    tagline: '4 · 7 · 8 Relax',
-    benefit: 'Parasympathetic nerve relaxation',
-    durationMinutes: 5,
-    accentColor: '#3B2D54',
-    bgColor: '#EDE7F6',
-    outerRingColor: 'rgba(59, 45, 84, 0.10)',
-    totalCycles: 4,
-    phases: [
-      { label: 'Breathe In...', duration: 4 },
-      { label: 'Hold...', duration: 7 },
-      { label: 'Breathe Out...', duration: 8 },
-    ],
-  },
-  {
-    id: 'coherent',
-    name: 'Coherent Harmony',
-    tagline: '5 · 5 Rhythm',
-    benefit: 'Maximize heart rate variability (HRV)',
-    durationMinutes: 10,
-    accentColor: '#184A3B',
-    bgColor: '#D2ECE3',
-    outerRingColor: 'rgba(24, 74, 59, 0.10)',
-    totalCycles: 6,
-    phases: [
-      { label: 'Breathe In...', duration: 5 },
-      { label: 'Breathe Out...', duration: 5 },
-    ],
-  },
-  {
-    id: 'energize',
-    name: 'Sunset Wind-Down',
-    tagline: '4 · 2 · 6 Restore',
-    benefit: 'Gentle restoration & physical release',
-    durationMinutes: 15,
-    accentColor: '#8C481A',
-    bgColor: '#FDEEE4',
-    outerRingColor: 'rgba(140, 72, 26, 0.10)',
-    totalCycles: 6,
-    phases: [
-      { label: 'Breathe In...', duration: 4 },
-      { label: 'Hold...', duration: 2 },
-      { label: 'Breathe Out...', duration: 6 },
-    ],
-  },
-];
-
-const MOODS = [
-  { id: 'unhappy', label: 'Unhappy', color: '#E07A5F' },
-  { id: 'sad', label: 'Sad', color: '#6A8CAF' },
-  { id: 'normal', label: 'Normal', color: '#8A9992' },
-  { id: 'good', label: 'Good', color: '#5A9E7F' },
-  { id: 'happy', label: 'Happy', color: '#D4A338' },
-];
-
-const MOOD_DESCRIPTIONS: Record<string, string> = {
-  unhappy: "It's okay to feel down or frustrated. A gentle breath can soften the moment.",
-  sad: 'Holding space for your feelings with quiet, tender presence.',
-  normal: 'Grounded, steady, and centered in your natural calm rhythm.',
-  good: 'Peaceful clarity and serene balance in your mind and body.',
-  happy: 'Vibrant joy, gratitude, and expansive positive energy.',
-};
+import {
+  BREATHING_TECHNIQUES as TECHNIQUES,
+  MOOD_PRESETS as MOODS,
+  MOOD_DESCRIPTIONS,
+} from '../../constants';
+import { formatDuration, formatDateKey, getTodayDateKey } from '../../utils';
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
 
@@ -387,15 +308,17 @@ export const MindfulnessView: React.FC = () => {
     const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const days: DayInfo[] = [];
 
+    const todayKey = getTodayDateKey();
+
     for (let i = 0; i < 7; i++) {
       const d = new Date(monday);
       d.setDate(monday.getDate() + i);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const key = formatDateKey(d);
       days.push({
         dayName: dayNames[i],
         dayNum: d.getDate(),
         dateKey: key,
-        isToday: key === mindfulnessService.getTodayKey(),
+        isToday: key === todayKey,
         isCompleted: weeklyStats.completedDates.includes(key),
       });
     }
@@ -590,11 +513,7 @@ export const MindfulnessView: React.FC = () => {
     }
   };
 
-  const formatCountdown = (secs: number) => {
-    const m = Math.floor(secs / 60).toString().padStart(2, '0');
-    const s = (secs % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-  };
+  const formatCountdown = (secs: number) => formatDuration(secs);
 
   return (
     <View style={styles.container}>

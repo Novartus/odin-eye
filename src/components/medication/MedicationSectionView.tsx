@@ -17,6 +17,7 @@ import Svg, { Path } from 'react-native-svg';
 import { Colors } from '../../theme/colors';
 import { medicationService } from '../../services/medication/medicationService';
 import { medicationNotificationService } from '../../services/medication/medicationNotificationService';
+import { getTodayDateKey, formatDateKey } from '../../utils';
 import type {
   Medication,
   ScheduledDoseItem,
@@ -38,7 +39,7 @@ import { MedicationReminderAlertModal } from './MedicationReminderAlertModal';
 export const MedicationSectionView: React.FC = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [selectedDateKey, setSelectedDateKey] = useState<string>(
-    medicationService.getTodayDateKey()
+    getTodayDateKey()
   );
   const [calendarMode, setCalendarMode] = useState<'week' | 'month'>('week');
   const [filter, setFilter] = useState<'all' | 'pending' | 'taken'>('all');
@@ -78,7 +79,7 @@ export const MedicationSectionView: React.FC = () => {
 
   // 7-day week strip (Sun - Sat) around selected date
   const weekDays = useMemo<MedicationDayItem[]>(() => {
-    const todayStr = medicationService.getTodayDateKey();
+    const todayStr = getTodayDateKey();
     const curr = new Date();
     const firstDay = new Date(curr.setDate(curr.getDate() - curr.getDay()));
     const days: MedicationDayItem[] = [];
@@ -87,7 +88,7 @@ export const MedicationSectionView: React.FC = () => {
     for (let i = 0; i < 7; i++) {
       const d = new Date(firstDay);
       d.setDate(firstDay.getDate() + i);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const key = formatDateKey(d);
       days.push({
         dayName: dayNames[i],
         dayNum: d.getDate(),

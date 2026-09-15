@@ -6,6 +6,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { Colors } from '../../theme/colors';
 import { medicationService } from '../../services/medication/medicationService';
+import { getTodayDateKey } from '../../utils';
 import type { FullMonthCalendarViewProps } from '../../types';
 
 export const FullMonthCalendarView: React.FC<FullMonthCalendarViewProps> = ({
@@ -22,7 +23,7 @@ export const FullMonthCalendarView: React.FC<FullMonthCalendarViewProps> = ({
   const [viewYear, setViewYear] = useState<number>(initialDate.getFullYear());
   const [viewMonth, setViewMonth] = useState<number>(initialDate.getMonth() + 1); // 1-12
 
-  const todayKey = medicationService.getTodayDateKey();
+  const todayKey = getTodayDateKey();
 
   // Get adherence map for this month: dateKey -> { total, taken }
   const adherenceMap = useMemo(() => {

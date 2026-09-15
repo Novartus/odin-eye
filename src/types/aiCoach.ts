@@ -40,7 +40,7 @@ export interface SemanticReasoningResult {
 }
 
 export interface AiModelStatus {
-  provider: 'gemini_nano' | 'ondevice' | 'gemini' | 'openai';
+  provider: 'gemini_nano' | 'ondevice' | 'gemini';
   modelName: string;
   isCloudLlm: boolean;
   hasApiKey: boolean;

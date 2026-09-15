@@ -1,5 +1,5 @@
 // OdinEye Master AI Health Coach Service
-// Bridges Live Cloud LLMs (Google Gemini, OpenAI) and On-Device Neural Engine
+// Bridges Live Cloud LLMs (Google Gemini) and On-Device Neural Engine (Gemini Nano)
 // Grounded in real-time Ultrahuman, Fitbit, and Hevy biometrics
 
 import { TriPillarHealthSummary } from '../../types/health';
@@ -7,6 +7,7 @@ import { ChatMessage, AiModelStatus } from '../../types/aiCoach';
 import { credentialsStorage } from '../storage/credentialsStorage';
 import { localAiCoach } from './localCoachEngine';
 import { androidAiCoreService } from './androidAiCoreService';
+import { getTodayDateKey, formatMinutesFriendly } from '../../utils';
 
 export { AiModelStatus };
 
@@ -36,7 +37,7 @@ export class AiHealthService {
     const { medicationService } = require('../medication/medicationService');
     const meds = medicationService.getMedicationsSync();
     const adherence = medicationService.getCompletionSummary();
-    const todayKey = medicationService.getTodayDateKey();
+    const todayKey = getTodayDateKey();
 
     const medsListFormatted = meds.length > 0
       ? meds.map((m: any) => {
@@ -52,7 +53,7 @@ export class AiHealthService {
 - Recovery Score: ${recovery.recoveryScore}% (Movement: ${recovery.movementIndex}%, Sleep Index: ${recovery.sleepIndex}%)
 - HRV Baseline (RMSSD): ${recovery.hrvRmssd} ms
 - Resting Heart Rate: ${recovery.restingHeartRate} bpm
-- Sleep Duration: ${Math.floor(recovery.sleepDurationMinutes / 60)}h ${recovery.sleepDurationMinutes % 60}m
+- Sleep Duration: ${formatMinutesFriendly(recovery.sleepDurationMinutes)}
 - Sleep Stages: Deep ${recovery.deepSleepPct}%, REM ${recovery.remSleepPct}%, Light ${recovery.lightSleepPct}%, Awake ${recovery.awakePct}%
 - Temperature Delta: ${recovery.skinTempDelta > 0 ? '+' : ''}${recovery.skinTempDelta}°C from baseline
 - Circadian Windows: Morning Sunlight ${recovery.circadianPhase.morningSunlightWindow.start}-${recovery.circadianPhase.morningSunlightWindow.end}, Caffeine Cutoff ${recovery.circadianPhase.caffeineCutoffTime}
@@ -104,17 +105,7 @@ You are an expert sports scientist and integrative health coach. When the user a
       }
     }
 
-    // 2. OpenAI GPT-4o Integration (If API key provided)
-    if (creds.openaiApiKey && creds.openaiApiKey.trim()) {
-      try {
-        const openaiReply = await this.callOpenAi(query, data, creds.openaiApiKey.trim(), conversationHistory);
-        if (openaiReply) return openaiReply;
-      } catch (err: any) {
-        console.warn('OpenAI API call failed, falling back to on-device engine:', err);
-      }
-    }
-
-    // 3. Android AICore (Gemini Nano) / On-Device Physiological Synthesis Engine
+    // 2. Android AICore (Gemini Nano) / On-Device Physiological Synthesis Engine
     try {
       const biometricsContext = this.formatBiometricContext(data);
       return await androidAiCoreService.generateContent(query, data, biometricsContext, conversationHistory);
@@ -122,6 +113,14 @@ You are an expert sports scientist and integrative health coach. When the user a
       console.warn('Android AICore execution notice, falling back to local coach engine:', err);
       return localAiCoach.answerUserQuery(query, data, conversationHistory);
     }
+  }
+
+  public async generateInsight(
+    query: string,
+    data: TriPillarHealthSummary,
+    conversationHistory: ChatMessage[] = []
+  ): Promise<ChatMessage> {
+    return this.generateResponse(query, data, conversationHistory);
   }
 
   // Call Google Gemini API (gemini-2.5-flash, gemini-2.0-flash, or gemini-1.5-flash)
@@ -212,68 +211,6 @@ ${context}`;
     throw lastError || new Error('All Gemini model candidates failed');
   }
 
-  // Call OpenAI API (gpt-4o-mini)
-  private async callOpenAi(
-    query: string,
-    data: TriPillarHealthSummary,
-    apiKey: string,
-    history: ChatMessage[]
-  ): Promise<ChatMessage | null> {
-    const context = this.formatBiometricContext(data);
-    const systemPrompt = `You are OdinEye, an elite AI Sports Scientist and Human Performance Coach built into an Android centralized health app.
-You analyze live biometrics from Ultrahuman Ring AIR (sleep/HRV/circadian), Android Health Connect / Fitbit (cardio/AZM/HR zones), and Hevy (resistance tonnage/muscle clocks).
-Always reference specific numbers from the user's live telemetry when answering. Be concise, actionable, and scientifically grounded.
-Ground your guidance directly in the following live telemetry:
-${context}`;
-
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      ...history.slice(-6).map((m) => ({
-        role: m.sender === 'user' ? 'user' : 'assistant',
-        content: m.text,
-      })),
-      { role: 'user', content: query },
-    ];
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages,
-        temperature: 0.7,
-        max_tokens: 600,
-      }),
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`OpenAI API Error (${response.status}): ${errText}`);
-    }
-
-    const resJson = await response.json();
-    const replyText = resJson?.choices?.[0]?.message?.content;
-
-    if (!replyText) {
-      throw new Error('Empty response from OpenAI');
-    }
-
-    return {
-      id: 'openai-' + Date.now(),
-      sender: 'coach',
-      text: replyText.trim(),
-      timestamp: new Date().toISOString(),
-      dataPointsReferenced: [
-        'OpenAI GPT-4o-mini',
-        `Ultrahuman (${data.recovery.recoveryScore}%)`,
-        `Fitbit (${data.cardio.todayActiveZoneMinutes} AZM)`,
-      ],
-    };
-  }
-
   // Test Gemini API key validity across model candidate tiers
   public async testGeminiConnection(apiKey: string): Promise<{ success: boolean; message: string }> {
     if (!apiKey || !apiKey.trim()) {
@@ -310,27 +247,6 @@ ${context}`;
     }
 
     return { success: false, message: lastError || 'Connection failed' };
-  }
-
-  // Test OpenAI API key validity
-  public async testOpenAiConnection(apiKey: string): Promise<{ success: boolean; message: string }> {
-    if (!apiKey || !apiKey.trim()) {
-      return { success: false, message: 'Please enter an OpenAI API Key' };
-    }
-    try {
-      const response = await fetch('https://api.openai.com/v1/models', {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${apiKey.trim()}` },
-      });
-
-      if (!response.ok) {
-        return { success: false, message: `OpenAI returned status ${response.status}` };
-      }
-
-      return { success: true, message: 'OpenAI GPT Connected ✓' };
-    } catch (err: any) {
-      return { success: false, message: err?.message || 'Connection failed' };
-    }
   }
 }
 

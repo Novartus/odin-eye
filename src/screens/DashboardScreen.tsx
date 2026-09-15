@@ -15,25 +15,9 @@ import {
   Vibration,
 } from 'react-native';
 
-/**
- * Schedules background work when the JS thread is idle without blocking UI mounting.
- * Replaces deprecated InteractionManager using requestIdleCallback with a safe timer fallback.
- */
-const runWhenIdle = (callback: () => void, timeout = 250): (() => void) => {
-  const g: any = typeof globalThis !== 'undefined' ? globalThis : undefined;
-  if (g && typeof g.requestIdleCallback === 'function') {
-    const handle = g.requestIdleCallback(callback, { timeout });
-    return () => {
-      if (typeof g.cancelIdleCallback === 'function') {
-        g.cancelIdleCallback(handle);
-      }
-    };
-  }
-  const timer = setTimeout(callback, 80);
-  return () => clearTimeout(timer);
-};
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
+import { runWhenIdle, getTodayDateKey } from '../utils';
 import { localAiCoach } from '../services/ai/localCoachEngine';
 import { Colors } from '../theme/colors';
 
@@ -262,7 +246,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onResetOnboard
           setGlobalMedAlert({
             medication: med,
             time,
-            dateKey: medicationService.getTodayDateKey(),
+            dateKey: getTodayDateKey(),
             triggeredAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           });
         }

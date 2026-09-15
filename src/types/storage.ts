@@ -13,8 +13,7 @@ export interface SavedCredentials {
   healthConnectPermissionsGranted?: boolean;
   healthConnectPromptDismissed?: boolean;
   geminiApiKey?: string;
-  openaiApiKey?: string;
-  aiProvider?: 'gemini_nano' | 'ondevice' | 'gemini' | 'openai';
+  aiProvider?: 'gemini_nano' | 'ondevice' | 'gemini';
   aiEnabled?: boolean;
   bodyAnalysisEnabled?: boolean;
   mindfulnessEnabled?: boolean;

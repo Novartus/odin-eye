@@ -6,6 +6,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { mindfulnessService } from '../../services/mindfulness/mindfulnessService';
 import { credentialsStorage } from '../../services/storage/credentialsStorage';
+import { getTodayDateKey, formatDateKey } from '../../utils';
 import type { TodayZenCardProps, MindfulnessWeeklyStats } from '../../types';
 
 export const TodayZenCard: React.FC<TodayZenCardProps> = ({ onOpenZen, onQuickStartBreath }) => {
@@ -27,7 +28,7 @@ export const TodayZenCard: React.FC<TodayZenCardProps> = ({ onOpenZen, onQuickSt
     return unsubscribe;
   }, []);
 
-  const todayKey = mindfulnessService.getTodayKey();
+  const todayKey = getTodayDateKey();
   const isTodayCompleted = stats.completedDates.includes(todayKey);
 
   // 7-day mini streak indicators (Mon - Sun)
@@ -41,7 +42,7 @@ export const TodayZenCard: React.FC<TodayZenCardProps> = ({ onOpenZen, onQuickSt
   const miniDays = weekDayLabels.map((label, i) => {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const key = formatDateKey(d);
     return {
       label,
       dateKey: key,

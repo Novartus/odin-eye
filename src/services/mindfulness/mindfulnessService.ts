@@ -3,8 +3,8 @@
 // 100% real persistent storage via expo-secure-store — ZERO dummy/seed data
 
 import * as SecureStore from 'expo-secure-store';
-
-const MINDFULNESS_LOG_KEY = 'odineye_mindfulness_logs_v1';
+import { STORAGE_KEYS, SOUNDSCAPES } from '../../constants';
+import { getTodayDateKey, formatDateKey } from '../../utils';
 
 import {
   MindfulSessionLog,
@@ -16,32 +16,8 @@ export {
   MindfulSessionLog,
   MindfulnessWeeklyStats,
   SoundscapeItem,
+  SOUNDSCAPES,
 };
-
-export const SOUNDSCAPES: SoundscapeItem[] = [
-  // Binaural Beats
-  { id: 'gamma40', label: '40 Hz Focus Gamma', description: 'Peak cognitive focus & working memory', category: 'binaural', carrierFreq: '200 / 240 Hz', benefit: 'Sharp alertness & focus', requiresHeadphones: true },
-  { id: 'alpha10', label: '10 Hz Flow Alpha', description: 'Serene bridge between calm & alertness', category: 'binaural', carrierFreq: '200 / 210 Hz', benefit: 'Creative flow & calm focus', requiresHeadphones: true },
-  { id: 'theta6', label: '6 Hz Theta Sanctuary', description: 'Deep introspective meditation & intuition', category: 'binaural', carrierFreq: '150 / 156 Hz', benefit: 'Deep meditation & tension release', requiresHeadphones: true },
-  { id: 'delta2', label: '2 Hz Delta Restore', description: 'Slow restorative oscillations for deep somatic peace', category: 'binaural', carrierFreq: '100 / 102 Hz', benefit: 'Restorative somatic grounding', requiresHeadphones: true },
-
-  // Solfeggio Frequencies
-  { id: 'hz432', label: '432 Hz Harmonic Peace', description: 'Schumann resonance for heart coherence & peace', category: 'solfeggio', carrierFreq: '432 Hz Pure', benefit: 'Heart coherence & grounding', requiresHeadphones: false },
-  { id: 'hz528', label: '528 Hz Cellular Balance', description: 'Ancient transformation tone of inner equilibrium', category: 'solfeggio', carrierFreq: '528 Hz Pure', benefit: 'Vitality & deep restorative balance', requiresHeadphones: false },
-  { id: 'hz639', label: '639 Hz Compassion Tone', description: 'Harmonizes empathy and emotional serenity', category: 'solfeggio', carrierFreq: '639 Hz Pure', benefit: 'Emotional calm & harmony', requiresHeadphones: false },
-
-  // Colored Noise
-  { id: 'brown_noise', label: 'Velvet Brown Noise', description: 'Deep low-frequency rumble like distant waterfall', category: 'noise', benefit: 'Calms racing thoughts & tinnitus', requiresHeadphones: false },
-  { id: 'pink_noise', label: 'Organic Pink Noise', description: 'Balanced 1/f soothing acoustic shielding', category: 'noise', benefit: 'Alpha wave support & quiet', requiresHeadphones: false },
-  { id: 'white_noise', label: 'Tranquil White Noise', description: 'Broadband sound masking for deep focus', category: 'noise', benefit: 'External sound blocking', requiresHeadphones: false },
-
-  // Nature Soundscapes
-  { id: 'waves', label: 'Ocean Waves', description: 'Slow, rhythmic tidal swell pacing breathing', category: 'nature', benefit: 'HRV pacing & tidal calm', requiresHeadphones: false },
-  { id: 'breeze', label: 'Forest Breeze', description: 'Whispering pine trees in mountain wind', category: 'nature', benefit: 'Stress release & parasympathetic tone', requiresHeadphones: false },
-  { id: 'rain', label: 'Gentle Rain', description: 'Soft raindrops on forest leaves', category: 'nature', benefit: 'Cool presence & tranquil thoughts', requiresHeadphones: false },
-  { id: 'birds', label: 'Chirping Birds', description: 'Gentle morning dawn birdsong', category: 'nature', benefit: 'Morning alertness & presence', requiresHeadphones: false },
-  { id: 'silent', label: 'Silent Clarity', description: 'Pure quiet mindfulness', category: 'nature', benefit: 'Unassisted breath awareness', requiresHeadphones: false },
-];
 
 type MindfulnessListener = (stats: MindfulnessWeeklyStats) => void;
 
@@ -82,7 +58,7 @@ class MindfulnessService {
   public async loadLogs(): Promise<MindfulSessionLog[]> {
     if (this.isLoaded) return this.logsCache;
     try {
-      const stored = await SecureStore.getItemAsync(MINDFULNESS_LOG_KEY);
+      const stored = await SecureStore.getItemAsync(STORAGE_KEYS.MINDFULNESS);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
@@ -98,8 +74,7 @@ class MindfulnessService {
   }
 
   public getTodayKey(): string {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    return getTodayDateKey();
   }
 
   public async logCompletedSession(
@@ -121,7 +96,7 @@ class MindfulnessService {
 
     this.logsCache = [...this.logsCache, newLog];
     try {
-      await SecureStore.setItemAsync(MINDFULNESS_LOG_KEY, JSON.stringify(this.logsCache));
+      await SecureStore.setItemAsync(STORAGE_KEYS.MINDFULNESS, JSON.stringify(this.logsCache));
     } catch {}
     this.notify();
     return newLog;
@@ -138,9 +113,6 @@ class MindfulnessService {
     const monday = new Date(today);
     monday.setDate(today.getDate() - distanceToMonday);
     monday.setHours(0, 0, 0, 0);
-
-    const fmt = (d: Date) =>
-      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
     for (const log of this.logsCache) {
       completedDatesSet.add(log.dateKey);
@@ -171,10 +143,10 @@ class MindfulnessService {
     // If completed today, count backward from today.
     // If NOT completed today, check if yesterday was completed (streak still alive until today ends).
     // If neither today nor yesterday, current streak is 0.
-    const todayKey = fmt(today);
+    const todayKey = formatDateKey(today);
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayKey = fmt(yesterday);
+    const yesterdayKey = formatDateKey(yesterday);
 
     let streak = 0;
     let startDay: Date | null = null;
@@ -189,7 +161,7 @@ class MindfulnessService {
       for (let i = 0; i < 365; i++) {
         const check = new Date(startDay);
         check.setDate(startDay.getDate() - i);
-        if (completedDatesSet.has(fmt(check))) {
+        if (completedDatesSet.has(formatDateKey(check))) {
           streak++;
         } else {
           break;
@@ -241,7 +213,7 @@ class MindfulnessService {
   public async clearLogs(): Promise<void> {
     this.logsCache = [];
     try {
-      await SecureStore.deleteItemAsync(MINDFULNESS_LOG_KEY);
+      await SecureStore.deleteItemAsync(STORAGE_KEYS.MINDFULNESS);
     } catch {}
     this.notify();
   }

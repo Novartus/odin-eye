@@ -7,6 +7,7 @@ import { medicationService, ScheduledDoseItem } from '../medication/medicationSe
 import { mindfulnessService } from '../mindfulness/mindfulnessService';
 import { liveHealthService } from '../live/liveHealthService';
 import { credentialsStorage } from '../storage/credentialsStorage';
+import { getTodayDateKey } from '../../utils';
 
 const { OdinEyeWidgetModule } = NativeModules;
 
@@ -54,7 +55,7 @@ class WidgetSyncService {
    */
   public async syncPillWidget(): Promise<void> {
     try {
-      const todayKey = medicationService.getTodayDateKey();
+      const todayKey = getTodayDateKey();
       const dailySchedule: ScheduledDoseItem[] = medicationService.getScheduledDosesForDate(todayKey);
 
       // Find first untaken dose, or the latest taken dose
@@ -137,7 +138,7 @@ class WidgetSyncService {
       if (actionResult && actionResult.action === 'TAKE_PILL' && actionResult.doseId) {
         const [medId, time] = actionResult.doseId.split('___');
         if (medId && time) {
-          const todayKey = medicationService.getTodayDateKey();
+          const todayKey = getTodayDateKey();
           await medicationService.toggleDoseTaken(medId, time, todayKey);
           await this.syncPillWidget();
         }

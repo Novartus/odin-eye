@@ -32,7 +32,7 @@ export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data
   const insets = useSafeAreaInsets();
   const tabBottomOffset = Math.max(insets.bottom + 10, 20);
 
-  const [aiProvider, setAiProvider] = useState<'gemini_nano' | 'ondevice' | 'gemini' | 'openai'>('gemini_nano');
+  const [aiProvider, setAiProvider] = useState<'gemini_nano' | 'ondevice' | 'gemini'>('gemini_nano');
   const [isVoiceOverlayVisible, setIsVoiceOverlayVisible] = useState(false);
   const [isMobilityModalVisible, setIsMobilityModalVisible] = useState(false);
   const [activeMobilityRoutine, setActiveMobilityRoutine] = useState<MobilityRoutine | null>(null);
@@ -208,9 +208,7 @@ export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data
                 ? 'Android AICore (Gemini Nano)'
                 : aiProvider === 'gemini'
                   ? 'Google Gemini 1.5 Flash'
-                  : aiProvider === 'openai'
-                    ? 'OpenAI GPT-4o-mini'
-                    : 'On-Device NPU Local AI'}
+                  : 'On-Device NPU Local AI'}
             </Text>
           </View>
           <Text style={styles.bannerLatency}>
@@ -355,9 +353,7 @@ export const DedicatedAiCoachView: React.FC<DedicatedAiCoachViewProps> = ({ data
                   ? 'Thinking... (Android AICore)'
                   : aiProvider === 'gemini'
                     ? 'Thinking... (Gemini 1.5 Flash)'
-                    : aiProvider === 'openai'
-                      ? 'Thinking... (GPT-4o-mini)'
-                      : 'Synthesizing biometrics on-device...'
+                    : 'Synthesizing biometrics on-device...'
               }
             />
           )}

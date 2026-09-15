@@ -4,6 +4,7 @@
 
 import { Platform, PermissionsAndroid, NativeModules } from 'react-native';
 import { Medication } from '../../types/medication';
+import { parseTime as parseCentralTime } from '../../utils';
 
 const OdinEyeNotification = NativeModules.OdinEyeNotificationModule;
 
@@ -202,16 +203,7 @@ class MedicationNotificationService {
   }
 
   public parseTime(timeStr: string): { hours: number; minutes: number } | null {
-    const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
-    if (!match) return null;
-    let hours = parseInt(match[1], 10);
-    const minutes = parseInt(match[2], 10);
-    const period = match[3]?.toUpperCase();
-
-    if (period === 'PM' && hours < 12) hours += 12;
-    if (period === 'AM' && hours === 12) hours = 0;
-
-    return { hours, minutes };
+    return parseCentralTime(timeStr);
   }
 }
 

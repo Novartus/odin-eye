@@ -13,9 +13,7 @@ import * as SecureStore from 'expo-secure-store';
 import { cryptoService, EncryptedPayload } from '../security/cryptoService';
 import { SavedCredentials, SecurityVaultStatus } from '../../types/storage';
 export { SavedCredentials, SecurityVaultStatus } from '../../types/storage';
-
-const SECURE_STORE_KEY = 'odineye_secure_vault';
-const VAULT_FILE_NAME = 'odineye_secure_vault.enc';
+import { STORAGE_KEYS } from '../../constants';
 
 class CredentialsStorage {
   private static instance: CredentialsStorage;
@@ -27,7 +25,6 @@ class CredentialsStorage {
     healthConnectPermissionsGranted: false,
     healthConnectPromptDismissed: false,
     geminiApiKey: '',
-    openaiApiKey: '',
     aiProvider: 'gemini_nano',
     aiEnabled: true,
     bodyAnalysisEnabled: true,
@@ -76,7 +73,7 @@ class CredentialsStorage {
       const fs = require('expo-file-system');
       if (fs && fs.documentDirectory) {
         this.fileSystem = fs;
-        this.vaultPath = `${fs.documentDirectory}${VAULT_FILE_NAME}`;
+        this.vaultPath = `${fs.documentDirectory}${STORAGE_KEYS.CREDENTIALS_FILE}`;
       }
     } catch {
       this.fileSystem = null;
@@ -113,7 +110,7 @@ class CredentialsStorage {
         // 1. Primary: expo-secure-store (hardware-backed keystore)
         if (this.isSecureStoreAvailable) {
           try {
-            rawEncrypted = await SecureStore.getItemAsync(SECURE_STORE_KEY);
+            rawEncrypted = await SecureStore.getItemAsync(STORAGE_KEYS.CREDENTIALS_VAULT);
           } catch (e: any) {
             console.warn('[CredentialsStorage] SecureStore read:', e?.message);
           }
@@ -179,7 +176,7 @@ class CredentialsStorage {
       // 1. Primary: expo-secure-store
       if (this.isSecureStoreAvailable) {
         try {
-          await SecureStore.setItemAsync(SECURE_STORE_KEY, serialized);
+          await SecureStore.setItemAsync(STORAGE_KEYS.CREDENTIALS_VAULT, serialized);
         } catch (e: any) {
           console.warn('[CredentialsStorage] SecureStore write:', e?.message);
         }
@@ -235,13 +232,12 @@ class CredentialsStorage {
       fitbitToken: '',
       healthConnectEnabled: true,
       geminiApiKey: '',
-      openaiApiKey: '',
       aiProvider: 'gemini_nano',
     };
 
     if (this.isSecureStoreAvailable) {
       try {
-        await SecureStore.deleteItemAsync(SECURE_STORE_KEY);
+        await SecureStore.deleteItemAsync(STORAGE_KEYS.CREDENTIALS_VAULT);
       } catch {}
     }
 

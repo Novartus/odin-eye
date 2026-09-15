@@ -162,12 +162,12 @@ sequenceDiagram
 
 ## 6. Optional Cloud Fallback ("Bring Your Own Key" / BYOK)
 
-OdinEye recognizes that some advanced users may wish to experiment with cutting-edge frontier models (such as Gemini 2.5 Pro or OpenAI GPT-4o) for open-ended philosophical discussions.
+OdinEye recognizes that some advanced users may wish to experiment with cutting-edge frontier models (such as Google Gemini 2.5 Flash / Pro) for open-ended philosophical discussions.
 
 To support this without compromising privacy for the general public, OdinEye implements a strict **Bring Your Own Key (BYOK)** model:
 
 - **Strictly Opt-In**: Cloud integrations are completely inactive by default.
-- **Direct Client-to-API**: When a user inputs their personal Gemini or OpenAI API key in the Config tab, requests travel **directly from the user's device to the provider's API endpoint**. There is no OdinEye proxy, intermediary server, or data retention middleman.
+- **Direct Client-to-API**: When a user inputs their personal Google Gemini API key in the Config tab, requests travel **directly from the user's device to Google's API endpoint**. There is no OdinEye proxy, intermediary server, or data retention middleman.
 - **Graceful Fallback**: If an external API key expires, fails, or has no internet connection, the system instantly and silently routes the query to the local on-device engine.
 
 ---

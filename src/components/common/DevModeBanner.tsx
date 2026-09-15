@@ -22,10 +22,9 @@ import {
   ScrollView,
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import { STORAGE_KEYS } from '../../constants';
 import { isNativeHealthConnectLinked } from '../../services/healthConnect/healthConnectService';
 import type { DevModeStep } from '../../types';
-
-const DISMISSED_KEY = 'dev_banner_dismissed_v1';
 
 const BUILD_STEPS: DevModeStep[] = [
   {
@@ -82,7 +81,7 @@ export const DevModeBanner: React.FC<{ onNavigateToSettings?: () => void }> = ({
     // Only show in dev mode when native module is not linked
     if (!__DEV__ || isNativeHealthConnectLinked()) return;
 
-    SecureStore.getItemAsync(DISMISSED_KEY).then((val) => {
+    SecureStore.getItemAsync(STORAGE_KEYS.DEV_BANNER_DISMISSED).then((val) => {
       if (val !== 'true') {
         setVisible(true);
         Animated.timing(opacity, {
@@ -105,7 +104,7 @@ export const DevModeBanner: React.FC<{ onNavigateToSettings?: () => void }> = ({
       useNativeDriver: true,
     }).start(() => setVisible(false));
     try {
-      await SecureStore.setItemAsync(DISMISSED_KEY, 'true');
+      await SecureStore.setItemAsync(STORAGE_KEYS.DEV_BANNER_DISMISSED, 'true');
     } catch {}
   };
 

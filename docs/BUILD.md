@@ -168,3 +168,4 @@ EXPO_NO_TELEMETRY=1 npx expo export --platform android --no-bytecode && rm -rf d
 | OdinEye not listed in Health Connect | Force-stop and reopen Health Connect; wait a few seconds for indexing |
 | `minSdkVersion` error | Ensure `minSdkVersion 26` is set in `android/build.gradle` |
 | Notification alarms not firing | Grant `SCHEDULE_EXACT_ALARM` permission manually in App settings |
+| Expo stuck on "Bundling" or not loading | See comprehensive guide: [TROUBLESHOOTING_EXPO_BUNDLING.md](TROUBLESHOOTING_EXPO_BUNDLING.md) |

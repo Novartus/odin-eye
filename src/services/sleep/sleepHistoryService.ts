@@ -17,7 +17,9 @@ export {
   DailyStepRecord,
 };
 
-const SLEEP_HISTORY_KEY = 'odineye_sleep_history_v1';
+import { STORAGE_KEYS } from '../../constants';
+import { formatDateKey as formatCentralDateKey } from '../../utils';
+
 const DAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -38,7 +40,7 @@ export class SleepHistoryService {
 
   private async loadHistory(): Promise<void> {
     try {
-      const raw = await SecureStore.getItemAsync(SLEEP_HISTORY_KEY);
+      const raw = await SecureStore.getItemAsync(STORAGE_KEYS.SLEEP_HISTORY);
       if (raw) {
         this.storedSleepRecords = JSON.parse(raw);
       }
@@ -50,7 +52,7 @@ export class SleepHistoryService {
   private async saveHistory(): Promise<void> {
     try {
       await SecureStore.setItemAsync(
-        SLEEP_HISTORY_KEY,
+        STORAGE_KEYS.SLEEP_HISTORY,
         JSON.stringify(this.storedSleepRecords)
       );
     } catch {
@@ -59,10 +61,7 @@ export class SleepHistoryService {
   }
 
   private formatDateKey(d: Date): string {
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return formatCentralDateKey(d);
   }
 
   /**
