@@ -11,6 +11,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#FFFFFF"
     },
+    "assetBundlePatterns": [
+      "assets/**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.odineye.health"

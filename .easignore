@@ -1,0 +1,6 @@
+# EAS Build Ignore Configuration
+# Ignore heavy marketing, promotional sites, and web deployment directories
+launch/
+docs/
+*.md
+!README.md

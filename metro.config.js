@@ -11,6 +11,7 @@ const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // Anchor explicitly to project root to avoid blocking node_modules packages that use "dist" or "build"
 const projectDist = new RegExp(`^${escapeRegExp(path.resolve(__dirname, 'dist'))}.*`);
 const projectDocs = new RegExp(`^${escapeRegExp(path.resolve(__dirname, 'docs'))}.*`);
+const projectLaunch = new RegExp(`^${escapeRegExp(path.resolve(__dirname, 'launch'))}.*`);
 const projectAndroidBuild = new RegExp(`^${escapeRegExp(path.resolve(__dirname, 'android', 'build'))}.*`);
 const projectAndroidAppBuild = new RegExp(`^${escapeRegExp(path.resolve(__dirname, 'android', 'app', 'build'))}.*`);
 const projectAndroidGradle = new RegExp(`^${escapeRegExp(path.resolve(__dirname, 'android', '.gradle'))}.*`);
@@ -18,6 +19,7 @@ const projectAndroidGradle = new RegExp(`^${escapeRegExp(path.resolve(__dirname,
 const additionalBlockList = [
   projectDist,
   projectDocs,
+  projectLaunch,
   projectAndroidBuild,
   projectAndroidAppBuild,
   projectAndroidGradle,
