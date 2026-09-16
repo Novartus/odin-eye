@@ -543,38 +543,53 @@ function initWebAudioSynthesizer() {
 function initMobileNavigation() {
   const toggleBtn = document.getElementById('mobile-toggle');
   const drawer = document.getElementById('mobile-drawer');
+  const backdrop = document.getElementById('mobile-drawer-backdrop');
+
+  function openDrawer() {
+    drawer.classList.add('open');
+    if (backdrop) backdrop.classList.add('open');
+    toggleBtn.classList.add('active');
+    toggleBtn.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDrawer() {
+    drawer.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('open');
+    toggleBtn.classList.remove('active');
+    toggleBtn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
 
   if (toggleBtn && drawer) {
     toggleBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const isOpen = drawer.classList.toggle('open');
-      toggleBtn.classList.toggle('active', isOpen);
-      toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      if (drawer.classList.contains('open')) {
+        closeDrawer();
+      } else {
+        openDrawer();
+      }
     });
 
+    if (backdrop) {
+      backdrop.addEventListener('click', closeDrawer);
+    }
+
     drawer.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        drawer.classList.remove('open');
-        toggleBtn.classList.remove('active');
-        toggleBtn.setAttribute('aria-expanded', 'false');
-      });
+      link.addEventListener('click', closeDrawer);
     });
 
     // Close when clicking outside drawer
     document.addEventListener('click', (e) => {
       if (drawer.classList.contains('open') && !drawer.contains(e.target) && !toggleBtn.contains(e.target)) {
-        drawer.classList.remove('open');
-        toggleBtn.classList.remove('active');
-        toggleBtn.setAttribute('aria-expanded', 'false');
+        closeDrawer();
       }
     });
 
     // Close on Escape key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && drawer.classList.contains('open')) {
-        drawer.classList.remove('open');
-        toggleBtn.classList.remove('active');
-        toggleBtn.setAttribute('aria-expanded', 'false');
+        closeDrawer();
       }
     });
   }

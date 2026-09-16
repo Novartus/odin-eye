@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OdinEye — Personal Health Intelligence · On-Device. Private. Precise.</title>
-  <meta name="description" content="Autonomous on-device personal health intelligence for Android. Clinical 4-stage sleep architecture, nocturnal pulse dip, offline medication tracking, and local Gemini Nano AI coaching with zero cloud leakage." />
+  <meta name="description"
+    content="Autonomous on-device personal health intelligence for Android. Clinical 4-stage sleep architecture, nocturnal pulse dip, offline medication tracking, and local Gemini Nano AI coaching with zero cloud leakage." />
   <link rel="icon" type="image/png" href="assets/icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
   <!-- Ambient Glow Canvas -->
@@ -39,9 +44,11 @@
       </nav>
 
       <div class="nav-actions">
-        <a href="https://github.com" target="_blank" rel="noopener" class="btn-ghost" title="View Source on GitHub">
+        <a href="https://github.com/Novartus/odin-eye" target="_blank" rel="noopener" class="btn-ghost"
+          title="View Source on GitHub">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/>
+            <path
+              d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z" />
           </svg>
           <span>GitHub</span>
         </a>
@@ -49,7 +56,8 @@
         <a href="#download" class="btn-primary btn-header-cta">
           <span class="desktop-cta-text">Get OdinEye v1.0</span>
           <span class="mobile-cta-text">Get v1.0</span>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
             <line x1="7" y1="17" x2="17" y2="7"></line>
             <polyline points="7 7 17 7 17 17"></polyline>
           </svg>
@@ -63,7 +71,8 @@
       </div>
     </header>
 
-    <!-- Mobile Nav Drawer -->
+    <!-- Mobile Nav Drawer & Backdrop -->
+    <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop"></div>
     <div class="mobile-drawer" id="mobile-drawer">
       <a href="#experience" class="mobile-nav-item">Experience</a>
       <a href="#sleep-science" class="mobile-nav-item">Sleep Architecture</a>
@@ -71,9 +80,13 @@
       <a href="#zen-sanctuary" class="mobile-nav-item">Zen & Audio</a>
       <a href="#zero-cloud" class="mobile-nav-item">Zero Cloud</a>
       <a href="#engineering" class="mobile-nav-item">Architecture</a>
-      <a href="https://github.com" target="_blank" rel="noopener" class="mobile-nav-item">GitHub Repository ↗</a>
+      <a href="privacy-policy.html" class="mobile-nav-item">Privacy Policy</a>
+      <a href="terms-of-service.html" class="mobile-nav-item">Terms of Service</a>
+      <a href="https://github.com/Novartus/odin-eye" target="_blank" rel="noopener" class="mobile-nav-item">GitHub
+        Repository ↗</a>
       <div class="mobile-drawer-cta">
-        <a href="#download" class="btn-primary" style="width: 100%; justify-content: center;">Download v1.0 APK</a>
+        <a href="https://github.com/Novartus/odin-eye/releases#release-1.0" class="btn-primary"
+          style="width: 100%; justify-content: center;">Download v1.0 APK</a>
       </div>
     </div>
 
@@ -82,7 +95,7 @@
          ==================================================================== -->
     <section class="hero-stage">
       <div class="hero-content">
-        
+
         <!-- Status Tag -->
         <div class="hero-status-tag">
           <span class="status-pulse-dot"></span>
@@ -97,7 +110,8 @@
 
         <!-- Editorial Subheading -->
         <p class="hero-lead">
-          Autonomous personal health intelligence unifying offline Android Health Connect biometrics, 4-stage sleep polysomnography, nocturnal pulse dip, and local Gemini Nano coaching.
+          Autonomous personal health intelligence unifying offline Android Health Connect biometrics, 4-stage sleep
+          polysomnography, nocturnal pulse dip, and local Gemini Nano coaching.
         </p>
 
         <!-- Key Metrics Strip (Open, borderless, floating) -->
@@ -127,7 +141,8 @@
         <div class="hero-actions">
           <a href="#download" class="btn-primary btn-large">
             <span>Download v1.0 APK</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="7 10 12 15 17 10"></polyline>
               <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -147,7 +162,7 @@
         <!-- Hero Visual Showcase with Floating Smart Badges -->
         <div class="hero-visual-container">
           <div class="hero-glow-ring"></div>
-          
+
           <div class="hero-image-frame">
             <img src="assets/hero.jpg" alt="OdinEye Titanium Android App & Smart Ring AIR" class="hero-main-img" />
           </div>
@@ -219,7 +234,8 @@
         <span class="section-kicker">Interactive App Showcase</span>
         <h2 class="section-heading">Ten unedited screens. One unified ecosystem.</h2>
         <p class="section-subheading">
-          Explore production captures directly from the running OdinEye Android build. Select any feature domain below to inspect the interface.
+          Explore production captures directly from the running OdinEye Android build. Select any feature domain below
+          to inspect the interface.
         </p>
       </div>
 
@@ -249,15 +265,16 @@
 
       <!-- Interactive Stage Display -->
       <div class="interactive-stage" id="stage-display">
-        
+
         <!-- Left: Device Frames (Dual or Single Perspective) -->
         <div class="stage-devices-col">
           <div class="stage-phone-halo"></div>
-          
+
           <div class="stage-phone-wrapper" id="stage-main-phone">
             <div class="phone-titanium-bezel">
               <div class="phone-screen-camera"></div>
-              <img id="stage-img-primary" src="assets/screenshots/Dashboard1.png" alt="OdinEye Active Interface" class="phone-screen-shot" />
+              <img id="stage-img-primary" src="assets/screenshots/Dashboard1.png" alt="OdinEye Active Interface"
+                class="phone-screen-shot" />
             </div>
           </div>
 
@@ -265,7 +282,8 @@
           <div class="stage-phone-wrapper secondary-phone" id="stage-sec-phone">
             <div class="phone-titanium-bezel">
               <div class="phone-screen-camera"></div>
-              <img id="stage-img-secondary" src="assets/screenshots/Dashboard2.png" alt="OdinEye Companion Interface" class="phone-screen-shot" />
+              <img id="stage-img-secondary" src="assets/screenshots/Dashboard2.png" alt="OdinEye Companion Interface"
+                class="phone-screen-shot" />
             </div>
           </div>
         </div>
@@ -275,7 +293,9 @@
           <div class="stage-badge" id="stage-badge">DOMAIN 01 · SYSTEM DASHBOARD</div>
           <h3 class="stage-title" id="stage-title">Real-Time Daily Equilibrium & Adherence</h3>
           <p class="stage-desc" id="stage-desc">
-            The OdinEye home dashboard synthesizes four primary biometric indicators into a single unified recovery score. View active cardiovascular exertion, daily medication adherence checklists, and quick-launch zen breathing triggers without opening secondary tabs.
+            The OdinEye home dashboard synthesizes four primary biometric indicators into a single unified recovery
+            score. View active cardiovascular exertion, daily medication adherence checklists, and quick-launch zen
+            breathing triggers without opening secondary tabs.
           </p>
 
           <!-- Dynamic Feature Points -->
@@ -283,19 +303,22 @@
             <div class="stage-spec-row">
               <span class="spec-bullet">✦</span>
               <div>
-                <strong>Restorative Recovery Gauge:</strong> Dynamic SVG radial score factoring sleep architecture and nocturnal autonomic dip.
+                <strong>Restorative Recovery Gauge:</strong> Dynamic SVG radial score factoring sleep architecture and
+                nocturnal autonomic dip.
               </div>
             </div>
             <div class="stage-spec-row">
               <span class="spec-bullet">✦</span>
               <div>
-                <strong>1-Tap Medication Check:</strong> Native offline adherence tracking synchronized with system notification alarms.
+                <strong>1-Tap Medication Check:</strong> Native offline adherence tracking synchronized with system
+                notification alarms.
               </div>
             </div>
             <div class="stage-spec-row">
               <span class="spec-bullet">✦</span>
               <div>
-                <strong>Zero Latency Health Connect Sync:</strong> Instant telemetry ingest from Pixel Watch, Galaxy Watch, and Ring AIR.
+                <strong>Zero Latency Health Connect Sync:</strong> Instant telemetry ingest from Pixel Watch, Galaxy
+                Watch, and Ring AIR.
               </div>
             </div>
           </div>
@@ -411,13 +434,15 @@
          ==================================================================== -->
     <section id="sleep-science" class="section-flow">
       <div class="split-story-grid">
-        
+
         <!-- Left: Polysomnography Narrative & Live Interactive Engine -->
         <div class="story-copy-col">
           <span class="section-kicker">Clinical Sleep Science</span>
           <h2 class="section-heading">Full 4-stage architecture.<br>Correlated with nocturnal pulse.</h2>
           <p class="section-lead">
-            Standard sleep trackers lump your night into generic sleep and wake periods. OdinEye processes native sleep stage records from Health Connect into clinically validated Deep (N3), REM, Light (N1+N2), and Awake intervals, while computing your true parasympathetic heart rate dip.
+            Standard sleep trackers lump your night into generic sleep and wake periods. OdinEye processes native sleep
+            stage records from Health Connect into clinically validated Deep (N3), REM, Light (N1+N2), and Awake
+            intervals, while computing your true parasympathetic heart rate dip.
           </p>
 
           <!-- Interactive Sleep Architecture Controller -->
@@ -427,7 +452,7 @@
                 <span id="sleep-stage-title" class="hypno-stage-name">Full 4-Stage Architecture</span>
                 <span id="sleep-stage-duration" class="hypno-stage-time">7h 42m Total · 94% Efficiency</span>
               </div>
-              
+
               <div class="sleep-stage-buttons">
                 <button class="sleep-tab-btn active" data-stage="all">All</button>
                 <button class="sleep-tab-btn" data-stage="deep">Deep</button>
@@ -442,8 +467,10 @@
               <div class="hypno-track">
                 <div class="hypno-seg deep" data-stage="deep" style="width: 22%;" title="Deep Sleep (N3) — 22%"></div>
                 <div class="hypno-seg rem" data-stage="rem" style="width: 24%;" title="REM Sleep — 24%"></div>
-                <div class="hypno-seg light" data-stage="light" style="width: 48%;" title="Light Sleep (N1+N2) — 48%"></div>
-                <div class="hypno-seg awake" data-stage="awake" style="width: 6%;" title="Awake / Micro-Arousals — 6%"></div>
+                <div class="hypno-seg light" data-stage="light" style="width: 48%;" title="Light Sleep (N1+N2) — 48%">
+                </div>
+                <div class="hypno-seg awake" data-stage="awake" style="width: 6%;" title="Awake / Micro-Arousals — 6%">
+                </div>
               </div>
               <div class="hypno-timeline-legend">
                 <span>11:30 PM (Sleep Onset)</span>
@@ -457,22 +484,26 @@
               <div class="sleep-breakdown-row">
                 <div class="breakdown-tag tag-deep">Deep Sleep (N3)</div>
                 <div class="breakdown-stat">1h 42m <span class="breakdown-pct">22%</span></div>
-                <div class="breakdown-desc">Cellular repair, growth hormone release & glymphatic neuro-waste clearance.</div>
+                <div class="breakdown-desc">Cellular repair, growth hormone release & glymphatic neuro-waste clearance.
+                </div>
               </div>
               <div class="sleep-breakdown-row">
                 <div class="breakdown-tag tag-rem">REM Sleep</div>
                 <div class="breakdown-stat">1h 51m <span class="breakdown-pct">24%</span></div>
-                <div class="breakdown-desc">Procedural memory synthesis, motor-skill integration & emotional recalibration.</div>
+                <div class="breakdown-desc">Procedural memory synthesis, motor-skill integration & emotional
+                  recalibration.</div>
               </div>
               <div class="sleep-breakdown-row">
                 <div class="breakdown-tag tag-light">Light Sleep</div>
                 <div class="breakdown-stat">3h 41m <span class="breakdown-pct">48%</span></div>
-                <div class="breakdown-desc">Circadian thermoregulation (-0.8°C core dip) & foundational metabolic reset.</div>
+                <div class="breakdown-desc">Circadian thermoregulation (-0.8°C core dip) & foundational metabolic reset.
+                </div>
               </div>
               <div class="sleep-breakdown-row">
                 <div class="breakdown-tag tag-awake">Micro-Arousals</div>
                 <div class="breakdown-stat">28m <span class="breakdown-pct">6%</span></div>
-                <div class="breakdown-desc">4 brief unconscious posture adjustments. Normal normative sleep fragmentation.</div>
+                <div class="breakdown-desc">4 brief unconscious posture adjustments. Normal normative sleep
+                  fragmentation.</div>
               </div>
             </div>
 
@@ -484,7 +515,8 @@
         <div class="story-visual-col">
           <div class="visual-ambient-backdrop"></div>
           <div class="phone-standout-frame">
-            <img src="assets/screenshots/Vitals2.png" alt="OdinEye Clinical Polysomnography Screenshot" class="phone-standout-img" />
+            <img src="assets/screenshots/Vitals2.png" alt="OdinEye Clinical Polysomnography Screenshot"
+              class="phone-standout-img" />
           </div>
           <div class="visual-caption">
             <strong>Production Capture: Vitals Screen</strong>
@@ -501,12 +533,13 @@
          ==================================================================== -->
     <section id="on-device-ai" class="section-flow ai-section">
       <div class="split-story-grid reverse-split">
-        
+
         <!-- Left: Real Phone Screenshot AI1.png Floating -->
         <div class="story-visual-col">
           <div class="visual-ambient-backdrop"></div>
           <div class="phone-standout-frame">
-            <img src="assets/screenshots/AI1.png" alt="OdinEye Dedicated On-Device AI Health Coach Screenshot" class="phone-standout-img" />
+            <img src="assets/screenshots/AI1.png" alt="OdinEye Dedicated On-Device AI Health Coach Screenshot"
+              class="phone-standout-img" />
           </div>
           <div class="visual-caption">
             <strong>Production Capture: Dedicated AI Coach</strong>
@@ -523,7 +556,9 @@
 
           <h2 class="section-heading">Hands-free voice coaching.<br>Zero cloud leakage.</h2>
           <p class="section-lead">
-            Ask complex clinical questions while stretching or cooking. OdinEye features a custom Kotlin <code>OdinEyeVoiceModule</code> for hands-free offline speech transcription and local text-to-speech, routed directly to Android AICore.
+            Ask complex clinical questions while stretching or cooking. OdinEye features a custom Kotlin
+            <code>OdinEyeVoiceModule</code> for hands-free offline speech transcription and local text-to-speech, routed
+            directly to Android AICore.
           </p>
 
           <!-- Interactive AI Query Simulator -->
@@ -553,7 +588,9 @@
                 <span class="ai-badge-offline">LOCAL NPU</span>
               </div>
               <p id="ai-simulated-text" class="ai-simulated-content">
-                "Your 88% recovery score is supported by 1h 42m of slow-wave Deep Sleep (22%) and a healthy 14.2% nocturnal cardiovascular dip down to 48 bpm. Your autonomic nervous system is in optimal parasympathetic equilibrium."
+                "Your 88% recovery score is supported by 1h 42m of slow-wave Deep Sleep (22%) and a healthy 14.2%
+                nocturnal cardiovascular dip down to 48 bpm. Your autonomic nervous system is in optimal parasympathetic
+                equilibrium."
               </p>
             </div>
 
@@ -586,19 +623,21 @@
          ==================================================================== -->
     <section id="zen-sanctuary" class="section-flow">
       <div class="split-story-grid">
-        
+
         <!-- Left: Zen & Sound Narrative & Live Synthesizer Player -->
         <div class="story-copy-col">
           <span class="section-kicker">Acoustic Neuroscience</span>
           <h2 class="section-heading">Mathematical frequencies.<br>No compressed audio loops.</h2>
           <p class="section-lead">
-            Traditional wellness apps stream repetitive, compressed MP3 recordings. OdinEye synthesizes pure mathematical frequencies directly in memory using native 44.1 kHz PCM stereo buffers, coupled with rhythmic somatic haptics for eyes-closed breathwork.
+            Traditional wellness apps stream repetitive, compressed MP3 recordings. OdinEye synthesizes pure
+            mathematical frequencies directly in memory using native 44.1 kHz PCM stereo buffers, coupled with rhythmic
+            somatic haptics for eyes-closed breathwork.
           </p>
 
           <!-- Interactive Web Audio Player -->
           <div class="audio-interactive-module">
             <div class="audio-player-bar">
-              
+
               <!-- Big Play/Pause Button -->
               <button class="audio-toggle-btn" id="audio-play-trigger" aria-label="Toggle Live Audio">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -668,7 +707,8 @@
         <div class="story-visual-col dual-visual">
           <div class="visual-ambient-backdrop"></div>
           <div class="phone-standout-frame front-frame">
-            <img src="assets/screenshots/Zen1.png" alt="OdinEye Tactile Breathwork Chamber" class="phone-standout-img" />
+            <img src="assets/screenshots/Zen1.png" alt="OdinEye Tactile Breathwork Chamber"
+              class="phone-standout-img" />
           </div>
           <div class="phone-standout-frame rear-frame">
             <img src="assets/screenshots/Zen2.png" alt="OdinEye Reactive Mood Face" class="phone-standout-img" />
@@ -691,7 +731,8 @@
         <span class="section-kicker">Radical Privacy Architecture</span>
         <h2 class="section-heading">Your biological telemetry belongs exclusively to you.</h2>
         <p class="section-subheading">
-          No cloud accounts. No remote databases. No commercial telemetry brokering. Here is how OdinEye compares to commercial wearable platforms.
+          No cloud accounts. No remote databases. No commercial telemetry brokering. Here is how OdinEye compares to
+          commercial wearable platforms.
         </p>
       </div>
 
@@ -795,7 +836,8 @@
         <span class="section-kicker">Engineering Specifications</span>
         <h2 class="section-heading">Built to modern Android enterprise standards.</h2>
         <p class="section-subheading">
-          Developed in strict TypeScript 6 with 0 compiler warnings, native Kotlin modules, and hardware-level encryption.
+          Developed in strict TypeScript 6 with 0 compiler warnings, native Kotlin modules, and hardware-level
+          encryption.
         </p>
       </div>
 
@@ -847,22 +889,27 @@
         <span class="section-kicker" style="color: #60A5FA;">Release v1.0.0 Ready</span>
         <h2 class="cta-headline">Take back control of your health intelligence.</h2>
         <p class="cta-description">
-          Experience personal health telemetry without compromising your personal privacy. Download the official signed APK or compile from source.
+          Experience personal health telemetry without compromising your personal privacy. Download the official signed
+          APK or compile from source.
         </p>
 
         <div class="cta-button-group">
-          <a href="https://github.com" target="_blank" rel="noopener" class="btn-primary btn-large">
+          <a href="https://github.com/Novartus/odin-eye/releases#release-1.0" target="_blank" rel="noopener"
+            class="btn-primary btn-large">
             <span>Download OdinEye v1.0 APK</span>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="7 10 12 15 17 10"></polyline>
               <line x1="12" y1="15" x2="12" y2="3"></line>
             </svg>
           </a>
 
-          <a href="https://github.com" target="_blank" rel="noopener" class="btn-ghost btn-large" style="background: rgba(255,255,255,0.08); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.2);">
+          <a href="https://github.com/Novartus/odin-eye" target="_blank" rel="noopener" class="btn-ghost btn-large"
+            style="background: rgba(255,255,255,0.08); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.2);">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/>
+              <path
+                d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z" />
             </svg>
             <span>Inspect GitHub Repository</span>
           </a>
@@ -899,9 +946,8 @@
           <div class="footer-group">
             <span class="group-title">Documentation</span>
             <a href="privacy-policy.html">Privacy Policy</a>
-            <a href="https://github.com">Terms of Service</a>
-            <a href="https://github.com">Release Notes v1.0</a>
-            <a href="https://github.com">Security Audit</a>
+            <a href="terms-of-service.html">Terms of Service</a>
+            <a href="https://github.com/Novartus/odin-eye/releases/tag/1.0">Release Notes v1.0</a>
           </div>
 
           <div class="footer-group">
@@ -914,10 +960,12 @@
 
           <div class="footer-group">
             <span class="group-title">Developers</span>
-            <a href="https://github.com" target="_blank" rel="noopener">GitHub Repository</a>
-            <a href="https://github.com" target="_blank" rel="noopener">Build from Source</a>
-            <a href="https://github.com" target="_blank" rel="noopener">Issue Tracker</a>
-            <a href="https://github.com" target="_blank" rel="noopener">MIT License</a>
+            <a href="https://github.com/Novartus/odin-eye" target="_blank" rel="noopener">GitHub
+              Repository</a>
+            <a href="https://github.com/Novartus/odin-eye/wiki" target="_blank" rel="noopener">Build from Source</a>
+            <a href="https://github.com/Novartus/odin-eye/issues" target="_blank" rel="noopener">Issue Tracker</a>
+            <a href="https://github.com/Novartus/odin-eye/blob/main/LICENSE" target="_blank" rel="noopener">MIT
+              License</a>
           </div>
         </div>
       </div>
@@ -932,4 +980,5 @@
 
   <script src="app.js"></script>
 </body>
+
 </html>

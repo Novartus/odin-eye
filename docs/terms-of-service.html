@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OdinEye — Privacy Policy · Zero-Cloud Health Telemetry</title>
-  <meta name="description" content="Official Privacy Policy for OdinEye (com.odineye.health). Explains our zero-cloud architecture, Health Connect read-only policy, AES-256 encryption, and GDPR/CCPA compliance." />
+  <title>OdinEye — Terms of Service · Local-First Health Intelligence</title>
+  <meta name="description" content="Official Terms of Service for OdinEye (com.odineye.health). Medical disclaimers, local-first architecture, third-party integrations, and user rights." />
   <link rel="icon" type="image/png" href="assets/icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -183,8 +183,8 @@
       letter-spacing: 0.8px;
       padding: 4px 12px;
       border-radius: var(--radius-pill);
-      background: var(--accent-mint-tint);
-      color: var(--accent-mint);
+      background: var(--accent-blue-tint);
+      color: var(--accent-blue);
     }
 
     .version-meta {
@@ -292,14 +292,14 @@
       border-left: 4px solid;
     }
 
-    .alert-mint {
-      background: var(--accent-mint-tint);
-      border-color: var(--accent-mint);
-      color: #065F46;
+    .alert-danger {
+      background: var(--accent-rose-tint);
+      border-color: var(--accent-rose);
+      color: #9F1239;
     }
 
-    .alert-mint strong {
-      color: #064E3B;
+    .alert-danger strong {
+      color: #881337;
       display: block;
       margin-bottom: 6px;
       font-size: 0.95rem;
@@ -345,7 +345,6 @@
       padding: 12px 16px;
       border-bottom: 1px solid var(--border-subtle);
       color: var(--text-body);
-      vertical-align: top;
     }
 
     /* Footer */
@@ -473,8 +472,8 @@
     </a>
 
     <div class="legal-nav-tabs">
-      <a href="privacy-policy.html" class="tab-link active">Privacy Policy</a>
-      <a href="terms-of-service.html" class="tab-link">Terms of Service</a>
+      <a href="terms-of-service.html" class="tab-link active">Terms of Service</a>
+      <a href="privacy-policy.html" class="tab-link">Privacy Policy</a>
     </div>
 
     <a href="index.html" class="back-home-btn">
@@ -486,228 +485,214 @@
   <main class="legal-content-card">
     
     <div class="legal-badge-row">
-      <span class="status-badge">Zero-Cloud Architecture</span>
+      <span class="status-badge">Legal Contract</span>
       <span class="version-meta">Effective Date: September 14, 2026 · v1.0.0</span>
     </div>
 
-    <h1>OdinEye Privacy Policy</h1>
+    <h1>OdinEye Terms of Service</h1>
     <p class="legal-lead">
-      OdinEye is engineered on an uncompromising <strong>Local-First, Zero-Knowledge Privacy Model</strong>. We do not operate remote servers, tracking backends, or data brokerage pipelines. Your health telemetry belongs exclusively to you.
+      Please read these Terms of Service carefully before installing or using OdinEye. This document outlines your legal rights, our medical non-diagnostic disclaimers, and your responsibilities regarding local cryptographic security.
     </p>
 
     <!-- Quick Navigation TOC -->
     <nav class="toc-box" aria-label="Table of Contents">
       <div class="toc-title">Table of Contents</div>
       <ul class="toc-grid">
-        <li><a href="#section-1">1. Core Privacy Philosophy</a></li>
-        <li><a href="#section-2">2. Information We Access (Health Connect)</a></li>
-        <li><a href="#section-3">3. Google Play Health Connect Policy</a></li>
-        <li><a href="#section-4">4. On-Device AI & Gemini Nano Disclosures</a></li>
-        <li><a href="#section-5">5. Cryptographic Vault & Storage Security</a></li>
-        <li><a href="#section-6">6. In-App Data Deletion & User Control</a></li>
-        <li><a href="#section-7">7. GDPR & CCPA/CPRA Legal Compliance</a></li>
-        <li><a href="#section-8">8. Children’s Privacy Protection</a></li>
-        <li><a href="#section-9">9. Changes to this Privacy Policy</a></li>
-        <li><a href="#section-10">10. Contact & Privacy Inquiries</a></li>
+        <li><a href="#section-1">1. Acceptance of Terms & Eligibility</a></li>
+        <li><a href="#section-2">2. Medical & Non-Diagnostic Disclaimer</a></li>
+        <li><a href="#section-3">3. Local-First Security Architecture</a></li>
+        <li><a href="#section-4">4. Third-Party Integrations & APIs</a></li>
+        <li><a href="#section-5">5. Intellectual Property & License</a></li>
+        <li><a href="#section-6">6. Disclaimer of Warranties</a></li>
+        <li><a href="#section-7">7. Limitation of Liability</a></li>
+        <li><a href="#section-8">8. Data Deletion & Termination</a></li>
+        <li><a href="#section-9">9. Governing Law & Jurisdiction</a></li>
+        <li><a href="#section-10">10. Contact & Project Inquiries</a></li>
       </ul>
     </nav>
 
     <!-- Section 1 -->
     <section id="section-1">
-      <h2>1. Core Privacy Philosophy</h2>
+      <h2>1. Acceptance of Terms & Eligibility</h2>
       <p>
-        Welcome to <strong>OdinEye</strong> ("we", "our", or "the Application"). Package Identifier: <code>com.odineye.health</code>.
+        Welcome to <strong>OdinEye</strong> (the "Application" or "Service"), developed and published by <strong>OdinEye Health</strong> ("we", "us", or "our"). Package Identifier: <code>com.odineye.health</code>.
       </p>
-      
-      <div class="legal-alert alert-mint">
-        <strong>🔒 ZERO CLOUD LEAKAGE GUARANTEE</strong>
-        OdinEye does not transmit your physiological metrics, sleep stages, medication schedules, or voice interactions to any cloud database or developer server. All processing executes 100% locally on your smartphone.
-      </div>
-
-      <ul>
-        <li><strong>No Cloud Servers:</strong> We do not operate, host, or maintain centralized cloud databases or telemetry backends.</li>
-        <li><strong>Hardware-Backed Encryption:</strong> Telemetry caches and medication schedules are encrypted with AES-256-CBC with PBKDF2 key derivation.</li>
-        <li><strong>Zero Data Monetization:</strong> We never sell, rent, broker, trade, or monetize your health information under any circumstances.</li>
-      </ul>
+      <p>
+        By downloading, installing, accessing, or using OdinEye, you ("User" or "you") acknowledge that you have read, understood, and agreed to be bound by these Terms of Service ("Terms") and our companion <a href="privacy-policy.html" style="color: var(--accent-blue); font-weight: 600;">Privacy Policy</a>. If you do not agree to these Terms, you must not download, install, or use the Application.
+      </p>
+      <h3>Eligibility</h3>
+      <p>
+        You must be at least 18 years of age (or the age of legal majority in your country or jurisdiction) to use OdinEye. If you are between 13 and 17 years of age, you may only use the Application with the affirmative consent and supervision of a parent or legal guardian who agrees to be bound by these Terms.
+      </p>
     </section>
 
     <!-- Section 2 -->
     <section id="section-2">
-      <h2>2. Information We Access and How It Is Handled</h2>
+      <h2>2. Medical & Non-Diagnostic Disclaimer (Critical Notice)</h2>
       
-      <h3>2.1 Android Health Connect Permissions (Strictly Read-Only)</h3>
+      <div class="legal-alert alert-danger">
+        <strong>⚠️ CRITICAL MEDICAL NOTICE</strong>
+        ODINEYE IS NOT A MEDICAL DEVICE AND DOES NOT PROVIDE MEDICAL DIAGNOSIS, CLINICAL ADVICE, PRESCRIPTIONS, OR MEDICAL TREATMENT.
+      </div>
+
+      <ol>
+        <li>
+          <strong>Informational and Wellness Purposes Only:</strong> All recovery scores, 4-stage sleep duration percentages, nocturnal pulse dip calculations, cardiovascular indicators, mindfulness timers, and on-device AI observations are generated solely for general fitness, mindfulness, and athletic awareness.
+        </li>
+        <li>
+          <strong>Not Evaluated by Health Authorities:</strong> The Application, its algorithms, and mathematical synthesizers have not been evaluated, tested, approved, or cleared by the U.S. Food and Drug Administration (FDA), the European Medicines Agency (EMA), or any other governmental medical regulatory body.
+        </li>
+        <li>
+          <strong>No Substitute for Professional Healthcare:</strong> Never disregard professional medical advice, delay seeking clinical consultation, or alter pharmaceutical regimens because of information observed in OdinEye.
+        </li>
+        <li>
+          <strong>Medical Emergencies:</strong> If you believe you are experiencing acute cardiovascular distress, heart palpitations, severe respiratory difficulty, or an adverse pharmaceutical reaction, <strong>immediately call emergency medical services (911, 112, or 999) or proceed to the nearest emergency room</strong>.
+        </li>
+        <li>
+          <strong>Medication Reminder Disclaimer:</strong> The medication adherence feature is an organizational scheduling tool operating via local Android alarms. Device battery optimization (Doze mode), power interruptions, or system task killing can disrupt notifications. You remain solely responsible for your medication schedule.
+        </li>
+      </ol>
+    </section>
+
+    <!-- Section 3 -->
+    <section id="section-3">
+      <h2>3. Local-First Architecture & User Security Responsibility</h2>
       <p>
-        With your explicit, granular permission granted via Android Health Connect, OdinEye reads the following biometric and activity data types to generate your daily equilibrium scores and 4-stage sleep hypnogram:
+        OdinEye is engineered on an uncompromising <strong>Local-First, Zero-Knowledge Privacy Model</strong>. We do not host remote user accounts or centralized database servers.
+      </p>
+      
+      <div class="legal-alert alert-info">
+        <strong>🛡️ ON-DEVICE ENCRYPTED VAULT</strong>
+        Your health records, biometric sync tokens, medication reminders, and mood check-ins are encrypted via AES-256-CBC and stored strictly inside your phone’s sandboxed private storage (Linux Mode 0700).
+      </div>
+
+      <p>Because encryption keys and personal health records reside strictly on your physical Android hardware:</p>
+      <ul>
+        <li>You are solely responsible for maintaining physical device security, biometric locks, screen PINs, and backup hygiene.</li>
+        <li>If you uninstall the Application, clear app data via Android system settings, or tap <em>"Wipe Vault & Delete Keys"</em>, your cryptographic keys and historical records are permanently destroyed. We cannot recover lost local data.</li>
+      </ul>
+    </section>
+
+    <!-- Section 4 -->
+    <section id="section-4">
+      <h2>4. Third-Party Services & API Integrations</h2>
+      <p>
+        OdinEye provides optional direct client-side synchronization with supported health telemetry providers:
       </p>
 
       <div class="table-scroll">
         <table>
           <thead>
             <tr>
-              <th>Data Type</th>
-              <th>Android Permission</th>
-              <th>Operational Purpose</th>
+              <th>Platform</th>
+              <th>Provider</th>
+              <th>Connection Protocol</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><strong>Sleep Stages & Duration</strong></td>
-              <td><code>READ_SLEEP</code></td>
-              <td>Visualizing Deep (N3), REM, Light, and Awake durations and computing sleep efficiency.</td>
+              <td><strong>Android Health Connect</strong></td>
+              <td>Google LLC</td>
+              <td>Offline Read-Only Android IPC</td>
             </tr>
             <tr>
-              <td><strong>Heart Rate Telemetry</strong></td>
-              <td><code>READ_HEART_RATE</code></td>
-              <td>Real-time cardiovascular tracking, cardio zone distribution, and nocturnal resting pulse.</td>
+              <td><strong>Smart Ring AIR</strong></td>
+              <td>Ultrahuman Healthcare</td>
+              <td>Direct Client-Side HTTPS with User API Token</td>
             </tr>
             <tr>
-              <td><strong>Resting Heart Rate (RHR)</strong></td>
-              <td><code>READ_RESTING_HEART_RATE</code></td>
-              <td>Establishing autonomic cardiovascular baselines and nocturnal pulse dip calculation.</td>
+              <td><strong>Fitbit Web API</strong></td>
+              <td>Google LLC</td>
+              <td>Direct Client-Side OAuth 2.0 PKCE</td>
             </tr>
             <tr>
-              <td><strong>Heart Rate Variability (HRV)</strong></td>
-              <td><code>READ_HEART_RATE_VARIABILITY</code></td>
-              <td>Computing parasympathetic autonomic readiness and recovery equilibrium.</td>
+              <td><strong>Hevy Strength App</strong></td>
+              <td>Hevy App Ltd.</td>
+              <td>Direct Client-Side HTTPS with User API Key</td>
             </tr>
             <tr>
-              <td><strong>Daily Steps & Cadence</strong></td>
-              <td><code>READ_STEPS</code></td>
-              <td>Tracking physical activity against custom daily movement goals.</td>
-            </tr>
-            <tr>
-              <td><strong>Active Calories Burned</strong></td>
-              <td><code>READ_ACTIVE_CALORIES_BURNED</code></td>
-              <td>Evaluating active cardiovascular exertion and metabolic expenditure.</td>
-            </tr>
-            <tr>
-              <td><strong>Skin Temperature</strong></td>
-              <td><code>READ_SKIN_TEMPERATURE</code></td>
-              <td>Detecting circadian thermoregulatory dips associated with deep restorative sleep.</td>
-            </tr>
-            <tr>
-              <td><strong>Oxygen Saturation (SpO2)</strong></td>
-              <td><code>READ_OXYGEN_SATURATION</code></td>
-              <td>Nocturnal respiratory stability and hypoxic indicator evaluation.</td>
+              <td><strong>Android AICore / Gemini Nano</strong></td>
+              <td>Google LLC</td>
+              <td>100% Offline Local Neural Processing (NPU)</td>
             </tr>
           </tbody>
         </table>
       </div>
 
       <p>
-        <strong>Strict Read-Only Access:</strong> OdinEye accesses Android Health Connect strictly in read-only mode. The Application never writes, edits, alters, or deletes any records in your Health Connect store.
+        Your use of third-party platforms is governed strictly by each provider’s respective terms and privacy policies. We make no warranties regarding third-party server uptime, API rate limits, or external sensor accuracy. You may disconnect any service at any time via <strong>Settings → Data Sources</strong>.
       </p>
-
-      <h3>2.2 Third-Party Fitness Wearable APIs (Client-Side Direct)</h3>
-      <p>
-        If you choose to sync third-party wearables (Ultrahuman Ring AIR, Fitbit Web API, Hevy Strength), OdinEye connects directly from your smartphone via secure HTTPS using credentials you provide. No tokens or biometrics ever transit through any intermediary servers.
-      </p>
-
-      <h3>2.3 User-Inputted Health Data</h3>
-      <p>
-        Any information you record directly—such as medication names, schedules, dosages, completed breathwork sessions, and self-reported mood ratings—is stored strictly within your phone's sandboxed encrypted storage.
-      </p>
-    </section>
-
-    <!-- Section 3 -->
-    <section id="section-3">
-      <h2>3. Google Play Health Connect Policy & Limited Use Disclosure</h2>
-      <p>
-        OdinEye strictly complies with the <strong>Google Play Health Connect Developer Policy</strong> and its <strong>Limited Use Requirements</strong>:
-      </p>
-      <ol>
-        <li><strong>Specific Permitted Use Only:</strong> Health Connect data is accessed exclusively to calculate and display user-facing health, sleep, and recovery metrics directly inside the OdinEye application UI.</li>
-        <li><strong>No Sale or Transfer:</strong> We NEVER sell, license, rent, or transfer Health Connect data to any third party, advertising exchange, or data aggregator.</li>
-        <li><strong>No Advertising or Marketing:</strong> Health Connect data is NEVER used or disclosed for personalized advertising, retargeting, promotional campaigns, or consumer profiling.</li>
-        <li><strong>No Creditworthiness Assessment:</strong> Health Connect data is NEVER used to evaluate creditworthiness, consumer credit eligibility, or insurance underwriting.</li>
-        <li><strong>No Human Access:</strong> No human is permitted to read or inspect your Health Connect data under any circumstances.</li>
-      </ol>
-    </section>
-
-    <!-- Section 4 -->
-    <section id="section-4">
-      <h2>4. Artificial Intelligence & Telemetry Processing Disclosures</h2>
-      
-      <div class="legal-alert alert-info">
-        <strong>⚡ 100% ON-DEVICE AI COACHING</strong>
-        Whenever supported by your Android hardware, OdinEye runs Gemini Nano locally via Android AICore directly on your phone’s Neural Processing Unit (NPU). Biometrics and prompts never leave your device.
-      </div>
-
-      <ul>
-        <li><strong>Android AICore / Gemini Nano:</strong> Local speech-to-text transcription and clinical reasoning execute directly on-device without internet access.</li>
-        <li><strong>Offline Sports Science Engine:</strong> Fallback deterministic sports science rules engine runs locally with zero network requests.</li>
-        <li><strong>Optional Cloud API Fallback:</strong> If you explicitly choose to provide a personal Google Gemini API key on unsupported legacy hardware, prompts are sent directly to Google AI Studio via encrypted HTTPS under Google's Terms of Service. This is disabled by default.</li>
-      </ul>
     </section>
 
     <!-- Section 5 -->
     <section id="section-5">
-      <h2>5. Cryptographic Vault & Storage Security</h2>
+      <h2>5. Intellectual Property & Limited License</h2>
       <p>
-        OdinEye applies defense-in-depth cryptographic security to safeguard your data:
+        <strong>Open Source License:</strong> OdinEye source code is released under the permissive <strong>MIT Open Source License</strong>. You are free to inspect, audit, fork, and compile the code in accordance with the license conditions.
       </p>
-      <ul>
-        <li><strong>AES-256-CBC:</strong> Industry-standard symmetric cipher encrypting SQLite databases at rest.</li>
-        <li><strong>PBKDF2 Key Derivation:</strong> 10,000 rounds with HMAC-SHA256 and cryptographically random salts.</li>
-        <li><strong>Android Hardware Keystore:</strong> Master cryptographic keys are generated and protected by hardware security enclaves.</li>
-        <li><strong>Linux Mode 0700:</strong> Database files are isolated exclusively to the private application sandbox, inaccessible to other apps.</li>
-      </ul>
+      <p>
+        <strong>Trademarks & Brand Assets:</strong> The name "OdinEye", the OdinEye logo icon, customized brand illustrations, and product presentation designs are proprietary assets of OdinEye Health. You may not use OdinEye trademarks in a manner that implies formal commercial endorsement without prior written authorization.
+      </p>
     </section>
 
     <!-- Section 6 -->
     <section id="section-6">
-      <h2>6. In-App Data Deletion & User Control</h2>
-      <p>
-        In full compliance with <strong>Google Play’s Account and Data Deletion Policy</strong>, you maintain complete and permanent authority to wipe all stored data at any moment without contacting support:
-      </p>
-      <ol>
-        <li>Open OdinEye and tap the <strong>Config</strong> (Settings) tab.</li>
-        <li>Scroll to <strong>Category 04: Hardware Security & Vault Audit</strong>.</li>
-        <li>Tap <strong>Wipe Vault & Delete Keys</strong>.</li>
-      </ol>
-      <p>
-        <strong>What happens immediately:</strong> All encrypted API keys, medication reminders, mood check-ins, sleep caches, and hardware Keystore entries are permanently wiped. Because we maintain no cloud databases, no residual copies remain anywhere.
-      </p>
+      <h2>6. Disclaimer of Warranties</h2>
+      <p>TO THE MAXIMUM EXTENT PERMITTED UNDER APPLICABLE LAW:</p>
+      <ul>
+        <li>THE APPLICATION IS PROVIDED ON AN <strong>"AS IS"</strong> AND <strong>"AS AVAILABLE"</strong> BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE.</li>
+        <li>WE EXPRESSLY DISCLAIM ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, SYSTEM COMPATIBILITY, AND NON-INFRINGEMENT.</li>
+        <li>WE DO NOT GUARANTEE THAT THE APP WILL OPERATE COMPLETELY ERROR-FREE, UNINTERRUPTED, OR COMPATIBLE WITH ALL HARDWARE WEARABLES AND SMART RINGS.</li>
+      </ul>
     </section>
 
     <!-- Section 7 -->
     <section id="section-7">
-      <h2>7. GDPR & CCPA/CPRA Legal Compliance</h2>
-      <p>
-        Under the General Data Protection Regulation (GDPR) and the California Consumer Privacy Act (CCPA/CPRA), users are entitled to rights of access, erasure, restriction, and portability:
-      </p>
+      <h2>7. Limitation of Liability</h2>
+      <p>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW:</p>
       <ul>
-        <li><strong>Right of Access & Portability:</strong> All personal data is immediately accessible to you in the OdinEye UI and local database.</li>
-        <li><strong>Right to Erasure (Right to be Forgotten):</strong> You can erase all data instantly using the in-app "Wipe Vault" tool or by uninstalling the application.</li>
-        <li><strong>Do Not Sell My Personal Information:</strong> OdinEye does not sell or share personal health information. Zero commercial data brokers have access to your metrics.</li>
+        <li>
+          IN NO EVENT SHALL ODINEYE HEALTH, ITS DEVELOPERS, CONTRIBUTORS, OR AFFILIATES BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING PERSONAL INJURY, MISSED MEDICATION DOSES, INCORRECT SLEEP INTERPRETATION, HARDWARE FAILURE, OR LOSS OF DATA.
+        </li>
+        <li>
+          OUR TOTAL AGGREGATE LIABILITY ARISING FROM OR RELATING TO YOUR USE OF THE APPLICATION SHALL NOT EXCEED THE TOTAL AMOUNT PAID BY YOU FOR THE APPLICATION, OR FIFTY U.S. DOLLARS ($50.00 USD), WHICHEVER IS LESS.
+        </li>
       </ul>
     </section>
 
     <!-- Section 8 -->
     <section id="section-8">
-      <h2>8. Children’s Privacy Protection</h2>
+      <h2>8. Data Deletion & Termination</h2>
       <p>
-        OdinEye is not directed toward children under 13 years of age (or under 16 in the European Union). We do not knowingly collect or solicit personal information from children. If you believe a minor has installed the Application without guardian consent, please contact us or delete the application from the device.
+        You have complete autonomy to terminate these Terms at any time:
+      </p>
+      <ol>
+        <li>Open OdinEye and navigate to <strong>Settings → Category 04: Hardware Security</strong>.</li>
+        <li>Tap <strong>Wipe Vault & Delete Keys</strong> to purge all encrypted credentials, medication schedules, and caches.</li>
+        <li>Uninstall the Application from your Android smartphone.</li>
+      </ol>
+      <p>
+        Because no data is ever transmitted to a cloud account, uninstalling the app permanently purges all associated information from existence.
       </p>
     </section>
 
     <!-- Section 9 -->
     <section id="section-9">
-      <h2>9. Changes to this Privacy Policy</h2>
+      <h2>9. Governing Law & Dispute Resolution</h2>
       <p>
-        We may update this Privacy Policy periodically to reflect new open-source capabilities or regulatory guidelines. When changes occur, the updated policy will be published here with a revised "Last Updated" timestamp. Continued use of OdinEye indicates acceptance of the updated terms.
+        These Terms shall be governed by and construed in accordance with the laws of the jurisdiction in which the OdinEye Health project maintainer is organized, without giving effect to any conflict of law principles. Any legal action or proceeding arising under these Terms shall be instituted exclusively in the applicable courts of that jurisdiction.
       </p>
     </section>
 
     <!-- Section 10 -->
     <section id="section-10">
-      <h2>10. Contact & Privacy Inquiries</h2>
+      <h2>10. Contact Us</h2>
       <p>
-        For inquiries, security disclosures, or questions concerning this Privacy Policy, please contact our team:
+        If you have questions, feedback, or legal inquiries regarding these Terms of Service, please reach out via:
       </p>
       <ul>
         <li><strong>Email:</strong> <code>support@odineye.health</code></li>
-        <li><strong>GitHub Security:</strong> <a href="https://github.com/Novartus/odin-eye/security" target="_blank" rel="noopener" style="color: var(--accent-blue);">github.com/Novartus/odin-eye/security</a></li>
+        <li><strong>GitHub Repository:</strong> <a href="https://github.com/Novartus/odin-eye" target="_blank" rel="noopener" style="color: var(--accent-blue);">github.com/Novartus/odin-eye</a></li>
         <li><strong>Application Package:</strong> <code>com.odineye.health</code></li>
       </ul>
     </section>
