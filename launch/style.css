@@ -167,6 +167,8 @@ code, kbd, samp, pre {
   gap: 10px;
   text-decoration: none;
   color: var(--text-headline);
+  flex-shrink: 0;
+  margin-right: 16px;
 }
 
 .brand-icon {
@@ -181,22 +183,19 @@ code, kbd, samp, pre {
   font-weight: 800;
   letter-spacing: 1.5px;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .brand-version-badge {
-  font-size: 0.72rem;
-  font-weight: 700;
-  background: var(--bg-chip);
-  color: var(--text-muted);
-  padding: 2px 8px;
-  border-radius: var(--radius-pill);
-  letter-spacing: 0.5px;
+  display: none;
 }
 
 .nav-desktop {
   display: flex;
   align-items: center;
-  gap: 32px;
+  justify-content: center;
+  gap: clamp(12px, 1.8vw, 24px);
+  flex: 1;
 }
 
 .nav-item {
@@ -204,6 +203,7 @@ code, kbd, samp, pre {
   font-weight: 600;
   color: var(--text-muted);
   text-decoration: none;
+  white-space: nowrap;
   transition: color var(--duration-fast) ease;
 }
 
@@ -215,6 +215,8 @@ code, kbd, samp, pre {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
+  margin-left: 16px;
 }
 
 /* Button Styles */
@@ -423,35 +425,7 @@ code, kbd, samp, pre {
   margin: 0 auto;
 }
 
-.hero-status-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(37, 99, 235, 0.05);
-  color: var(--accent-blue);
-  font-size: 0.84rem;
-  font-weight: 700;
-  padding: 6px 16px;
-  border-radius: var(--radius-pill);
-  border: 1px solid rgba(37, 99, 235, 0.15);
-  margin-bottom: 24px;
-  letter-spacing: 0.2px;
-}
 
-.status-pulse-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent-mint);
-  box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.2);
-  animation: pulse-ring 2s infinite ease-in-out;
-}
-
-@keyframes pulse-ring {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4); }
-  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
-}
 
 .hero-headline {
   font-size: clamp(2.8rem, 6vw, 4.8rem);
@@ -543,18 +517,22 @@ code, kbd, samp, pre {
 .hero-image-frame {
   position: relative;
   z-index: 1;
-  border-radius: 28px;
+  border-radius: 24px;
   overflow: hidden;
   box-shadow: var(--shadow-hero, 0 30px 80px -15px rgba(15, 23, 42, 0.12));
   background: #FFFFFF;
+  max-width: 800px;
+  width: 100%;
 }
 
 .hero-main-img {
   display: block;
   width: 100%;
-  max-width: 860px;
   height: auto;
-  border-radius: 28px;
+  max-height: 500px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 24px;
 }
 
 /* Floating Ambient Badges (Apple-style subtle micro-callouts) */
@@ -567,33 +545,40 @@ code, kbd, samp, pre {
   background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  padding: 10px 18px;
+  padding: 10px 16px;
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-float);
   border: 1px solid var(--border-subtle);
   animation: float-gentle 4s ease-in-out infinite alternate;
+  pointer-events: none;
 }
 
 @keyframes float-gentle {
   0% { transform: translateY(0px); }
-  100% { transform: translateY(-8px); }
+  100% { transform: translateY(-6px); }
+}
+
+@keyframes float-center {
+  0% { transform: translateX(-50%) translateY(0px); }
+  100% { transform: translateX(-50%) translateY(-6px); }
 }
 
 .pill-top-left {
-  top: 10%;
-  left: -20px;
+  top: 18px;
+  left: 18px;
 }
 
 .pill-top-right {
-  top: 14%;
-  right: -20px;
+  top: 18px;
+  right: 18px;
   animation-delay: 1.5s;
 }
 
 .pill-bottom-center {
-  bottom: 24px;
+  bottom: 18px;
   left: 50%;
   transform: translateX(-50%);
+  animation: float-center 4s ease-in-out infinite alternate;
   animation-delay: 2.5s;
 }
 
@@ -829,19 +814,16 @@ code, kbd, samp, pre {
   transition: opacity 0.25s ease;
 }
 
-/* Secondary phone (overlapping perspective) */
+/* Secondary phone (companion perspective tucked neatly behind) */
 .secondary-phone {
   position: absolute;
-  right: 20px;
+  left: calc(50% + 35px);
   bottom: 0px;
   z-index: 1;
   transform: scale(0.88) translateY(20px);
-  opacity: 0.85;
-}
-
-.secondary-phone:hover {
-  opacity: 1;
-  transform: scale(0.92) translateY(10px);
+  opacity: 0.75;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s var(--ease-spring);
 }
 
 /* Stage Narrative */
@@ -1133,19 +1115,30 @@ code, kbd, samp, pre {
 }
 
 /* Dual visual for Zen Sanctuary */
+.story-visual-col.dual-visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
 .dual-visual .front-frame {
   position: relative;
   z-index: 2;
-  transform: translateX(-30px);
+  transform: translateX(-16px);
 }
 
 .dual-visual .rear-frame {
   position: absolute;
-  right: 10px;
-  top: 40px;
+  left: calc(50% - 90px);
+  top: 32px;
   z-index: 1;
   transform: scale(0.92);
-  opacity: 0.85;
+  opacity: 0.8;
+  pointer-events: none;
 }
 
 /* ==========================================================================
@@ -1251,9 +1244,9 @@ code, kbd, samp, pre {
 
 .sleep-breakdown-row {
   display: grid;
-  grid-template-columns: 140px 100px 1fr;
+  grid-template-columns: minmax(100px, auto) minmax(70px, auto) 1fr;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   padding: 10px 0;
   border-top: 1px solid var(--border-subtle);
 }
@@ -1422,7 +1415,7 @@ code, kbd, samp, pre {
 
 .ai-points-strip {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 16px;
   padding-top: 16px;
   border-top: 1px solid var(--border-subtle);
@@ -1486,6 +1479,8 @@ code, kbd, samp, pre {
 
 .audio-meta {
   flex: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .audio-state-line {
@@ -1849,7 +1844,31 @@ code, kbd, samp, pre {
 /* ==========================================================================
    RESPONSIVE DESIGN (Flawless Mobile & Tablet Adaptation Across All Viewports)
    ========================================================================== */
-@media (max-width: 1024px) {
+@media (max-width: 1080px) {
+  .nav-desktop {
+    display: none !important;
+  }
+
+  .nav-actions .btn-ghost {
+    display: none !important;
+  }
+
+  .brand-version-badge {
+    display: none !important;
+  }
+
+  .mobile-toggle {
+    display: flex !important;
+  }
+
+  .btn-primary.btn-header-cta .desktop-cta-text {
+    display: none !important;
+  }
+
+  .btn-primary.btn-header-cta .mobile-cta-text {
+    display: inline !important;
+  }
+
   .floating-pill {
     display: none !important; /* Eliminate negative-margin horizontal blowout */
   }
@@ -1943,33 +1962,9 @@ code, kbd, samp, pre {
     letter-spacing: 1px;
   }
 
-  .brand-version-badge {
-    display: none;
-  }
-
-  .nav-desktop {
-    display: none;
-  }
-
-  .nav-actions .btn-ghost {
-    display: none;
-  }
-
   .btn-primary.btn-header-cta {
     padding: 8px 14px;
     font-size: 0.82rem;
-  }
-
-  .btn-primary.btn-header-cta .desktop-cta-text {
-    display: none;
-  }
-
-  .btn-primary.btn-header-cta .mobile-cta-text {
-    display: inline;
-  }
-
-  .mobile-toggle {
-    display: flex;
   }
 
   /* Fixed Mobile Drawer Right Below Sticky Header */
@@ -2508,17 +2503,28 @@ code, kbd, samp, pre {
     font-size: 0.95rem;
   }
 
-  .hero-status-tag {
-    font-size: 0.72rem;
-    padding: 4px 10px;
-  }
-
   .metric-number {
     font-size: 1.25rem;
   }
 
   .metric-label {
     font-size: 0.7rem;
+  }
+
+  .phone-screen-camera {
+    width: 48px;
+    height: 11px;
+    top: 6px;
+  }
+
+  .hero-image-frame {
+    border-radius: 16px;
+    max-height: 340px;
+  }
+
+  .hero-main-img {
+    max-height: 340px;
+    border-radius: 16px;
   }
 
   .phone-titanium-bezel,
@@ -2548,6 +2554,7 @@ code, kbd, samp, pre {
   .brand-title {
     font-size: 0.88rem;
     letter-spacing: 0.5px;
+    white-space: nowrap;
   }
 
   .brand-icon {
@@ -2559,6 +2566,7 @@ code, kbd, samp, pre {
     padding: 6px 8px;
     font-size: 0.74rem;
     gap: 4px;
+    white-space: nowrap;
   }
 
   .hero-headline {
